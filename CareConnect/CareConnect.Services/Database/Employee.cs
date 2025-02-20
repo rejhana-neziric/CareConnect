@@ -1,0 +1,29 @@
+﻿using System;
+using System.Collections.Generic;
+
+namespace CareConnect.Services.Database;
+
+public partial class Employee
+{
+    public int EmployeeId { get; set; }
+
+    public DateOnly HireDate { get; set; }
+
+    public string JobTitle { get; set; } = null!;
+
+    public int? QualificationId { get; set; }
+
+    public DateTime ModifiedDate { get; set; }
+
+    public virtual ICollection<EmployeeAvailability> EmployeeAvailabilities { get; set; } = new List<EmployeeAvailability>();
+
+    public virtual User EmployeeNavigation { get; set; } = null!;
+
+    public virtual ICollection<EmployeePayHistory> EmployeePayHistories { get; set; } = new List<EmployeePayHistory>();
+
+    public virtual Qualification? Qualification { get; set; }
+
+    public virtual ICollection<Review> Reviews { get; set; } = new List<Review>();
+
+    public virtual ICollection<Session> Sessions { get; set; } = new List<Session>();
+}

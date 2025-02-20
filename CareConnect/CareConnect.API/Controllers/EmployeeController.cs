@@ -1,0 +1,17 @@
+﻿using CareConnect.Models;
+using CareConnect.Models.Requests;
+using CareConnect.Models.SearchObjects;
+using CareConnect.Services;
+using Microsoft.AspNetCore.Mvc;
+
+namespace CareConnect.API.Controllers
+{
+    [ApiController]
+    [Route("[controller]")]
+    public class EmployeeController : BaseCRUDController<Models.Employee, EmployeeSearchObject, EmployeeInsertRequest, EmployeeUpdateRequest>
+    {
+        protected IEmployeeService _service;
+
+        public EmployeeController(IEmployeeService service) : base(service) { }
+    }
+}
