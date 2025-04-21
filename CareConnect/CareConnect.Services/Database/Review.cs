@@ -13,7 +13,7 @@ public partial class Review
 
     public string Content { get; set; } = null!;
 
-    public DateOnly PublishDate { get; set; }
+    public DateTime PublishDate { get; set; }
 
     public int? WorkshopId { get; set; }
 

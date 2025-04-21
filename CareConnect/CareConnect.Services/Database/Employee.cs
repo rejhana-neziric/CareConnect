@@ -7,7 +7,7 @@ public partial class Employee
 {
     public int EmployeeId { get; set; }
 
-    public DateOnly HireDate { get; set; }
+    public DateTime HireDate { get; set; }
 
     public string JobTitle { get; set; } = null!;
 
@@ -17,7 +17,7 @@ public partial class Employee
 
     public virtual ICollection<EmployeeAvailability> EmployeeAvailabilities { get; set; } = new List<EmployeeAvailability>();
 
-    public virtual User EmployeeNavigation { get; set; } = null!;
+    public virtual User User { get; set; } = null!;
 
     public virtual ICollection<EmployeePayHistory> EmployeePayHistories { get; set; } = new List<EmployeePayHistory>();
 

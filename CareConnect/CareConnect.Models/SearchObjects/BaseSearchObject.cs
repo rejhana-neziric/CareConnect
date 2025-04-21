@@ -4,10 +4,19 @@ using System.Text;
 
 namespace CareConnect.Models.SearchObjects
 {
-    public class BaseSearchObject
+    public class BaseSearchObject<TAdditionalData> 
+        where TAdditionalData : BaseAdditionalSearchRequestData
     {
-        public int? Page { get; set; }
+        public string? FTS { get; set; }
 
-        public int? PageSize { get; set; }
+        public int? Page { get; set; } = 0;
+
+        public int? PageSize { get; set; } = 10; 
+
+        public bool IncludeTotalCount { get; set; } = false;
+
+        public bool RetrieveAll { get; set; } = false;
+
+        public TAdditionalData? AdditionalData { get; set; }
     }
 }

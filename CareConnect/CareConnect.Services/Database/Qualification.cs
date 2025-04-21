@@ -11,7 +11,7 @@ public partial class Qualification
 
     public string InstituteName { get; set; } = null!;
 
-    public DateOnly ProcurementYear { get; set; }
+    public DateTime ProcurementYear { get; set; }
 
     public DateTime ModifiedDate { get; set; }
 

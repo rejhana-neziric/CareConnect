@@ -7,9 +7,9 @@ public partial class Member
 {
     public int MemberId { get; set; }
 
-    public DateOnly JoinedDate { get; set; }
+    public DateTime JoinedDate { get; set; }
 
-    public DateOnly? LeftDate { get; set; }
+    public DateTime? LeftDate { get; set; }
 
     public DateTime ModifiedDate { get; set; }
 

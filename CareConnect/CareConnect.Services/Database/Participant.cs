@@ -11,7 +11,7 @@ public partial class Participant
 
     public int AttendanceStatusId { get; set; }
 
-    public DateOnly RegistrationDate { get; set; }
+    public DateTime RegistrationDate { get; set; }
 
     public DateTime ModifiedDate { get; set; }
 

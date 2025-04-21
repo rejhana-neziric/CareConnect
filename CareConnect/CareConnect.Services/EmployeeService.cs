@@ -1,5 +1,4 @@
-﻿using CareConnect.Models;
-using CareConnect.Services.Database;
+﻿using CareConnect.Services.Database;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
@@ -10,36 +9,84 @@ using MapsterMapper;
 using System.Security.Cryptography;
 using CareConnect.Models.Requests;
 using CareConnect.Models.SearchObjects;
+using Mapster;
 
 namespace CareConnect.Services
 {
-    public class EmployeeService : BaseCRUDService<Models.Employee, EmployeeSearchObject, Database.Employee, EmployeeInsertRequest, EmployeeUpdateRequest>, IEmployeeService
+    public class EmployeeService : BaseCRUDService<Models.Responses.Employee, EmployeeSearchObject, EmployeeAdditionalData,  Database.Employee, EmployeeInsertRequest, EmployeeUpdateRequest>, IEmployeeService
     {
         public EmployeeService(_210024Context context, IMapper mapper) : base(context, mapper) { }
 
 
         public override IQueryable<Database.Employee> AddFilter(EmployeeSearchObject search, IQueryable<Database.Employee> query)
         {
-
             query = base.AddFilter(search, query);
 
-            query = query.Include(x => x.EmployeeNavigation); 
+            if (!string.IsNullOrWhiteSpace(search?.FirstNameGTE))
+            {
+                query = query.Where(x => x.User.FirstName.StartsWith(search.FirstNameGTE));
+            }
+
+            if (!string.IsNullOrWhiteSpace(search?.LastNameGTE))
+            {
+                query = query.Where(x => x.User.LastName.StartsWith(search.LastNameGTE));
+            }
+
+            if (!string.IsNullOrWhiteSpace(search?.Email))
+            {
+                query = query.Where(x => x.User.Email == search.Email);
+            }
 
             if (!string.IsNullOrWhiteSpace(search?.JobTitle))
             {
                 query = query.Where(x => x.JobTitle == search.JobTitle);
             }
 
+            if (search?.HireDateGTE.HasValue == true)
+            {
+                var mappedHireDate = search.HireDateGTE; 
+                query = query.Where(x => x.HireDate >= mappedHireDate);
+            }
+
+            if (search?.HireDateLTE.HasValue == true)
+            {
+                var mappedHireDate = search.HireDateLTE;
+                query = query.Where(x => x.HireDate <= mappedHireDate);
+            }
+
             return query;
+        }
+
+        protected override void AddInclude(EmployeeAdditionalData additionalData, ref IQueryable<Employee> query)
+        {
+            if(additionalData != null)
+            {
+                if (additionalData.IsUserIncluded.HasValue && additionalData.IsUserIncluded == true)
+                {
+                    additionalData.IncludeList.Add("User");
+                }
+
+                if (additionalData.IsQualificationIncluded.HasValue && additionalData.IsQualificationIncluded == true)
+                {
+                    additionalData.IncludeList.Add("Qualification");
+                }
+
+                if (additionalData.IsEmployeeAvailabilityIncluded.HasValue && additionalData.IsEmployeeAvailabilityIncluded == true)
+                {
+                    additionalData.IncludeList.Add("EmployeeAvailabilities");
+                }
+            }
+
+            base.AddInclude(additionalData, ref query);
         }
 
         public override void BeforeInsert(EmployeeInsertRequest request, Database.Employee entity)
         {
-            if (request.Password != request.ConfirmationPassword)
+            if (request.User.Password != request.User.ConfirmationPassword)
                 throw new Exception("Password and confirmation password must be same.");
 
-            entity.EmployeeNavigation.PasswordSalt = GenerateSalt();
-            entity.EmployeeNavigation.PasswordHash = GenerateHash(entity.EmployeeNavigation.PasswordSalt, request.Password);
+            entity.User.PasswordSalt = GenerateSalt();
+            entity.User.PasswordHash = GenerateHash(entity.User.PasswordSalt, request.User.Password);
 
             base.BeforeInsert(request, entity);
         }
@@ -66,38 +113,72 @@ namespace CareConnect.Services
             return Convert.ToBase64String(inArray);
         }
 
-        public Models.Employee Update(int id, EmployeeUpdateRequest request)
+
+        public override void BeforeUpdate(EmployeeUpdateRequest request, ref Database.Employee entity)
         {
-            var entity = Context.Employees.Find(id);
-
-            Mapper.Map(request, entity);
-
-            if (request.ConfirmationPassword != null)
+            if (request.User != null)
             {
-                if (request.Password != request.ConfirmationPassword)
-                    throw new Exception("Password and confirmation password must be same.");
+                if (request.User.ConfirmationPassword != null)
+                {
+                    if (request.User.Password != request.User.ConfirmationPassword)
+                        throw new Exception("Password and confirmation password must be same.");
 
-                entity.EmployeeNavigation.PasswordSalt = GenerateSalt();
-                entity.EmployeeNavigation.PasswordSalt = GenerateHash(entity.EmployeeNavigation.PasswordSalt, request.Password);
+                    entity.User.PasswordSalt = GenerateSalt();
+                    entity.User.PasswordHash = GenerateHash(entity.User.PasswordSalt, request.User.Password);
+                }
+
+                Mapper.Map(request.User, entity.User);
+                entity.User.ModifiedDate = DateTime.Now; ;
             }
 
-            Context.SaveChanges();
+            if (request.Qualification != null && entity.Qualification != null)
+            {
+                Mapper.Map(request.Qualification, entity.Qualification);
+                entity.Qualification.ModifiedDate = DateTime.Now;
+            }
 
-            return Mapper.Map<Models.Employee>(entity);
+            entity.ModifiedDate = DateTime.Now;
+
+            base.BeforeUpdate(request, ref entity);
         }
 
-        public override void BeforeUpdate(EmployeeUpdateRequest request, Database.Employee entity)
+        public override Employee GetByIdWithIncludes(int id)
         {
-            if (request.ConfirmationPassword != null)
-            {
-                if (request.Password != request.ConfirmationPassword)
-                    throw new Exception("Lozinka i LozinkaPotvrda moraju biti iste");
+            return Context.Employees
+                .Include(e => e.EmployeeAvailabilities)
+                .Include(e => e.EmployeePayHistories)
+                .Include(e => e.Reviews)
+                .Include(e => e.Sessions)
+                .Include(e => e.User)
+                .Include(e => e.Qualification)
+                .First(e => e.EmployeeId == id);
+        }
 
-                entity.EmployeeNavigation.PasswordSalt = GenerateSalt();
-                entity.EmployeeNavigation.PasswordSalt = GenerateHash(entity.EmployeeNavigation.PasswordSalt, request.Password);
+        public override void BeforeDelete(Employee entity)
+        { 
+            if(entity.Qualification != null)    
+                Context.Remove(entity.Qualification);
+
+            foreach (var history in entity.EmployeePayHistories)
+                Context.Remove(history);
+
+            foreach (var availability in entity.EmployeeAvailabilities)
+                Context.Remove(availability);
+
+            base.BeforeDelete(entity);
+        }
+
+        public override void AfterDelete(int id)
+        {
+            var user = Context.Users.Find(id);
+
+            if (user != null)
+            {
+                Context.Remove(user);
+                Context.SaveChanges();               
             }
 
-            base.BeforeUpdate(request, entity);
+            base.AfterDelete(id);
         }
     }
 }

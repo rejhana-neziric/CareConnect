@@ -66,7 +66,8 @@ public partial class _210024Context : DbContext
     public virtual DbSet<WorkshopType> WorkshopTypes { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-        => optionsBuilder.UseSqlServer("");
+#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.
+        => optionsBuilder.UseSqlServer("Data Source=DESKTOP-BRFTFE0\\MSSQLSERVER9;Initial Catalog=_210024;Trusted_Connection=True;User ID=sa;Password=QWEasd123!;MultipleActiveResultSets=true; TrustServerCertificate=true");
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -77,6 +78,7 @@ public partial class _210024Context : DbContext
             entity.Property(e => e.AppointmentId).HasColumnName("AppointmentID");
             entity.Property(e => e.AppointmentType).HasMaxLength(50);
             entity.Property(e => e.AttendanceStatusId).HasColumnName("AttendanceStatusID");
+            entity.Property(e => e.Date).HasColumnType("datetime");
             entity.Property(e => e.Description).HasColumnType("text");
             entity.Property(e => e.EmployeeAvailabilityId).HasColumnName("EmployeeAvailabilityID");
             entity.Property(e => e.ModifiedDate)
@@ -121,6 +123,7 @@ public partial class _210024Context : DbContext
             entity.HasKey(e => e.ChildId).HasName("PK__Children__BEFA0736EA5ECDD8");
 
             entity.Property(e => e.ChildId).HasColumnName("ChildID");
+            entity.Property(e => e.BirthDate).HasColumnType("datetime");
             entity.Property(e => e.FirstName).HasMaxLength(50);
             entity.Property(e => e.Gender)
                 .HasMaxLength(1)
@@ -138,6 +141,7 @@ public partial class _210024Context : DbContext
 
             entity.Property(e => e.ChildId).HasColumnName("ChildID");
             entity.Property(e => e.DiagnosisId).HasColumnName("DiagnosisID");
+            entity.Property(e => e.DiagnosisDate).HasColumnType("datetime");
             entity.Property(e => e.ModifiedDate)
                 .HasDefaultValueSql("(getdate())")
                 .HasColumnType("datetime");
@@ -207,13 +211,14 @@ public partial class _210024Context : DbContext
             entity.Property(e => e.EmployeeId)
                 .ValueGeneratedNever()
                 .HasColumnName("EmployeeID");
+            entity.Property(e => e.HireDate).HasColumnType("datetime");
             entity.Property(e => e.JobTitle).HasMaxLength(50);
             entity.Property(e => e.ModifiedDate)
                 .HasDefaultValueSql("(getdate())")
                 .HasColumnType("datetime");
             entity.Property(e => e.QualificationId).HasColumnName("QualificationID");
 
-            entity.HasOne(d => d.EmployeeNavigation).WithOne(p => p.Employee)
+            entity.HasOne(d => d.User).WithOne(p => p.Employee)
                 .HasForeignKey<Employee>(d => d.EmployeeId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_Employees_Users");
@@ -232,11 +237,13 @@ public partial class _210024Context : DbContext
             entity.Property(e => e.EmployeeAvailabilityId).HasColumnName("EmployeeAvailabilityID");
             entity.Property(e => e.DayOfWeek).HasMaxLength(20);
             entity.Property(e => e.EmployeeId).HasColumnName("EmployeeID");
+            entity.Property(e => e.EndTime).HasColumnType("datetime");
             entity.Property(e => e.ModifiedDate)
                 .HasDefaultValueSql("(getdate())")
                 .HasColumnType("datetime");
             entity.Property(e => e.ReasonOfUnavailability).HasMaxLength(500);
             entity.Property(e => e.ServiceId).HasColumnName("ServiceID");
+            entity.Property(e => e.StartTime).HasColumnType("datetime");
 
             entity.HasOne(d => d.Employee).WithMany(p => p.EmployeeAvailabilities)
                 .HasForeignKey(d => d.EmployeeId)
@@ -287,6 +294,8 @@ public partial class _210024Context : DbContext
             entity.HasKey(e => new { e.MemberId, e.JoinedDate });
 
             entity.Property(e => e.MemberId).HasColumnName("MemberID");
+            entity.Property(e => e.JoinedDate).HasColumnType("datetime");
+            entity.Property(e => e.LeftDate).HasColumnType("datetime");
             entity.Property(e => e.ModifiedDate)
                 .HasDefaultValueSql("(getdate())")
                 .HasColumnType("datetime");
@@ -307,6 +316,7 @@ public partial class _210024Context : DbContext
             entity.Property(e => e.ModifiedDate)
                 .HasDefaultValueSql("(getdate())")
                 .HasColumnType("datetime");
+            entity.Property(e => e.RegistrationDate).HasColumnType("datetime");
 
             entity.HasOne(d => d.AttendanceStatus).WithMany(p => p.Participants)
                 .HasForeignKey(d => d.AttendanceStatusId)
@@ -333,6 +343,7 @@ public partial class _210024Context : DbContext
             entity.Property(e => e.ModifiedDate)
                 .HasDefaultValueSql("(getdate())")
                 .HasColumnType("datetime");
+            entity.Property(e => e.PaymentDate).HasColumnType("datetime");
             entity.Property(e => e.PaymentPurposeId).HasColumnName("PaymentPurposeID");
             entity.Property(e => e.PaymentStatusId).HasColumnName("PaymentStatusID");
             entity.Property(e => e.UserId).HasColumnName("UserID");
@@ -387,6 +398,7 @@ public partial class _210024Context : DbContext
                 .HasDefaultValueSql("(getdate())")
                 .HasColumnType("datetime");
             entity.Property(e => e.Name).HasMaxLength(200);
+            entity.Property(e => e.ProcurementYear).HasColumnType("datetime");
         });
 
         modelBuilder.Entity<Review>(entity =>
@@ -399,6 +411,7 @@ public partial class _210024Context : DbContext
             entity.Property(e => e.ModifiedDate)
                 .HasDefaultValueSql("(getdate())")
                 .HasColumnType("datetime");
+            entity.Property(e => e.PublishDate).HasColumnType("datetime");
             entity.Property(e => e.Title).HasMaxLength(50);
             entity.Property(e => e.UserId).HasColumnName("UserID");
             entity.Property(e => e.WorkshopId).HasColumnName("WorkshopID");
@@ -445,13 +458,16 @@ public partial class _210024Context : DbContext
             entity.HasKey(e => e.SessionId).HasName("PK__Sessions__C9F49270A1B7D6A1");
 
             entity.Property(e => e.SessionId).HasColumnName("SessionID");
+            entity.Property(e => e.Date).HasColumnType("datetime");
             entity.Property(e => e.Description).HasColumnType("text");
             entity.Property(e => e.EmployeeId).HasColumnName("EmployeeID");
+            entity.Property(e => e.EndTime).HasColumnType("datetime");
             entity.Property(e => e.InstructorId).HasColumnName("InstructorID");
             entity.Property(e => e.ModifiedDate)
                 .HasDefaultValueSql("(getdate())")
                 .HasColumnType("datetime");
             entity.Property(e => e.Name).HasMaxLength(200);
+            entity.Property(e => e.StartTime).HasColumnType("datetime");
             entity.Property(e => e.Status).HasMaxLength(50);
             entity.Property(e => e.WorkshopId).HasColumnName("WorkshopID");
 
@@ -475,6 +491,7 @@ public partial class _210024Context : DbContext
 
             entity.Property(e => e.UserId).HasColumnName("UserID");
             entity.Property(e => e.Address).HasMaxLength(50);
+            entity.Property(e => e.BirthDate).HasColumnType("datetime");
             entity.Property(e => e.Email).HasMaxLength(100);
             entity.Property(e => e.FirstName).HasMaxLength(50);
             entity.Property(e => e.Gender)
@@ -518,6 +535,7 @@ public partial class _210024Context : DbContext
 
             entity.Property(e => e.WorkshopId).HasColumnName("WorkshopID");
             entity.Property(e => e.Description).HasColumnType("text");
+            entity.Property(e => e.EndDate).HasColumnType("datetime");
             entity.Property(e => e.MemberPrice).HasColumnType("decimal(18, 2)");
             entity.Property(e => e.ModifiedDate)
                 .HasDefaultValueSql("(getdate())")
@@ -525,6 +543,7 @@ public partial class _210024Context : DbContext
             entity.Property(e => e.Name).HasMaxLength(200);
             entity.Property(e => e.Notes).HasColumnType("text");
             entity.Property(e => e.Price).HasColumnType("decimal(18, 2)");
+            entity.Property(e => e.StartDate).HasColumnType("datetime");
             entity.Property(e => e.Status).HasMaxLength(50);
             entity.Property(e => e.WorkshopTypeId).HasColumnName("WorkshopTypeID");
 

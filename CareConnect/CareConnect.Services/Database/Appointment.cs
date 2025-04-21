@@ -15,7 +15,7 @@ public partial class Appointment
 
     public int AttendanceStatusId { get; set; }
 
-    public DateOnly Date { get; set; }
+    public DateTime Date { get; set; }
 
     public string? Description { get; set; }
 

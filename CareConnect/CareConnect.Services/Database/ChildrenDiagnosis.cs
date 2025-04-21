@@ -9,7 +9,7 @@ public partial class ChildrenDiagnosis
 
     public int DiagnosisId { get; set; }
 
-    public DateOnly? DiagnosisDate { get; set; }
+    public DateTime? DiagnosisDate { get; set; }
 
     public string? Notes { get; set; }
 

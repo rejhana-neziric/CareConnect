@@ -1,17 +1,20 @@
-﻿using System;
+﻿using CareConnect.Models.Responses;
+using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Text.Json.Serialization;
 
 namespace CareConnect.Models.Requests
 {
     public class EmployeeUpdateRequest
     {
-        public string FirstName { get; set; }
+        public string? JobTitle { get; set; } = null!;
 
-        public string LastName { get; set; }
+        [JsonIgnore]
+        public DateTime? ModifiedDate { get; set; } = DateTime.Now;
 
-        public string Password { get; set; }
+        public UserUpdateRequest? User {  get; set; }
 
-        public string ConfirmationPassword { get; set; }
+        public QualificationUpdateRequest? Qualification { get; set; }
     }
 }

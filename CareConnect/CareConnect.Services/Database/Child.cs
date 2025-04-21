@@ -11,7 +11,7 @@ public partial class Child
 
     public string LastName { get; set; } = null!;
 
-    public DateOnly BirthDate { get; set; }
+    public DateTime BirthDate { get; set; }
 
     public string Gender { get; set; } = null!;
 

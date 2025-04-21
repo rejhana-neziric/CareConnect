@@ -1,0 +1,26 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Text;
+using System.Text.Json.Serialization;
+
+namespace CareConnect.Models.Requests
+{
+    public class UserUpdateRequest
+    {
+
+        public string? PhoneNumber { get; set; }
+
+        public string? Username { get; set; } = null!;
+
+        public string? Password { get; set; } = null!;
+        
+        public string? ConfirmationPassword { get; set; } = null!;
+
+        public bool? Status { get; set; }
+
+        public string? Address { get; set; }
+
+        [JsonIgnore]
+        public DateTime? ModifiedDate { get; set; } = DateTime.Now; 
+    }
+}

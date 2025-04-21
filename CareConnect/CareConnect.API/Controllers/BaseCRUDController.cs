@@ -4,12 +4,16 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace CareConnect.API.Controllers
 {
-    public class BaseCRUDController<TModel, TSearch, TInsert, TUpdate> : BaseController<TModel, TSearch> 
-        where TModel : class where TSearch : BaseSearchObject where TInsert : class where TUpdate : class
+    public class BaseCRUDController<TModel, TSearch, TSearchAdditionalData, TInsert, TUpdate> : BaseController<TModel, TSearch, TSearchAdditionalData> 
+        where TModel : class 
+        where TSearch : BaseSearchObject<TSearchAdditionalData>
+        where TSearchAdditionalData : BaseAdditionalSearchRequestData
+        where TInsert : class 
+        where TUpdate : class
     {
-        protected new ICRUDService<TModel, TSearch, TInsert, TUpdate> _service;
+        protected new ICRUDService<TModel, TSearch, TSearchAdditionalData, TInsert, TUpdate> _service;
 
-        public BaseCRUDController(ICRUDService<TModel, TSearch, TInsert, TUpdate> service) : base(service)
+        public BaseCRUDController(ICRUDService<TModel, TSearch, TSearchAdditionalData,  TInsert, TUpdate> service) : base(service)
         {
             _service = service;
         }
@@ -24,6 +28,12 @@ namespace CareConnect.API.Controllers
         public TModel Update(int id, TUpdate request)
         {
             return _service.Update(id, request);
+        }
+
+        [HttpDelete("{id}")]
+        public bool Delete(int id)
+        {
+            return _service.Delete(id);
         }
     }
 }

@@ -9,13 +9,16 @@ using System.Threading.Tasks;
 
 namespace CareConnect.Services
 {
-    public abstract class BaseCRUDService<TModel, TSearch, TDbEntity, TInsert, TUpdate> : BaseService<TModel, TSearch, TDbEntity> 
-        where TModel : class where TSearch : BaseSearchObject where TDbEntity : class
+    public abstract class BaseCRUDService<TModel, TSearch, TSearchAdditionalData, TDbEntity, TInsert, TUpdate> : BaseService<TModel, TSearch, TSearchAdditionalData, TDbEntity> 
+        where TModel : class
+        where TSearch : BaseSearchObject <TSearchAdditionalData>
+        where TDbEntity : class
+        where TSearchAdditionalData: BaseAdditionalSearchRequestData
     {
+
         public BaseCRUDService(_210024Context context, IMapper mapper) : base(context, mapper)
         {
         }
-
 
         public virtual TModel Insert(TInsert request)
         {
@@ -33,19 +36,44 @@ namespace CareConnect.Services
 
         public virtual TModel Update(int id, TUpdate request)
         {
-            var set = Context.Set<TDbEntity>();
+            var entity = GetByIdWithIncludes(id);
 
-            var entity = set.Find(id);
-
+            if (entity == null) return null;
+            
             Mapper.Map(request, entity);
 
-            BeforeUpdate(request, entity);
+            BeforeUpdate(request, ref entity);
 
             Context.SaveChanges();
 
             return Mapper.Map<TModel>(entity);
         }
 
-        public virtual void BeforeUpdate(TUpdate request, TDbEntity entity) { }
+        public virtual void BeforeUpdate(TUpdate request, ref TDbEntity entity) { }
+
+        public virtual TDbEntity? GetByIdWithIncludes(int id)
+        {
+            return Context.Set<TDbEntity>().Find(id);
+        }
+
+        public virtual bool Delete(int id)
+        { 
+            var entity = GetByIdWithIncludes(id);
+
+            if (entity == null) return false; 
+
+            BeforeDelete(entity); 
+
+            Context.Set<TDbEntity>().Remove(entity);
+            Context.SaveChanges() ; 
+
+            AfterDelete(id);    
+
+            return true;    
+        }
+
+        public virtual void BeforeDelete(TDbEntity entity) { }
+
+        public virtual void AfterDelete(int id) { }
     }
 }

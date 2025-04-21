@@ -23,7 +23,7 @@ public partial class User
 
     public bool Status { get; set; }
 
-    public DateOnly? BirthDate { get; set; }
+    public DateTime? BirthDate { get; set; }
 
     public DateTime ModifiedDate { get; set; }
 

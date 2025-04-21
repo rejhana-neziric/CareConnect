@@ -1,20 +1,32 @@
-﻿using CareConnect.Models.SearchObjects;
+﻿using CareConnect.Models.Responses;
+using CareConnect.Models.SearchObjects;
 using CareConnect.Services.Database;
 using MapsterMapper;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Win32;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Text;
 using System.Threading.Tasks;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace CareConnect.Services
 {
-    public abstract class BaseService<TModel, TSearch, TDbEntity> : IService<TModel, TSearch> 
-        where TSearch : BaseSearchObject where TDbEntity : class where TModel : class
+    public abstract class BaseService<TModel, TSearch, TSearchAdditionalData, TDbEntity> : IService<TModel, TSearch, TSearchAdditionalData> 
+        where TSearch : BaseSearchObject<TSearchAdditionalData>
+        where TDbEntity : class 
+        where TModel : class
+        where TSearchAdditionalData : BaseAdditionalSearchRequestData
     {
         public _210024Context Context { get; set; }
 
         public IMapper Mapper { get; }
+
+        //private readonly _210024Context _context;
+
+        //protected readonly IMapper _mapper;
 
         public BaseService(_210024Context context, IMapper mapper)
         {
@@ -22,29 +34,41 @@ namespace CareConnect.Services
             Mapper = mapper;
         }
 
-        public Models.PagedResult<TModel> GetPaged(TSearch search)
+        public PagedResult<TModel> Get(TSearch search)
         {
             List<TModel> result = new List<TModel>();
 
             var query = Context.Set<TDbEntity>().AsQueryable();
 
+            if(search.AdditionalData != null) 
+            {
+                AddInclude(search.AdditionalData, ref query);
+            }
+
             query = AddFilter(search, query);
 
-            int count = query.Count();
+            int? totalCount = null;
 
-            if (search.PageSize.HasValue && search.Page.HasValue)
+            if (search.IncludeTotalCount)
             {
-                query = query.Skip(search.Page.Value * search.PageSize.Value).Take(search.PageSize.Value);
+                totalCount = query.Count();
+            }
+
+            if (!search.RetrieveAll && search.Page.HasValue && search.PageSize.HasValue)
+            {
+                query = query
+                    .Skip(search.Page.Value * search.PageSize.Value)
+                    .Take(search.PageSize.Value);
             }
 
             var list = query.ToList();
 
             result = Mapper.Map(list, result);
 
-            Models.PagedResult<TModel> pagedResult = new Models.PagedResult<TModel>();
+            PagedResult<TModel> pagedResult = new PagedResult<TModel>();
 
             pagedResult.ResultList = result;
-            pagedResult.Count = count;
+            pagedResult.TotalCount = totalCount;
 
             return pagedResult;
         }
@@ -54,19 +78,37 @@ namespace CareConnect.Services
             return query;
         }
 
-        public TModel GetById(int id)
+        protected virtual void AddInclude(TSearchAdditionalData additionalData, ref IQueryable<TDbEntity> query)
         {
-            var entity = Context.Set<TDbEntity>().Find(id);
-
-            if (entity != null)
+            if (additionalData != null)
             {
-                return Mapper.Map<TModel>(entity);
+                query = additionalData.IncludeList.Aggregate(query, (current, include) => current.Include(include));
             }
+        }
 
-            else
+        public virtual TModel GetById(int id, TSearchAdditionalData additionalData = null)
+        {
+            var query = Context.Set<TDbEntity>().AsQueryable();
+
+            if (additionalData != null)
             {
-                return null;
+                AddInclude(additionalData, ref query);
             }
+            
+            var entityType = typeof(TDbEntity);
+            var pkName = entityType.Name + "Id";
+
+            var parameter = Expression.Parameter(entityType, "x");
+            var property = Expression.Property(parameter, pkName);
+            var constant = Expression.Constant(id);
+            var equality = Expression.Equal(property, constant);
+            var lambda = Expression.Lambda<Func<TDbEntity, bool>>(equality, parameter);
+
+            var entity = query.FirstOrDefault(lambda);
+
+            if (entity == null) return null; 
+
+            return Mapper.Map<TModel>(entity);
         }
     }
 }
