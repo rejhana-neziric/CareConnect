@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 using System.Text.Json.Serialization;
 
 namespace CareConnect.Models.Requests
@@ -13,7 +11,7 @@ namespace CareConnect.Models.Requests
         public string? Username { get; set; } = null!;
 
         public string? Password { get; set; } = null!;
-        
+
         public string? ConfirmationPassword { get; set; } = null!;
 
         public bool? Status { get; set; }
@@ -21,6 +19,6 @@ namespace CareConnect.Models.Requests
         public string? Address { get; set; }
 
         [JsonIgnore]
-        public DateTime? ModifiedDate { get; set; } = DateTime.Now; 
+        public DateTime? ModifiedDate { get; set; } = DateTime.Now;
     }
 }

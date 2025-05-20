@@ -11,8 +11,7 @@ namespace CareConnect.API.Controllers
         where TSearch : BaseSearchObject<TSearchAdditionalData>
         where TSearchAdditionalData : BaseAdditionalSearchRequestData
     {
-        protected IService<TModel, TSearch, TSearchAdditionalData> _service;
-
+       protected IService<TModel, TSearch, TSearchAdditionalData> _service;
         public BaseController(IService<TModel, TSearch, TSearchAdditionalData> service)
         {
             _service = service;

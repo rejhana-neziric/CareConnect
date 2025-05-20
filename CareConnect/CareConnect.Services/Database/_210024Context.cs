@@ -4,13 +4,13 @@ using Microsoft.EntityFrameworkCore;
 
 namespace CareConnect.Services.Database;
 
-public partial class _210024Context : DbContext
+public partial class CareConnectContext : DbContext
 {
-    public _210024Context()
+    public CareConnectContext()
     {
     }
 
-    public _210024Context(DbContextOptions<_210024Context> options)
+    public CareConnectContext(DbContextOptions<CareConnectContext> options)
         : base(options)
     {
     }
@@ -167,7 +167,7 @@ public partial class _210024Context : DbContext
                 .HasDefaultValueSql("(getdate())")
                 .HasColumnType("datetime");
 
-            entity.HasOne(d => d.ClientNavigation).WithOne(p => p.Client)
+            entity.HasOne(d => d.User).WithOne(p => p.Client)
                 .HasForeignKey<Client>(d => d.ClientId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_Clients_Users");
@@ -300,7 +300,7 @@ public partial class _210024Context : DbContext
                 .HasDefaultValueSql("(getdate())")
                 .HasColumnType("datetime");
 
-            entity.HasOne(d => d.MemberNavigation).WithMany(p => p.Members)
+            entity.HasOne(d => d.Client).WithMany(p => p.Members)
                 .HasForeignKey(d => d.MemberId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_Members_Clients");

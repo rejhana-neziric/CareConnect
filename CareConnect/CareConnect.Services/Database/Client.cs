@@ -11,7 +11,7 @@ public partial class Client
 
     public DateTime ModifiedDate { get; set; }
 
-    public virtual User ClientNavigation { get; set; } = null!;
+    public virtual User User { get; set; } = null!;
 
     public virtual ICollection<ClientsChild> ClientsChildren { get; set; } = new List<ClientsChild>();
 

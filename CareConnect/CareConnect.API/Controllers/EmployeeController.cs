@@ -10,8 +10,6 @@ namespace CareConnect.API.Controllers
     [Route("[controller]")]
     public class EmployeeController : BaseCRUDController<Employee, EmployeeSearchObject, EmployeeAdditionalData, EmployeeInsertRequest, EmployeeUpdateRequest>
     {
-        //protected IEmployeeService _service;
-
         public EmployeeController(IEmployeeService service) : base(service) { }
     }
 }

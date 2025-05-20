@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using CareConnect.Models.SearchObjects;
 
 namespace CareConnect.Models.SearchObjects
 {

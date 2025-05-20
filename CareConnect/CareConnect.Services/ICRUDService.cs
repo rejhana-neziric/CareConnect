@@ -1,16 +1,11 @@
 ﻿using CareConnect.Models.SearchObjects;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace CareConnect.Services
 {
-    public interface ICRUDService<TModel, TSearch, TSearchAdditionalData,  TInsert, TUpdate> : IService<TModel, TSearch, TSearchAdditionalData> 
-        where TModel : class 
-        where TSearch : BaseSearchObject <TSearchAdditionalData>
-        where TInsert : class 
+    public interface ICRUDService<TModel, TSearch, TSearchAdditionalData, TInsert, TUpdate> : IService<TModel, TSearch, TSearchAdditionalData>
+        where TModel : class
+        where TSearch : BaseSearchObject<TSearchAdditionalData>
+        where TInsert : class
         where TUpdate : class
         where TSearchAdditionalData : BaseAdditionalSearchRequestData
     {
@@ -18,6 +13,6 @@ namespace CareConnect.Services
 
         TModel Update(int id, TUpdate request);
 
-        public bool Delete(int id); 
+        public bool Delete(int id);
     }
 }

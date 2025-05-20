@@ -8,14 +8,15 @@ using System.Threading.Tasks;
 using MapsterMapper;
 using System.Security.Cryptography;
 using CareConnect.Models.Requests;
-using CareConnect.Models.SearchObjects;
 using Mapster;
+using CareConnect.Services.Helpers;
+using CareConnect.Models.SearchObjects;
 
 namespace CareConnect.Services
 {
-    public class EmployeeService : BaseCRUDService<Models.Responses.Employee, EmployeeSearchObject, EmployeeAdditionalData,  Database.Employee, EmployeeInsertRequest, EmployeeUpdateRequest>, IEmployeeService
+    public class EmployeeService : BaseCRUDService<Models.Responses.Employee, EmployeeSearchObject, EmployeeAdditionalData, Database.Employee, EmployeeInsertRequest, EmployeeUpdateRequest>, IEmployeeService
     {
-        public EmployeeService(_210024Context context, IMapper mapper) : base(context, mapper) { }
+        public EmployeeService(CareConnectContext context, IMapper mapper) : base(context, mapper) { }
 
 
         public override IQueryable<Database.Employee> AddFilter(EmployeeSearchObject search, IQueryable<Database.Employee> query)
@@ -44,7 +45,7 @@ namespace CareConnect.Services
 
             if (search?.HireDateGTE.HasValue == true)
             {
-                var mappedHireDate = search.HireDateGTE; 
+                var mappedHireDate = search.HireDateGTE;
                 query = query.Where(x => x.HireDate >= mappedHireDate);
             }
 
@@ -59,7 +60,7 @@ namespace CareConnect.Services
 
         protected override void AddInclude(EmployeeAdditionalData additionalData, ref IQueryable<Employee> query)
         {
-            if(additionalData != null)
+            if (additionalData != null)
             {
                 if (additionalData.IsUserIncluded.HasValue && additionalData.IsUserIncluded == true)
                 {
@@ -80,41 +81,18 @@ namespace CareConnect.Services
             base.AddInclude(additionalData, ref query);
         }
 
-        public override void BeforeInsert(EmployeeInsertRequest request, Database.Employee entity)
+        public override void BeforeInsert(EmployeeInsertRequest request, Employee entity)
         {
             if (request.User.Password != request.User.ConfirmationPassword)
                 throw new Exception("Password and confirmation password must be same.");
 
-            entity.User.PasswordSalt = GenerateSalt();
-            entity.User.PasswordHash = GenerateHash(entity.User.PasswordSalt, request.User.Password);
+            entity.User.PasswordSalt = SecurityHelper.GenerateSalt();
+            entity.User.PasswordHash = SecurityHelper.GenerateHash(entity.User.PasswordSalt, request.User.Password);
 
             base.BeforeInsert(request, entity);
         }
 
-        public static string GenerateSalt()
-        {
-            var byteArray = RNGCryptoServiceProvider.GetBytes(16);
-
-
-            return Convert.ToBase64String(byteArray);
-        }
-
-        public static string GenerateHash(string salt, string password)
-        {
-            byte[] src = Convert.FromBase64String(salt);
-            byte[] bytes = Encoding.Unicode.GetBytes(password);
-            byte[] dst = new byte[src.Length + bytes.Length];
-
-            System.Buffer.BlockCopy(src, 0, dst, 0, src.Length);
-            System.Buffer.BlockCopy(bytes, 0, dst, src.Length, bytes.Length);
-
-            HashAlgorithm algorithm = HashAlgorithm.Create("SHA1");
-            byte[] inArray = algorithm.ComputeHash(dst);
-            return Convert.ToBase64String(inArray);
-        }
-
-
-        public override void BeforeUpdate(EmployeeUpdateRequest request, ref Database.Employee entity)
+        public override void BeforeUpdate(EmployeeUpdateRequest request, ref Employee entity)
         {
             if (request.User != null)
             {
@@ -123,8 +101,8 @@ namespace CareConnect.Services
                     if (request.User.Password != request.User.ConfirmationPassword)
                         throw new Exception("Password and confirmation password must be same.");
 
-                    entity.User.PasswordSalt = GenerateSalt();
-                    entity.User.PasswordHash = GenerateHash(entity.User.PasswordSalt, request.User.Password);
+                    entity.User.PasswordSalt = SecurityHelper.GenerateSalt();
+                    entity.User.PasswordHash = SecurityHelper.GenerateHash(entity.User.PasswordSalt, request.User.Password);
                 }
 
                 Mapper.Map(request.User, entity.User);
@@ -155,8 +133,8 @@ namespace CareConnect.Services
         }
 
         public override void BeforeDelete(Employee entity)
-        { 
-            if(entity.Qualification != null)    
+        {
+            if (entity.Qualification != null)
                 Context.Remove(entity.Qualification);
 
             foreach (var history in entity.EmployeePayHistories)
@@ -175,7 +153,7 @@ namespace CareConnect.Services
             if (user != null)
             {
                 Context.Remove(user);
-                Context.SaveChanges();               
+                Context.SaveChanges();
             }
 
             base.AfterDelete(id);

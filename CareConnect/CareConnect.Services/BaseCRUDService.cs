@@ -2,21 +2,17 @@
 using CareConnect.Services.Database;
 using MapsterMapper;
 using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace CareConnect.Services
 {
-    public abstract class BaseCRUDService<TModel, TSearch, TSearchAdditionalData, TDbEntity, TInsert, TUpdate> : BaseService<TModel, TSearch, TSearchAdditionalData, TDbEntity> 
+    public abstract class BaseCRUDService<TModel, TSearch, TSearchAdditionalData, TDbEntity, TInsert, TUpdate> : BaseService<TModel, TSearch, TSearchAdditionalData, TDbEntity>
         where TModel : class
-        where TSearch : BaseSearchObject <TSearchAdditionalData>
+        where TSearch : BaseSearchObject<TSearchAdditionalData>
         where TDbEntity : class
-        where TSearchAdditionalData: BaseAdditionalSearchRequestData
+        where TSearchAdditionalData : BaseAdditionalSearchRequestData
     {
-
-        public BaseCRUDService(_210024Context context, IMapper mapper) : base(context, mapper)
+        public BaseCRUDService(CareConnectContext context, IMapper mapper) : base(context, mapper)
         {
         }
 
@@ -39,7 +35,7 @@ namespace CareConnect.Services
             var entity = GetByIdWithIncludes(id);
 
             if (entity == null) return null;
-            
+
             Mapper.Map(request, entity);
 
             BeforeUpdate(request, ref entity);
@@ -57,19 +53,19 @@ namespace CareConnect.Services
         }
 
         public virtual bool Delete(int id)
-        { 
+        {
             var entity = GetByIdWithIncludes(id);
 
-            if (entity == null) return false; 
+            if (entity == null) return false;
 
-            BeforeDelete(entity); 
+            BeforeDelete(entity);
 
             Context.Set<TDbEntity>().Remove(entity);
-            Context.SaveChanges() ; 
+            Context.SaveChanges();
 
-            AfterDelete(id);    
+            AfterDelete(id);
 
-            return true;    
+            return true;
         }
 
         public virtual void BeforeDelete(TDbEntity entity) { }

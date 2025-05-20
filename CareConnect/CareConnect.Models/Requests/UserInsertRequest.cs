@@ -22,12 +22,12 @@ namespace CareConnect.Models.Requests
         public string ConfirmationPassword { get; set; } = null!;
 
         [JsonIgnore]
-        public bool Status { get; set; } = true; 
+        public bool Status { get; set; } = true;
 
         public DateTime? BirthDate { get; set; }
 
         [JsonIgnore]
-        public DateTime ModifiedDate { get; set; } = DateTime.Now; 
+        public DateTime ModifiedDate { get; set; } = DateTime.Now;
 
         public string Gender { get; set; } = null!;
 

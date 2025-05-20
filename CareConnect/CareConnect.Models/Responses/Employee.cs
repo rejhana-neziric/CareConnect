@@ -11,8 +11,6 @@ namespace CareConnect.Models.Responses
 
         public DateTime ModifiedDate { get; set; }
 
-        public virtual ICollection<EmployeeAvailability> EmployeeAvailabilities { get; set; } = new List<EmployeeAvailability>();
-
         public virtual User User { get; set; } = null!;
 
         //public virtual ICollection<EmployeePayHistory> EmployeePayHistories { get; set; } = new List<EmployeePayHistory>();

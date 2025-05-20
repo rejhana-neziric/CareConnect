@@ -10,7 +10,7 @@ namespace CareConnect.Models.SearchObjects
         {
             IncludeList = new List<string>();
         }
-       
+
         public IList<string> IncludeList { get; set; }
     }
 }

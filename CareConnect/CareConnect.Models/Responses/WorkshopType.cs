@@ -1,0 +1,15 @@
+using System;
+using System.Collections.Generic;
+using System.Text;
+
+namespace CareConnect.Models.Responses
+{
+    public class WorkshopType
+    {
+        public string Name { get; set; } = null!;
+
+        public string? Description { get; set; }
+
+        public DateTime ModifiedDate { get; set; }
+     }
+}

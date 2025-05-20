@@ -3,32 +3,25 @@ using CareConnect.Models.SearchObjects;
 using CareConnect.Services.Database;
 using MapsterMapper;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Win32;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
-using System.Text;
 using System.Threading.Tasks;
-using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace CareConnect.Services
 {
-    public abstract class BaseService<TModel, TSearch, TSearchAdditionalData, TDbEntity> : IService<TModel, TSearch, TSearchAdditionalData> 
+    public abstract class BaseService<TModel, TSearch, TSearchAdditionalData, TDbEntity> : IService<TModel, TSearch, TSearchAdditionalData>
         where TSearch : BaseSearchObject<TSearchAdditionalData>
-        where TDbEntity : class 
+        where TDbEntity : class
         where TModel : class
         where TSearchAdditionalData : BaseAdditionalSearchRequestData
     {
-        public _210024Context Context { get; set; }
+        public CareConnectContext Context { get; set; }
 
         public IMapper Mapper { get; }
 
-        //private readonly _210024Context _context;
-
-        //protected readonly IMapper _mapper;
-
-        public BaseService(_210024Context context, IMapper mapper)
+        public BaseService(CareConnectContext context, IMapper mapper)
         {
             Context = context;
             Mapper = mapper;
@@ -40,7 +33,7 @@ namespace CareConnect.Services
 
             var query = Context.Set<TDbEntity>().AsQueryable();
 
-            if(search.AdditionalData != null) 
+            if (search.AdditionalData != null)
             {
                 AddInclude(search.AdditionalData, ref query);
             }
@@ -94,7 +87,7 @@ namespace CareConnect.Services
             {
                 AddInclude(additionalData, ref query);
             }
-            
+
             var entityType = typeof(TDbEntity);
             var pkName = entityType.Name + "Id";
 
@@ -106,7 +99,7 @@ namespace CareConnect.Services
 
             var entity = query.FirstOrDefault(lambda);
 
-            if (entity == null) return null; 
+            if (entity == null) return null;
 
             return Mapper.Map<TModel>(entity);
         }

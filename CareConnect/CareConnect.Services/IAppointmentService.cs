@@ -1,16 +1,10 @@
 ﻿using CareConnect.Models.Requests;
 using CareConnect.Models.Responses;
 using CareConnect.Models.SearchObjects;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace CareConnect.Services
 {
-    //public interface IAppointmentService : ICRUDService<Appointment, AppointmentSearchObject, AppointmentInsertRequest, AppointmentUpdateRequest>
-    //{
-
-    //}
+    public interface IAppointmentService : ICRUDService<Appointment, AppointmentSearchObject, AppointmentAdditionalData, AppointmentInsertRequest, AppointmentUpdateRequest>
+    {
+    }
 }

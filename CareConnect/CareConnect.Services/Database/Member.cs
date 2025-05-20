@@ -13,5 +13,5 @@ public partial class Member
 
     public DateTime ModifiedDate { get; set; }
 
-    public virtual Client MemberNavigation { get; set; } = null!;
+    public virtual Client Client { get; set; } = null!;
 }

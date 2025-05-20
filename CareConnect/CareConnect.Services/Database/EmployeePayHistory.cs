@@ -7,7 +7,7 @@ public partial class EmployeePayHistory
 {
     public int EmployeeId { get; set; }
 
-    public DateOnly RateChangeDate { get; set; }
+    public DateTime RateChangeDate { get; set; }
 
     public decimal Rate { get; set; }
 

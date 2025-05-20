@@ -16,4 +16,4 @@ namespace CareConnect.Models.Requests
         [JsonIgnore]
         public DateTime? ModifiedDate { get; set; } = DateTime.Now;
     }
-} 
+}

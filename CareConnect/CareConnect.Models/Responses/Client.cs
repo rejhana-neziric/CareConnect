@@ -4,14 +4,14 @@ using System.Text;
 
 namespace CareConnect.Models.Responses
 {
-    public partial class Client
+    public class Client
     {
-        public int ClientId { get; set; }
+        public bool EmploymentStatus { get; set; }
 
         public virtual User User { get; set; } = null!;
 
-        public bool EmploymentStatus { get; set; }
+        //public virtual ICollection<ClientsChild> ClientsChildren { get; set; } = new List<ClientsChild>();
+        //public virtual ICollection<Child> Children { get; set; } = new List<Child>();
 
-        public DateTime ModifiedDate { get; set; }
     }
 }
