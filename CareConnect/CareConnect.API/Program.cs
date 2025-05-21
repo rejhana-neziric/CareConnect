@@ -1,9 +1,12 @@
 using CareConnect.API.Configuration;
+using CareConnect.API.Filters;
 using CareConnect.Services;
 using CareConnect.Services.AppointmentStateMachine;
 using CareConnect.Services.Database;
 using Mapster;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
+using Serilog;
 using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -38,12 +41,15 @@ builder.Services.AddTransient<StartedAppointmentService>();
 builder.Services.AddTransient<CompletedAppointmentState>();
 builder.Services.AddTransient<CanceledAppointmentState>();
 
-
-builder.Services.AddControllers()
+builder.Services.AddControllers(x =>
+{
+    x.Filters.Add<ExceptionFilter>();
+})
 .AddJsonOptions(options =>
     {
         options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
     });
+
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
@@ -58,6 +64,11 @@ builder.Services.AddDbContext<CareConnectContext>(options =>
 
 builder.Services.AddMapster();
 
+builder.Services.AddSerilog(options =>
+{
+    options.ReadFrom.Configuration(builder.Configuration); 
+});
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -70,6 +81,8 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 
 app.UseAuthorization();
+
+app.UseSerilogRequestLogging();
 
 app.MapControllers();
 

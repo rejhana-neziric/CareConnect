@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using CareConnect.Models.SearchObjects;
 using CareConnect.Services.AppointmentStateMachine;
 using Azure.Core;
+using Microsoft.Extensions.Logging;
 
 namespace CareConnect.Services
 {
@@ -12,9 +13,13 @@ namespace CareConnect.Services
     {
         public BaseAppointmentState BaseAppointmentState { get; set; }
 
-        public AppointmentService(CareConnectContext context, IMapper mapper, BaseAppointmentState baseAppointmentState) : base(context, mapper) 
+        ILogger<AppointmentService> _logger; 
+
+        public AppointmentService(CareConnectContext context, IMapper mapper, BaseAppointmentState baseAppointmentState, ILogger<AppointmentService> logger) 
+            : base(context, mapper) 
         {
-            BaseAppointmentState = baseAppointmentState;    
+            BaseAppointmentState = baseAppointmentState;  
+            _logger = logger;   
         }
 
         public override IQueryable<Database.Appointment> AddFilter(AppointmentSearchObject search, IQueryable<Database.Appointment> query)
@@ -154,6 +159,8 @@ namespace CareConnect.Services
 
         public List<string> AllowedActions(int id)
         {
+            _logger.LogInformation($"Allowed action called for: {id}."); 
+
             if(id <= 0)
             {
                 var state = BaseAppointmentState.GetProductState("Initial");
