@@ -1,12 +1,9 @@
 using CareConnect.API.Configuration;
-using CareConnect.Models.Requests;
 using CareConnect.Services;
+using CareConnect.Services.AppointmentStateMachine;
 using CareConnect.Services.Database;
 using Mapster;
-using MapsterMapper;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Infrastructure;
-using Swashbuckle.AspNetCore.SwaggerGen;
 using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -31,6 +28,15 @@ builder.Services.AddTransient<IReviewService, ReviewService>();
 builder.Services.AddTransient<ISessionService, SessionService>(); 
 builder.Services.AddTransient<IServiceService, ServiceService>(); 
 builder.Services.AddTransient<IWorkshopService, WorkshopService>();
+
+builder.Services.AddTransient<BaseAppointmentState>();
+builder.Services.AddTransient<InitialAppointmentState>();
+builder.Services.AddTransient<ScheduledAppointmentState>();
+builder.Services.AddTransient<ConfirmedAppointmentState>();
+builder.Services.AddTransient<RescheduledAppointmedState>();
+builder.Services.AddTransient<StartedAppointmentService>();
+builder.Services.AddTransient<CompletedAppointmentState>();
+builder.Services.AddTransient<CanceledAppointmentState>();
 
 
 builder.Services.AddControllers()

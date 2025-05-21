@@ -23,6 +23,8 @@ public partial class Appointment
 
     public DateTime ModifiedDate { get; set; }
 
+    public string? StateMachine { get; set; }
+
     public virtual AttendanceStatus AttendanceStatus { get; set; } = null!;
 
     public virtual EmployeeAvailability EmployeeAvailability { get; set; } = null!;

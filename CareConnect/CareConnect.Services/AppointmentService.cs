@@ -2,22 +2,20 @@
 using CareConnect.Services.Database;
 using MapsterMapper;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Security.Cryptography;
-using Mapster;
-using CareConnect.Services.Helpers;
 using CareConnect.Models.SearchObjects;
-
+using CareConnect.Services.AppointmentStateMachine;
+using Azure.Core;
 
 namespace CareConnect.Services
 {
     public class AppointmentService : BaseCRUDService<Models.Responses.Appointment, AppointmentSearchObject, AppointmentAdditionalData, Database.Appointment, AppointmentInsertRequest, AppointmentUpdateRequest>, IAppointmentService
     {
-        public AppointmentService(CareConnectContext context, IMapper mapper) : base(context, mapper) { }
+        public BaseAppointmentState BaseAppointmentState { get; set; }
+
+        public AppointmentService(CareConnectContext context, IMapper mapper, BaseAppointmentState baseAppointmentState) : base(context, mapper) 
+        {
+            BaseAppointmentState = baseAppointmentState;    
+        }
 
         public override IQueryable<Database.Appointment> AddFilter(AppointmentSearchObject search, IQueryable<Database.Appointment> query)
         {
@@ -99,14 +97,10 @@ namespace CareConnect.Services
             base.AddInclude(additionalData, ref query);
         }
 
-        public override void BeforeInsert(AppointmentInsertRequest request, Database.Appointment entity)
+        public override Models.Responses.Appointment Insert(AppointmentInsertRequest request)
         {
-            base.BeforeInsert(request, entity);
-        }
-
-        public override void BeforeUpdate(AppointmentUpdateRequest request, ref Database.Appointment entity)
-        {
-            base.BeforeUpdate(request, ref entity);
+            var state = BaseAppointmentState.GetProductState("Initial");
+            return state.Insert(request); 
         }
 
         public override Database.Appointment GetByIdWithIncludes(int id)
@@ -118,28 +112,60 @@ namespace CareConnect.Services
                 .First(a => a.AppointmentId == id);
         }
 
-        public override void BeforeDelete(Database.Appointment entity)
+        public Models.Responses.Appointment Cancel(int id)
         {
-            //foreach (var child in entity.ClientsChildren)
-            //    Context.Remove(child);
+            var entity = GetById(id);
 
-            //foreach (var review in entity)
-            //    Context.Remove(review);
-
-            base.BeforeDelete(entity);
+            var state = BaseAppointmentState.GetProductState(entity.StateMachine);
+            return state.Cancel(id);
         }
 
-        public override void AfterDelete(int id)
+        public Models.Responses.Appointment Confirm(int id)
         {
-            //var user = Context.Users.Find(id);
+            var entity = GetById(id);
 
-            //if (user != null)
-            //{
-            //    Context.Remove(user);
-            //    Context.SaveChanges();
-            //}
+            var state = BaseAppointmentState.GetProductState(entity.StateMachine);
+            return state.Confirm(id);
+        }
 
-            base.AfterDelete(id);
+        public Models.Responses.Appointment Start(int id)
+        {
+            var entity = GetById(id);
+
+            var state = BaseAppointmentState.GetProductState(entity.StateMachine);
+            return state.Start(id);
+        }
+
+        public Models.Responses.Appointment Complete(int id)
+        {
+            var entity = GetById(id);
+
+            var state = BaseAppointmentState.GetProductState(entity.StateMachine);
+            return state.Complete(id);
+        }
+
+        public Models.Responses.Appointment Reschedule(int id, AppointmentRescheduleRequest request)
+        {
+            var entity = GetById(id);
+
+            var state = BaseAppointmentState.GetProductState(entity.StateMachine);
+            return state.Reschedule(id, request);
+        }
+
+        public List<string> AllowedActions(int id)
+        {
+            if(id <= 0)
+            {
+                var state = BaseAppointmentState.GetProductState("Initial");
+                return state.AllowedActions(null);
+            }
+
+            else
+            {
+                var entity = Context.Appointments.Find(id); 
+                var state = BaseAppointmentState.GetProductState(entity.StateMachine);
+                return state.AllowedActions(entity);
+            }
         }
     }
 }
