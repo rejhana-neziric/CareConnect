@@ -1,5 +1,7 @@
-﻿using CareConnect.Models.Requests;
+﻿using CareConnect.Models.Messages;
+using CareConnect.Models.Requests;
 using CareConnect.Services.Database;
+using EasyNetQ;
 using MapsterMapper;
 using System;
 using System.Collections.Generic;
@@ -27,7 +29,15 @@ namespace CareConnect.Services.AppointmentStateMachine
 
             _context.SaveChanges();
 
-            return _mapper.Map<Models.Responses.Appointment>(entity);
+            var bus = RabbitHutch.CreateBus("host=localhost;username=admin;password=admin");
+
+            var scheduledAppointment = _mapper.Map<Models.Responses.Appointment>(entity);
+
+            AppointmentScheduled mesagge = new AppointmentScheduled() {  Appointment = scheduledAppointment }; 
+
+            bus.PubSub.Publish(mesagge); 
+
+            return scheduledAppointment;
         }
 
         public override List<string> AllowedActions(Appointment entity)

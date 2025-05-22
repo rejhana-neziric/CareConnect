@@ -18,10 +18,6 @@ namespace CareConnect.Services
         {
             if (additionalData != null)
             {
-                if (additionalData.IsUserIncluded.HasValue && additionalData.IsUserIncluded == true)
-                {
-                    additionalData.IncludeList.Add("User");
-                }
 
                 if (additionalData.IsRoleIncluded.HasValue && additionalData.IsRoleIncluded == true)
                 {
