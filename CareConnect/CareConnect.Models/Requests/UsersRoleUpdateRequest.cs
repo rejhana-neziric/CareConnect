@@ -2,10 +2,9 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace CareConnect.Models
+namespace CareConnect.Models.Requests
 {
-    public class UserException : Exception
+    public class UsersRoleUpdateRequest
     {
-
     }
 }

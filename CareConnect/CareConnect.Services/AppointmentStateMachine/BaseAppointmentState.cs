@@ -1,4 +1,5 @@
-﻿using CareConnect.Models.Requests;
+﻿using CareConnect.Models.Exceptions;
+using CareConnect.Models.Requests;
 using CareConnect.Services.Database;
 using MapsterMapper;
 using Microsoft.Extensions.DependencyInjection; 
@@ -22,37 +23,37 @@ namespace CareConnect.Services.AppointmentStateMachine
 
         public virtual Models.Responses.Appointment Insert(AppointmentInsertRequest request)
         {
-            throw new Exception("Method not allowed.");
+            throw new UserException("Method not allowed.");
         }
 
         public virtual Models.Responses.Appointment Reschedule(int id, AppointmentRescheduleRequest request)
         {
-            throw new Exception("Method not allowed.");
+            throw new UserException("Method not allowed.");
         }
 
         public virtual Models.Responses.Appointment Confirm(int id)
         {
-            throw new Exception("Method not allowed.");
+            throw new UserException("Method not allowed.");
         }
 
         public virtual Models.Responses.Appointment Start(int id)
         {
-            throw new Exception("Method not allowed.");
+            throw new UserException("Method not allowed.");
         }
 
         public virtual Models.Responses.Appointment Complete(int id)
         {
-            throw new Exception("Method not allowed.");
+            throw new UserException("Method not allowed.");
         }
 
         public virtual Models.Responses.Appointment Cancel(int id)
         {
-            throw new Exception("Method not allowed.");
+            throw new UserException("Method not allowed.");
         }
 
         public virtual List<string> AllowedActions(Appointment entity)
         {
-            throw new Exception("Method not allowed.");
+            throw new UserException("Method not allowed.");
         }
 
         public BaseAppointmentState GetProductState(string stateName)

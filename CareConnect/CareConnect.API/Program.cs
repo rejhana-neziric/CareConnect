@@ -1,12 +1,19 @@
+using CareConnect.API;
 using CareConnect.API.Configuration;
 using CareConnect.API.Filters;
+using CareConnect.Models;
+using CareConnect.Models.Responses;
 using CareConnect.Services;
 using CareConnect.Services.AppointmentStateMachine;
 using CareConnect.Services.Database;
 using Mapster;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.OpenApi.Models;
 using Serilog;
+using System.Reflection;
 using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -15,6 +22,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 MapsterConfig.RegisterMappings();
 
+builder.Services.AddTransient<IUserService, UserService>(); 
 builder.Services.AddTransient<IEmployeeService, EmployeeService>();
 builder.Services.AddTransient<IEmployeeAvailabilityService, EmployeeAvailabilityService>();
 builder.Services.AddTransient<IEmployeePayHistoryService, EmployeePayHistoryService>();
@@ -27,7 +35,9 @@ builder.Services.AddTransient<IInstructorService, InstructorService>();
 builder.Services.AddTransient<IMemberService, MemberService>();
 builder.Services.AddTransient<IParticipantService, ParticipantService>();
 builder.Services.AddTransient<IPaymentService, PaymentService>();
-builder.Services.AddTransient<IReviewService, ReviewService>(); 
+builder.Services.AddTransient<IReviewService, ReviewService>();
+builder.Services.AddTransient<IRoleService, RoleService>();
+builder.Services.AddTransient<IUsersRoleService, UsersRoleService>();
 builder.Services.AddTransient<ISessionService, SessionService>(); 
 builder.Services.AddTransient<IServiceService, ServiceService>(); 
 builder.Services.AddTransient<IWorkshopService, WorkshopService>();
@@ -55,6 +65,30 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
 {
     options.UseInlineDefinitionsForEnums();
+
+    options.AddSecurityDefinition("BasicAuthentication", new OpenApiSecurityScheme
+    {
+        Name = "Authorization",
+        Type = SecuritySchemeType.Http,
+        Scheme = "basic",
+        In = ParameterLocation.Header,
+        Description = "Basic Authorization header using the Bearer scheme."
+    });
+    options.AddSecurityRequirement(new OpenApiSecurityRequirement
+    {
+        {
+            new OpenApiSecurityScheme 
+            { 
+                Reference = new OpenApiReference 
+                { 
+                    Type = ReferenceType.SecurityScheme, 
+                    Id = "BasicAuthentication" 
+                } 
+            },
+            new string[] { }
+        }
+    });
+
 });
 
 var connectionString = builder.Configuration.GetConnectionString("_210024Connection");
@@ -68,6 +102,30 @@ builder.Services.AddSerilog(options =>
 {
     options.ReadFrom.Configuration(builder.Configuration); 
 });
+
+builder.Services.AddAuthentication("BasicAuthentication")
+    .AddScheme<AuthenticationSchemeOptions, BasicAuthenticationHandler>("BasicAuthentication", null);
+
+builder.Services.AddAuthorization(options =>
+{
+    var permissionConstants = typeof(Permissions)
+        .GetNestedTypes(BindingFlags.Public | BindingFlags.Static)
+        .SelectMany(nestedType => nestedType
+            .GetFields(BindingFlags.Public | BindingFlags.Static | BindingFlags.FlattenHierarchy))
+        .Where(f => f.IsLiteral && !f.IsInitOnly && f.FieldType == typeof(string))
+        .Select(f => f.GetRawConstantValue()?.ToString())
+        .Where(value => !string.IsNullOrWhiteSpace(value))
+        .ToList();
+
+    foreach (var permission in permissionConstants)
+    {
+        options.AddPolicy(permission, builder =>
+        {
+            builder.AddRequirements(new PermissionRequirement(permission));
+        });
+    }
+});
+
 
 var app = builder.Build();
 

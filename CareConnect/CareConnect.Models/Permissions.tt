@@ -1,0 +1,44 @@
+﻿<#@ template language="C#" debug="true" hostspecific="true" #>
+<#@ output extension=".cs" #>
+<#@ assembly name="System.Core" #>
+<#@ import namespace="System" #>
+<#@ import namespace="System.IO" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Collections.Generic" #>
+
+// Auto-generated Permissions class
+public static class Permissions
+{
+<#
+    var filePath = Path.Combine(Path.GetDirectoryName(Host.TemplateFile), "permissions.txt");
+    var lines = File.ReadAllLines(filePath)
+                    .Where(line => !string.IsNullOrWhiteSpace(line))
+                    .Select(line => line.Trim());
+
+    foreach (var line in lines)
+    {
+        var parts = line.Split(':');
+        if (parts.Length != 2) continue;
+
+        var section = parts[0].Trim();
+        var permissions = parts[1]
+            .Split(',')
+            .Select(p => p.Trim())
+            .Where(p => !string.IsNullOrEmpty(p))
+            .ToList();
+#>
+    public static class <#= section #>
+    {
+<#
+        foreach (var perm in permissions)
+        {
+#>
+        public const string <#= perm #> = "Permissions.<#= section #>.<#= perm #>";
+<#
+        }
+#>
+    }
+<#
+    }
+#>
+}

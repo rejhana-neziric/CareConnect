@@ -1,9 +1,12 @@
-﻿using CareConnect.Models.SearchObjects;
+﻿using CareConnect.API.Filters;
+using CareConnect.Models.SearchObjects;
 using CareConnect.Services;
 using Microsoft.AspNetCore.Mvc;
 
 namespace CareConnect.API.Controllers
 {
+    [ApiController]
+    [Route("[controller]")]
     public class BaseCRUDController<TModel, TSearch, TSearchAdditionalData, TInsert, TUpdate> : BaseController<TModel, TSearch, TSearchAdditionalData> 
         where TModel : class 
         where TSearch : BaseSearchObject<TSearchAdditionalData>
@@ -19,19 +22,22 @@ namespace CareConnect.API.Controllers
         }
 
         [HttpPost]
-        public TModel Insert(TInsert request)
+        [PermissionAuthorize("Insert")]
+        public virtual TModel Insert(TInsert request)
         {
             return _service.Insert(request);
         }
 
         [HttpPut("{id}")]
-        public TModel Update(int id, TUpdate request)
+        [PermissionAuthorize("Update")]
+        public virtual TModel Update(int id, TUpdate request)
         {
             return _service.Update(id, request);
         }
 
         [HttpDelete("{id}")]
-        public bool Delete(int id)
+        [PermissionAuthorize("Delete")]
+        public virtual bool Delete(int id)
         {
             return _service.Delete(id);
         }

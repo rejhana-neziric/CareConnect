@@ -47,6 +47,8 @@ public partial class CareConnectContext : DbContext
 
     public virtual DbSet<PaymentStatus> PaymentStatuses { get; set; }
 
+    public virtual DbSet<Permission> Permissions { get; set; }
+
     public virtual DbSet<Qualification> Qualifications { get; set; }
 
     public virtual DbSet<Review> Reviews { get; set; }
@@ -389,6 +391,13 @@ public partial class CareConnectContext : DbContext
             entity.Property(e => e.Name).HasMaxLength(50);
         });
 
+        modelBuilder.Entity<Permission>(entity =>
+        {
+            entity.HasKey(e => e.PermissionId).HasName("PK__Permissi__EFA6FB2FD9DF3E33");
+
+            entity.Property(e => e.Name).HasMaxLength(200);
+        });
+
         modelBuilder.Entity<Qualification>(entity =>
         {
             entity.HasKey(e => e.QualificationId).HasName("PK__Qualific__C95C128ACC47C0D4");
@@ -438,6 +447,23 @@ public partial class CareConnectContext : DbContext
             entity.Property(e => e.RoleId).HasColumnName("RoleID");
             entity.Property(e => e.Description).HasMaxLength(50);
             entity.Property(e => e.Name).HasMaxLength(20);
+
+            entity.HasMany(d => d.Permissions).WithMany(p => p.Roles)
+                .UsingEntity<Dictionary<string, object>>(
+                    "RolePermission",
+                    r => r.HasOne<Permission>().WithMany()
+                        .HasForeignKey("PermissionId")
+                        .OnDelete(DeleteBehavior.ClientSetNull)
+                        .HasConstraintName("FK__RolePermi__Permi__3F115E1A"),
+                    l => l.HasOne<Role>().WithMany()
+                        .HasForeignKey("RoleId")
+                        .OnDelete(DeleteBehavior.ClientSetNull)
+                        .HasConstraintName("FK__RolePermi__RoleI__3E1D39E1"),
+                    j =>
+                    {
+                        j.HasKey("RoleId", "PermissionId").HasName("PK__RolePerm__6400A1A8026A7CAE");
+                        j.ToTable("RolePermissions");
+                    });
         });
 
         modelBuilder.Entity<Service>(entity =>

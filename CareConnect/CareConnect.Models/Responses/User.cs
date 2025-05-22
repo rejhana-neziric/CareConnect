@@ -16,7 +16,7 @@ namespace CareConnect.Models.Responses
 
         //public string? PhoneNumber { get; set; }
 
-        //public string Username { get; set; } = null!;
+        public string Username { get; set; } = null!;
 
         //public string PasswordHash { get; set; } = null!;
 
@@ -31,5 +31,7 @@ namespace CareConnect.Models.Responses
         //public string Gender { get; set; } = null!;
 
         //public string? Address { get; set; }
+
+        public virtual ICollection<UsersRole> UsersRoles { get; set; } = new List<UsersRole>();
     }
 }

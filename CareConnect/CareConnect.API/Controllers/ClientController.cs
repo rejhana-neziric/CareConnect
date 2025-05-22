@@ -1,4 +1,5 @@
-﻿using CareConnect.Models.Requests;
+﻿using CareConnect.API.Filters;
+using CareConnect.Models.Requests;
 using CareConnect.Models.Responses;
 using CareConnect.Models.SearchObjects;
 using CareConnect.Services;
@@ -21,12 +22,14 @@ namespace CareConnect.API.Controllers
         }
 
         [HttpGet("{id}/children")]
-        public List<Child> AddChildToClient(int id)
+        [PermissionAuthorize("GetChildren")]
+        public List<Child> GetChildren(int id)
         {
             return _clientsChildService.GetChildren(id);
         }   
         
         [HttpPost("{id}/children")]
+        [PermissionAuthorize("AddChildren")]
         public ClientsChild AddChildToClient(int id, [FromBody] ChildInsertRequest childInsertRequest)
         {
             var childId = _childService.InsertAndReturnId(childInsertRequest);

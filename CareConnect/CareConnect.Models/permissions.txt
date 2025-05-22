@@ -1,0 +1,18 @@
+﻿Appointment: Get, GetById, Insert, Update, Delete, Cancel, Confirm, Start, Complete, Reschedule, AllowedActions
+Child: Get, GetById, Insert, Update, Delete
+ChildrenDiagnosis: Get, GetById, Insert, Update, Delete
+Client: Get, GetById, Insert, Update, Delete, GetChildren, AddChildren
+EmployeeAvailability: Get, GetById, Insert, Update, Delete
+Employee: Get, GetById, Insert, Update, Delete
+EmployeePayHistory: Get, GetById, Insert, Update, Delete
+Instructor: Get, GetById, Insert, Update, Delete
+Member: Get, GetById, Insert, Update, Delete
+Participant: Get, GetById, Insert, Update, Delete
+Payment: Get, GetById, Insert, Update, Delete
+Review: Get, GetById, Insert, Update, Delete
+Role: Get, GetById, Insert, Update, Delete, AssignPermission
+UsersRole: Get, GetById, Insert, Update, Delete
+Service: Get, GetById, Insert, Update, Delete
+Session: Get, GetById, Insert, Update, Delete
+User: Login, GetPermission
+Workshop: Get, GetById, Insert, Update, Delete
