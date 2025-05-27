@@ -1,5 +1,7 @@
 ﻿// See https://aka.ms/new-console-template for more information
 
+//todo
+
 using EasyNetQ;
 using CareConnect.Models.Messages;
 

@@ -1,0 +1,37 @@
+version: '3'
+
+services:
+
+  careconnect-sql:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    restart: unless-stopped
+    environment:
+      - ACCEPT_EULA=Y
+      - SA_PASSWORD=${DB_PASSWORD}
+      - MSSQL_PID=Developer
+    ports:
+      - 1401:1433
+    expose:
+      - 1433
+    networks:
+      - careconnectnet2024
+
+  careconnect-api:
+    restart: unless-stopped
+    build:
+      context: .
+    environment:
+      - ConnectionStrings:DefaultConnection=Server=${DB_HOST},${DB_PORT};Database=${DB_NAME};User=${DB_USER};Password=${DB_PASSWORD};ConnectRetryCount=0;TrustServerCertificate=True
+      - ASPNETCORE_ENVIRONMENT=Development
+    ports:
+      - 5241:5241
+    networks:
+      - careconnectnet2024
+    links:
+      - careconnect-sql
+    depends_on:
+      - careconnect-sql
+      
+networks:
+  careconnectnet2024:
+    driver: bridge      

@@ -91,7 +91,7 @@ builder.Services.AddSwaggerGen(options =>
 
 });
 
-var connectionString = builder.Configuration.GetConnectionString("_210024Connection");
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 
 builder.Services.AddDbContext<CareConnectContext>(options =>
     options.UseSqlServer(connectionString));
@@ -143,6 +143,13 @@ app.UseAuthorization();
 app.UseSerilogRequestLogging();
 
 app.MapControllers();
+
+using(var scope = app.Services.CreateScope())
+{
+    var dataContext = scope.ServiceProvider.GetRequiredService<CareConnectContext>();
+   
+    dataContext.Database.Migrate(); 
+}
 
 app.Run();
 

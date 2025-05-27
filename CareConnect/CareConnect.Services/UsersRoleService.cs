@@ -25,7 +25,7 @@ namespace CareConnect.Services
                 }
             }
 
-            base.AddInclude(additionalData, ref query);
+            base.AddInclude(additionalData!, ref query);
         }
     }
 }

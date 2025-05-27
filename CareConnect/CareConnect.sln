@@ -9,7 +9,13 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CareConnect.Models", "CareC
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CareConnect.Services", "CareConnect.Services\CareConnect.Services.csproj", "{41557153-177F-4678-95EA-CDAEA1E63928}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CareConnect.Subscriber", "CareConnect.Subscriber\CareConnect.Subscriber.csproj", "{AA1D3742-B8C0-4388-A893-38CD119D9DEB}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CareConnect.Subscriber", "CareConnect.Subscriber\CareConnect.Subscriber.csproj", "{AA1D3742-B8C0-4388-A893-38CD119D9DEB}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{7DB8E8E0-B970-47D0-B963-80EF69AA88AB}"
+	ProjectSection(SolutionItems) = preProject
+		docker-compose.yml = docker-compose.yml
+		Dockerfile = Dockerfile
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
