@@ -1,53 +1,11 @@
-import 'dart:convert';
-import 'package:careconnect_admin/providers/auth_provider.dart';
-import 'package:http/http.dart' as http;
-import 'package:http/http.dart';
+import 'package:careconnect_admin/models/employee.dart';
+import 'package:careconnect_admin/providers/base_provider.dart';
 
-class EmployeeProvider {
-  static String? _baseUrl;
+class EmployeeProvider extends BaseProvider<Employee> {
+  EmployeeProvider() : super("Employee");
 
-  EmployeeProvider() {
-    _baseUrl = const String.fromEnvironment(
-      "baseUrl",
-      defaultValue: "http://localhost:5241/",
-    );
-  }
-
-  Future<dynamic> get() async {
-    var url = "${_baseUrl}Employee";
-    var uri = Uri.parse(url);
-    var response = await http.get(uri, headers: createHeaders());
-
-    if (isValidResponse(response)) {
-      var data = jsonDecode(response.body);
-      return data;
-    } else {
-      throw new Exception("Unknown exception");
-    }
-  }
-
-  bool isValidResponse(Response response) {
-    if (response.statusCode < 299) {
-      return true;
-    } else if (response.statusCode == 401) {
-      throw new Exception("Unauthorized");
-    } else {
-      throw new Exception("Something bad happened, please try again.");
-    }
-  }
-
-  Map<String, String> createHeaders() {
-    String username = AuthProvider.username ?? "";
-    String password = AuthProvider.password ?? "";
-
-    String basicAuth =
-        "Basic ${base64Encode(utf8.encode('$username:$password'))}";
-
-    var headers = {
-      "Content-Type": "application/json",
-      "Authorization": basicAuth,
-    };
-
-    return headers;
+  @override
+  Employee fromJson(data) {
+    return Employee.fromJson(data);
   }
 }

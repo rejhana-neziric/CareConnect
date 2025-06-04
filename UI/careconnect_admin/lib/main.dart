@@ -2,9 +2,19 @@ import 'package:careconnect_admin/providers/auth_provider.dart';
 import 'package:careconnect_admin/providers/employee_provider.dart';
 import 'package:careconnect_admin/screens/employee_list_screen.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 void main() {
-  runApp(const MyApp());
+  runApp(
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider<EmployeeProvider>(
+          create: (_) => EmployeeProvider(),
+        ),
+      ],
+      child: const MyApp(),
+    ),
+  );
 }
 
 class MyApp extends StatelessWidget {
@@ -42,8 +52,8 @@ class MyApp extends StatelessWidget {
 
 class LoginPage extends StatelessWidget {
   LoginPage({super.key});
-  TextEditingController _usernameController = new TextEditingController();
-  TextEditingController _passwordController = new TextEditingController();
+  final TextEditingController _usernameController = new TextEditingController();
+  final TextEditingController _passwordController = new TextEditingController();
 
   @override
   Widget build(BuildContext context) {
@@ -79,7 +89,7 @@ class LoginPage extends StatelessWidget {
                   ),
                   ElevatedButton(
                     onPressed: () async {
-                      EmployeeProvider provider = new EmployeeProvider();
+                      //EmployeeProvider provider = new EmployeeProvider();
                       print(
                         "credentials ${_usernameController.text} : ${_passwordController.text}",
                       );
@@ -88,7 +98,7 @@ class LoginPage extends StatelessWidget {
                       AuthProvider.password = _passwordController.text;
 
                       try {
-                        var data = await provider.get();
+                        //var data = await provider.get();
                         Navigator.of(context).push(
                           MaterialPageRoute(
                             builder: (context) => EmployeeListScreen(),

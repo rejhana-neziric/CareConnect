@@ -5,8 +5,8 @@ import 'package:flutter/material.dart';
 class MasterScreen extends StatefulWidget {
   MasterScreen(this.title, this.child, {super.key});
 
-  String title;
-  Widget child;
+  final String title;
+  final Widget child;
 
   @override
   State<MasterScreen> createState() => _MasterScreenState();
