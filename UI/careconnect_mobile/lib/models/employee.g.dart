@@ -7,21 +7,13 @@ part of 'employee.dart';
 // **************************************************************************
 
 Employee _$EmployeeFromJson(Map<String, dynamic> json) => Employee(
-  hireDate: DateTime.parse(json['hireDate'] as String),
-  endDate: json['endDate'] == null
+  hireDate: json['hireDate'] == null
       ? null
-      : DateTime.parse(json['endDate'] as String),
-  employed: json['employed'] as bool,
+      : DateTime.parse(json['hireDate'] as String),
   jobTitle: json['jobTitle'] as String?,
-  user: json['user'] == null
-      ? null
-      : User.fromJson(json['user'] as Map<String, dynamic>),
 );
 
 Map<String, dynamic> _$EmployeeToJson(Employee instance) => <String, dynamic>{
-  'hireDate': instance.hireDate.toIso8601String(),
-  'endDate': instance.endDate?.toIso8601String(),
-  'employed': instance.employed,
+  'hireDate': instance.hireDate?.toIso8601String(),
   'jobTitle': instance.jobTitle,
-  'user': instance.user?.toJson(),
 };

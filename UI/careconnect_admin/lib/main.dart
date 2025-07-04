@@ -1,15 +1,33 @@
+import 'package:careconnect_admin/models/user.dart';
+import 'package:careconnect_admin/providers/attendance_status_provider.dart';
 import 'package:careconnect_admin/providers/auth_provider.dart';
 import 'package:careconnect_admin/providers/employee_provider.dart';
 import 'package:careconnect_admin/screens/employee_list_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:careconnect_admin/models/employee.dart';
+import 'theme/theme.dart';
 
 void main() {
+  // final dummy = Employee(
+  //   hireDate: DateTime.now(),
+  //   jobTitle: 'Developer',
+  //   user: User(
+  //     firstName: 'John',
+  //     lastName: 'Doe',
+  //     email: 'john.doe@example.com',
+  //     username: 'johndoe',
+  //   ),
+  // );
+
   runApp(
     MultiProvider(
       providers: [
         ChangeNotifierProvider<EmployeeProvider>(
           create: (_) => EmployeeProvider(),
+        ),
+        ChangeNotifierProvider<AttendanceStatusProvider>(
+          create: (_) => AttendanceStatusProvider(),
         ),
       ],
       child: const MyApp(),
@@ -20,29 +38,11 @@ void main() {
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Flutter Demo',
-      theme: ThemeData(
-        // This is the theme of your application.+
-        //
-        // TRY THIS: Try running your application with "flutter run". You'll see
-        // the application has a purple toolbar. Then, without quitting the app,
-        // try changing the seedColor in the colorScheme below to Colors.green
-        // and then invoke "hot reload" (save your changes or press the "hot
-        // reload" button in a Flutter-supported IDE, or press "r" if you used
-        // the command line to start the app).
-        //
-        // Notice that the counter didn't reset back to zero; the application
-        // state is not lost during the reload. To reset the state, use hot
-        // restart instead.
-        //
-        // This works for code too, not just values: Most code changes can be
-        // tested with just a hot reload.
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
-      ),
+      theme: ThemeData(useMaterial3: true),
       home: Center(
         child: LoginPage(),
       ), //const MyHomePage(title: 'Flutter Demo Home Page'),

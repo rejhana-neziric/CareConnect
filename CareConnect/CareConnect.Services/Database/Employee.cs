@@ -9,6 +9,8 @@ public partial class Employee
 
     public DateTime HireDate { get; set; }
 
+    public DateTime? EndDate { get; set; }
+
     public string JobTitle { get; set; } = null!;
 
     public int? QualificationId { get; set; }

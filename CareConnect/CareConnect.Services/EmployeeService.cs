@@ -11,6 +11,7 @@ using CareConnect.Models.Requests;
 using Mapster;
 using CareConnect.Services.Helpers;
 using CareConnect.Models.SearchObjects;
+using System.Globalization;
 
 namespace CareConnect.Services
 {
@@ -22,6 +23,11 @@ namespace CareConnect.Services
         public override IQueryable<Database.Employee> AddFilter(EmployeeSearchObject search, IQueryable<Database.Employee> query)
         {
             query = base.AddFilter(search, query);
+
+            if (!string.IsNullOrWhiteSpace(search?.FTS))
+            {
+                query = query.Where(x => x.User.FirstName.StartsWith(search.FTS) || x.User.LastName.StartsWith(search.FTS) || x.JobTitle.StartsWith(search.FTS) || x.User.Email == search.FTS);
+            }
 
             if (!string.IsNullOrWhiteSpace(search?.FirstNameGTE))
             {
@@ -43,6 +49,16 @@ namespace CareConnect.Services
                 query = query.Where(x => x.JobTitle == search.JobTitle);
             }
 
+            if(search?.Employed != null && search?.Employed == true)
+            {
+                query = query.Where(x => x.EndDate == null);
+            }
+
+            if (search?.Employed != null && search?.Employed == false)
+            {
+                query = query.Where(x => x.EndDate != null);
+            }
+
             if (search?.HireDateGTE.HasValue == true)
             {
                 var mappedHireDate = search.HireDateGTE;
@@ -53,6 +69,17 @@ namespace CareConnect.Services
             {
                 var mappedHireDate = search.HireDateLTE;
                 query = query.Where(x => x.HireDate <= mappedHireDate);
+            }
+
+            if(!string.IsNullOrWhiteSpace(search?.SortBy))
+            {
+                query = search?.SortBy switch
+                {
+                    "firstName" => search.SortAscending ? query.OrderBy(x => x.User.FirstName) : query.OrderByDescending(x => x.User.FirstName),
+                    "lastName" => search.SortAscending ? query.OrderBy(x => x.User.LastName) : query.OrderByDescending(x => x.User.LastName),
+                    "jobTitle" => search.SortAscending ? query.OrderBy(x => x.JobTitle) : query.OrderByDescending(x => x.JobTitle),
+                    _ => query
+                };
             }
 
             return query;

@@ -15,6 +15,8 @@ namespace CareConnect.Models.SearchObjects
 
         public string? JobTitle { get; set; }
 
+        public bool? Employed { get; set; }
+
         public DateTime? HireDateGTE { get; set; }
 
         public DateTime? HireDateLTE { get; set; }

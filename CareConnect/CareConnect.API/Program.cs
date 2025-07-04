@@ -27,6 +27,7 @@ builder.Services.AddTransient<IEmployeeService, EmployeeService>();
 builder.Services.AddTransient<IEmployeeAvailabilityService, EmployeeAvailabilityService>();
 builder.Services.AddTransient<IEmployeePayHistoryService, EmployeePayHistoryService>();
 builder.Services.AddTransient<IAppointmentService, AppointmentService>();
+builder.Services.AddTransient<IAttendanceStatusService, AttendanceStatusService>();
 builder.Services.AddTransient<IClientService, ClientService>();
 builder.Services.AddTransient<IChildService, ChildService>();
 builder.Services.AddTransient<IClientsChildService, ClientsChildService>();

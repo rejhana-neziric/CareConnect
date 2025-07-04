@@ -6,6 +6,8 @@ namespace CareConnect.Models.Responses
 {
     public class AttendanceStatus
     {
+        public int AttendanceStatusId { get; set; }
+
         public string Name { get; set; } = null!;
 
         public DateTime ModifiedDate { get; set; }

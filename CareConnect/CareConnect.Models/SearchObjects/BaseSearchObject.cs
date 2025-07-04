@@ -17,6 +17,10 @@ namespace CareConnect.Models.SearchObjects
 
         public bool RetrieveAll { get; set; } = false;
 
+        public string? SortBy { get; set; }
+
+        public bool SortAscending { get; set; } = true;
+
         public TAdditionalData? AdditionalData { get; set; }
     }
 }

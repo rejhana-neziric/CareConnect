@@ -7,6 +7,10 @@ namespace CareConnect.Models.Responses
     {
         public DateTime HireDate { get; set; }
 
+        public DateTime? EndDate { get; set; }
+
+        public bool Employed => EndDate == null; 
+
         public string JobTitle { get; set; } = null!;
 
         public DateTime ModifiedDate { get; set; }
