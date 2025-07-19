@@ -22,6 +22,7 @@ class _EmployeeListScreenState extends State<EmployeeListScreen> {
   late EmployeeProvider provider;
 
   SearchResult<Employee>? result;
+  int currentPage = 0;
 
   final TextEditingController _ftsController = TextEditingController();
   final TextEditingController _firstNameController = TextEditingController();
@@ -72,10 +73,13 @@ class _EmployeeListScreenState extends State<EmployeeListScreen> {
     super.initState();
     provider = context.read<EmployeeProvider>();
 
-    loadData();
+    if (provider.shouldRefresh) {
+      loadData();
+      provider.markRefreshed();
+    }
   }
 
-  void loadData() async {
+  Future<SearchResult<Employee>?> loadData({int page = 0}) async {
     final filterObject = EmployeeSearchObject(
       fts: _ftsController.text,
       firstNameGTE: _firstNameController.text,
@@ -85,40 +89,57 @@ class _EmployeeListScreenState extends State<EmployeeListScreen> {
       hireDateGTE: _from,
       hireDateLTE: _to,
       employed: employed,
+      page: page,
       sortBy: _sortBy,
       sortAscending: _sortAscending,
-      additionalData: EmployeeAdditionalData(isUserIncluded: true),
+      additionalData: EmployeeAdditionalData(
+        isUserIncluded: true,
+        isQualificationIncluded: true,
+      ),
+      includeTotalCount: true,
     );
 
     final filter = filterObject.toJson();
 
-    result = await provider.get(filter: filter);
+    final newResult = await provider.get(filter: filter);
 
-    totalEmployees = result?.result.length;
-    currentlyEmployeed = result?.result.where((e) => e.endDate == null).length;
-    newThisMonth = result?.result
-        .where((e) => e.hireDate.month == DateTime.now().month)
-        .length;
+    result = newResult;
 
-    setState(() {});
+    if (page == 0) {
+      totalEmployees = result?.totalCount;
+      currentlyEmployeed = result?.result
+          .where((e) => e.endDate == null)
+          .length;
+      newThisMonth = result?.result
+          .where((e) => e.hireDate.month == DateTime.now().month)
+          .length;
+    }
+
+    if (mounted) {
+      setState(() {});
+    }
+
+    return result;
   }
-
-  /*
-  void searchFilter(String value) async {
-    loadData();
-  }
-
-  // izbrisati
-  void sort() async {
-    loadData();
-  }*/
 
   @override
   Widget build(BuildContext context) {
     return MasterScreen(
       "Employees",
       Column(
-        children: [_buildOverview(), _buildSearch(), _buildResultView(result)],
+        children: [
+          _buildOverview(),
+          _buildSearch(),
+          Consumer<EmployeeProvider>(
+            builder: (context, provider, child) {
+              if (provider.shouldRefresh) {
+                loadData();
+                provider.markRefreshed();
+              }
+              return _buildResultView(result, loadData);
+            },
+          ),
+        ],
       ),
     );
   }
@@ -140,7 +161,7 @@ class _EmployeeListScreenState extends State<EmployeeListScreen> {
               },
               icon: Icon(Icons.person_add_alt_1, color: Colors.white),
               label: Text(
-                'Add Customer',
+                'Add Employee',
                 style: TextStyle(
                   color: Colors.white,
                   fontWeight: FontWeight.w500,
@@ -204,7 +225,7 @@ class _EmployeeListScreenState extends State<EmployeeListScreen> {
               Container(
                 padding: EdgeInsets.all(10),
                 decoration: BoxDecoration(
-                  color: iconColor.withOpacity(0.1),
+                  color: iconColor.withAlpha((0.1 * 255).toInt()),
                   shape: BoxShape.circle,
                 ),
                 child: Icon(icon, color: iconColor, size: 25),
@@ -351,9 +372,14 @@ class _EmployeeListScreenState extends State<EmployeeListScreen> {
     );
   }
 
-  Widget _buildResultView(SearchResult<Employee>? result) {
+  Widget _buildResultView(
+    SearchResult<Employee>? result,
+    Future<SearchResult<Employee>?> Function({int page}) loadData,
+  ) {
     if (result != null) {
-      return Expanded(child: EmployeeTable(result: result));
+      return Expanded(
+        child: EmployeeTable(result: result, onPageChanged: loadData),
+      );
     } else {
       return const Padding(
         padding: EdgeInsets.all(16),
@@ -363,32 +389,140 @@ class _EmployeeListScreenState extends State<EmployeeListScreen> {
   }
 }
 
-class EmployeeTable extends StatelessWidget {
-  final SearchResult<Employee>? result;
+class EmployeeTable extends StatefulWidget {
+  SearchResult<Employee>? result;
+  final Future<SearchResult<Employee>?> Function({int page}) onPageChanged;
 
-  const EmployeeTable({super.key, required this.result});
+  EmployeeTable({super.key, this.result, required this.onPageChanged});
+
+  @override
+  State<EmployeeTable> createState() => _EmployeeTableState();
+}
+
+class _EmployeeTableState extends State<EmployeeTable> {
+  final int _pageSize = 10;
+  int _currentPage = 0;
+  bool _isLoading = false;
+  EmployeeDataSource? _dataSource;
+
+  @override
+  void initState() {
+    super.initState();
+    _updateDataSource();
+  }
+
+  @override
+  void didUpdateWidget(EmployeeTable oldWidget) {
+    super.didUpdateWidget(oldWidget);
+
+    if (oldWidget.result != widget.result) {
+      _updateDataSource();
+    }
+  }
+
+  void _updateDataSource() {
+    final employees = widget.result?.result ?? [];
+    final totalCount = widget.result?.totalCount ?? 0;
+
+    _dataSource = EmployeeDataSource(
+      employees,
+      context,
+      totalCount,
+      onPageChanged: _fetchPage,
+      pageSize: _pageSize,
+      currentPage: _currentPage,
+    );
+  }
+
+  Future<void> _fetchPage(int page) async {
+    if (_isLoading) return;
+
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      final result = await widget.onPageChanged(page: page);
+
+      if (mounted) {
+        setState(() {
+          _currentPage = page;
+          widget.result = result;
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Error loading data: $e')));
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    final employees = result?.result ?? [];
+    final employees = widget.result?.result ?? [];
+    final totalCount = widget.result?.totalCount ?? 0;
 
-    return PaginatedDataTable2(
-      columns: const [
-        DataColumn2(label: Text('Employee Name')),
-        DataColumn2(label: Text('Job Title')),
-        DataColumn2(label: Text('Email')),
-        DataColumn2(label: Text('Phone Number')),
-        DataColumn2(label: Text('Status'), size: ColumnSize.M, fixedWidth: 200),
-        DataColumn2(
-          label: Center(child: Text('Actions')),
-          size: ColumnSize.S,
-          fixedWidth: 120,
+    if (_isLoading && employees.isEmpty) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
+    if (_dataSource == null) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
+    return Stack(
+      children: [
+        PaginatedDataTable2(
+          key: ValueKey(widget.result?.result.hashCode),
+          columns: const [
+            DataColumn2(label: Text('Employee Name')),
+            DataColumn2(label: Text('Job Title')),
+            DataColumn2(label: Text('Email')),
+            DataColumn2(label: Text('Phone Number')),
+            DataColumn2(
+              label: Text('Status'),
+              size: ColumnSize.M,
+              fixedWidth: 200,
+            ),
+            DataColumn2(
+              label: Center(child: Text('Actions')),
+              size: ColumnSize.S,
+              fixedWidth: 120,
+            ),
+          ],
+          source: _dataSource!, //ovo moze biti prazno
+          rowsPerPage: _pageSize,
+          onPageChanged: (start) {
+            final newPage = start ~/ _pageSize;
+            print(
+              'PaginatedDataTable2 page changed to: $newPage, start: $start',
+            );
+            if (newPage != _currentPage && !_isLoading) {
+              _fetchPage(newPage);
+            }
+          },
+          initialFirstRowIndex: _currentPage * _pageSize,
+          columnSpacing: 15,
+          horizontalMargin: 12,
+          minWidth: 600,
+          showCheckboxColumn: false,
+          availableRowsPerPage: const [10],
         ),
+        if (_isLoading)
+          Positioned.fill(
+            child: Container(
+              color: Colors.white.withAlpha((0.7 * 255).toInt()),
+              child: const Center(child: CircularProgressIndicator()),
+            ),
+          ),
       ],
-      source: EmployeeDataSource(employees, context),
-      rowsPerPage: 10,
-      columnSpacing: 15,
-      horizontalMargin: 12,
-      minWidth: 600,
     );
   }
 }
@@ -396,9 +530,20 @@ class EmployeeTable extends StatelessWidget {
 class EmployeeDataSource extends DataTableSource {
   final List<Employee> employees;
   final BuildContext context;
+  final int? count;
+  final Future<void> Function(int page)? onPageChanged;
+  final int pageSize;
+  final int currentPage;
 
-  EmployeeDataSource(this.employees, this.context);
-
+  EmployeeDataSource(
+    this.employees,
+    this.context,
+    this.count, {
+    this.onPageChanged,
+    this.pageSize = 10,
+    this.currentPage = 0,
+  });
+  /*
   @override
   DataRow? getRow(int index) {
     if (index >= employees.length) return null;
@@ -407,12 +552,88 @@ class EmployeeDataSource extends DataTableSource {
     return DataRow.byIndex(
       index: index,
       cells: [
-        DataCell(
-          Text("${employee.user?.firstName} ${employee.user?.lastName}"),
-        ),
+        DataCell(Text("${employee.user.firstName} ${employee.user.lastName}")),
         DataCell(Text(employee.jobTitle.toString())),
-        DataCell(Text(employee.user?.email ?? " ")),
-        DataCell(Text(employee.user?.phoneNumber ?? "")),
+        DataCell(Text(employee.user.email ?? " ")),
+        DataCell(Text(employee.user.phoneNumber ?? "")),
+        DataCell(
+          Container(
+            padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+            decoration: BoxDecoration(
+              color: employee.endDate == null
+                  ? Colors.green.shade50
+                  : Colors.red.shade50,
+              border: Border.all(
+                color: employee.endDate == null ? Colors.green : Colors.red,
+              ),
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: Text(
+              employee.endDate == null ? "Employed" : "Not Employed",
+              style: TextStyle(
+                color: employee.endDate == null ? Colors.green : Colors.red,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+        ),
+        DataCell(
+          Row(
+            children: [
+              IconButton(
+                icon: const Icon(Icons.edit_outlined, color: Colors.grey),
+                tooltip: 'Edit',
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) =>
+                          EmployeeDetailsScreen(employee: employee),
+                    ),
+                  );
+                },
+              ),
+              IconButton(
+                icon: const Icon(
+                  Icons.delete_outline_outlined,
+                  color: Colors.grey,
+                ),
+                tooltip: 'Delete',
+                onPressed: () {
+                  // Handle delete
+                },
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+*/
+
+  @override
+  DataRow? getRow(int index) {
+    final pageStart = currentPage * pageSize;
+    final pageEnd = pageStart + pageSize;
+    if (index < pageStart || index >= pageEnd) {
+      return null;
+    }
+
+    final localIndex = index - pageStart;
+
+    if (localIndex >= employees.length || localIndex < 0) {
+      return null;
+    }
+
+    final employee = employees[localIndex];
+
+    return DataRow.byIndex(
+      index: index,
+      cells: [
+        DataCell(Text("${employee.user.firstName} ${employee.user.lastName}")),
+        DataCell(Text(employee.jobTitle.toString())),
+        DataCell(Text(employee.user.email ?? " ")),
+        DataCell(Text(employee.user.phoneNumber ?? "")),
         DataCell(
           Container(
             padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
@@ -471,10 +692,15 @@ class EmployeeDataSource extends DataTableSource {
   bool get isRowCountApproximate => false;
 
   @override
-  int get rowCount => employees.length;
+  int get rowCount => count ?? employees.length;
 
   @override
   int get selectedRowCount => 0;
+
+  @override
+  void notifyListeners() {
+    super.notifyListeners();
+  }
 }
 
 class StatusDropdown extends StatelessWidget {
@@ -489,7 +715,7 @@ class StatusDropdown extends StatelessWidget {
   final String name;
   final String? selectedValue;
   final Map<String, String?> options;
-  final ValueChanged<String> onChanged;
+  final ValueChanged<String?> onChanged;
 
   @override
   Widget build(BuildContext context) {
@@ -537,9 +763,9 @@ class StatusDropdown extends StatelessWidget {
             );
           }).toList(),
           onChanged: (String? newValue) {
-            if (newValue != null) {
-              onChanged(newValue);
-            }
+            //if (newValue != null) {
+            onChanged(newValue);
+            //}
           },
           selectedItemBuilder: (BuildContext context) {
             return options.entries.map((entry) {

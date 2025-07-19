@@ -1,4 +1,4 @@
 class SearchResult<T> {
-  int? count = null;
+  int? totalCount = null;
   List<T> result = [];
 }

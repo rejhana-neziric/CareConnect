@@ -8,4 +8,9 @@ class EmployeeProvider extends BaseProvider<Employee> {
   Employee fromJson(data) {
     return Employee.fromJson(data);
   }
+
+  @override
+  int getId(Employee item) {
+    return item.user.userId;
+  }
 }

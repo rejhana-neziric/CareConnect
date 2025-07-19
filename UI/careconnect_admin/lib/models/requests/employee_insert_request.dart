@@ -1,0 +1,29 @@
+import 'package:careconnect_admin/models/requests/qualification_insert_request.dart';
+import 'package:careconnect_admin/models/requests/user_insert_request.dart';
+
+import 'package:json_annotation/json_annotation.dart';
+
+part 'employee_insert_request.g.dart'; // Don't open or edit this
+
+@JsonSerializable()
+class EmployeeInsertRequest {
+  final DateTime hireDate;
+  final String jobTitle;
+  final UserInsertRequest user;
+  final QualificationInsertRequest? qualification;
+
+  EmployeeInsertRequest({
+    required this.hireDate,
+    required this.jobTitle,
+    required this.user,
+    this.qualification,
+  });
+
+  /// Connect the generated [_$UserInsertRequestFromJson] function to the `fromJson`
+  /// factory.
+  factory EmployeeInsertRequest.fromJson(Map<String, dynamic> json) =>
+      _$EmployeeInsertRequestFromJson(json);
+
+  /// Connect the generated [_$UserToJson] function to the `toJson` method.
+  Map<String, dynamic> toJson() => _$EmployeeInsertRequestToJson(this);
+}

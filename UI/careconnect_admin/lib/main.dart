@@ -1,25 +1,12 @@
-import 'package:careconnect_admin/models/user.dart';
 import 'package:careconnect_admin/providers/attendance_status_provider.dart';
 import 'package:careconnect_admin/providers/auth_provider.dart';
+import 'package:careconnect_admin/providers/employee_form_provider.dart';
 import 'package:careconnect_admin/providers/employee_provider.dart';
 import 'package:careconnect_admin/screens/employee_list_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:careconnect_admin/models/employee.dart';
-import 'theme/theme.dart';
 
 void main() {
-  // final dummy = Employee(
-  //   hireDate: DateTime.now(),
-  //   jobTitle: 'Developer',
-  //   user: User(
-  //     firstName: 'John',
-  //     lastName: 'Doe',
-  //     email: 'john.doe@example.com',
-  //     username: 'johndoe',
-  //   ),
-  // );
-
   runApp(
     MultiProvider(
       providers: [
@@ -29,6 +16,7 @@ void main() {
         ChangeNotifierProvider<AttendanceStatusProvider>(
           create: (_) => AttendanceStatusProvider(),
         ),
+        ChangeNotifierProvider(create: (_) => EmployeeFormProvider()),
       ],
       child: const MyApp(),
     ),

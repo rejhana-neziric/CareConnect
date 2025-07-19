@@ -1,39 +1,38 @@
 import 'package:json_annotation/json_annotation.dart';
 
-part 'user.g.dart'; // Don't open or edit this
+part 'user_insert_request.g.dart';
 
 @JsonSerializable()
-class User {
-  final int userId;
+class UserInsertRequest {
   final String firstName;
   final String lastName;
   final String? email;
   final String? phoneNumber;
   final String username;
+  final String password;
+  final String confirmationPassword;
   final DateTime? birthDate;
   final String gender;
   final String? address;
-  final bool status;
-  //final List<UserRoleResponse> usersRoles;
 
-  User({
-    required this.userId,
+  UserInsertRequest({
     required this.firstName,
     required this.lastName,
     this.email,
     this.phoneNumber,
     required this.username,
+    required this.password,
+    required this.confirmationPassword,
     this.birthDate,
     required this.gender,
     this.address,
-    required this.status,
-    //required this.usersRoles,
   });
 
   /// Connect the generated [_$EmployeeFromJson] function to the `fromJson`
   /// factory.
-  factory User.fromJson(Map<String, dynamic> json) => _$UserFromJson(json);
+  factory UserInsertRequest.fromJson(Map<String, dynamic> json) =>
+      _$UserInsertRequestFromJson(json);
 
   /// Connect the generated [_$UserToJson] function to the `toJson` method.
-  Map<String, dynamic> toJson() => _$UserToJson(this);
+  Map<String, dynamic> toJson() => _$UserInsertRequestToJson(this);
 }

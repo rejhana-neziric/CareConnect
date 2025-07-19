@@ -6,7 +6,7 @@ namespace CareConnect.Models.Responses
 {
     public class User
     {
-        //public int UserId { get; set; }
+        public int UserId { get; set; }
 
         public string FirstName { get; set; } = null!;
 
@@ -22,15 +22,15 @@ namespace CareConnect.Models.Responses
 
         //public string PasswordSalt { get; set; } = null!;
 
-        //public bool Status { get; set; }
+        public bool Status { get; set; }
 
-        //public DateOnly? BirthDate { get; set; }
+        public DateTime? BirthDate { get; set; }
 
         //public DateTime ModifiedDate { get; set; }
 
-        //public string Gender { get; set; } = null!;
+        public string Gender { get; set; } = null!;
 
-        //public string? Address { get; set; }
+        public string? Address { get; set; }
 
         public virtual ICollection<UsersRole> UsersRoles { get; set; } = new List<UsersRole>();
     }

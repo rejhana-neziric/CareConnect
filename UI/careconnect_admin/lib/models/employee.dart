@@ -1,3 +1,4 @@
+import 'package:careconnect_admin/models/qualification.dart';
 import 'package:careconnect_admin/models/user.dart';
 import 'package:json_annotation/json_annotation.dart';
 
@@ -5,18 +6,22 @@ part 'employee.g.dart';
 
 @JsonSerializable(explicitToJson: true)
 class Employee {
-  DateTime hireDate;
-  DateTime? endDate;
-  bool employed;
-  String? jobTitle;
-  User? user;
+  final DateTime hireDate;
+  final DateTime? endDate;
+  final String jobTitle;
+  final DateTime modifiedDate;
+  final User user;
+  final Qualification? qualification;
+
+  bool get employed => endDate == null;
 
   Employee({
     required this.hireDate,
     this.endDate,
-    required this.employed,
-    this.jobTitle,
-    this.user,
+    required this.jobTitle,
+    required this.modifiedDate,
+    required this.user,
+    this.qualification,
   });
 
   /// Connect the generated [_$EmployeeFromJson] function to the `fromJson`

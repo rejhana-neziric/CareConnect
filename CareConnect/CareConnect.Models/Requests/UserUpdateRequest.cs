@@ -14,6 +14,8 @@ namespace CareConnect.Models.Requests
 
         public string? ConfirmationPassword { get; set; } = null!;
 
+        public string? Email { get; set; }
+
         public bool? Status { get; set; }
 
         public string? Address { get; set; }

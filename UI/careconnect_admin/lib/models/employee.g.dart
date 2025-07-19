@@ -11,17 +11,19 @@ Employee _$EmployeeFromJson(Map<String, dynamic> json) => Employee(
   endDate: json['endDate'] == null
       ? null
       : DateTime.parse(json['endDate'] as String),
-  employed: json['employed'] as bool,
-  jobTitle: json['jobTitle'] as String?,
-  user: json['user'] == null
+  jobTitle: json['jobTitle'] as String,
+  modifiedDate: DateTime.parse(json['modifiedDate'] as String),
+  user: User.fromJson(json['user'] as Map<String, dynamic>),
+  qualification: json['qualification'] == null
       ? null
-      : User.fromJson(json['user'] as Map<String, dynamic>),
+      : Qualification.fromJson(json['qualification'] as Map<String, dynamic>),
 );
 
 Map<String, dynamic> _$EmployeeToJson(Employee instance) => <String, dynamic>{
   'hireDate': instance.hireDate.toIso8601String(),
   'endDate': instance.endDate?.toIso8601String(),
-  'employed': instance.employed,
   'jobTitle': instance.jobTitle,
-  'user': instance.user?.toJson(),
+  'modifiedDate': instance.modifiedDate.toIso8601String(),
+  'user': instance.user.toJson(),
+  'qualification': instance.qualification?.toJson(),
 };

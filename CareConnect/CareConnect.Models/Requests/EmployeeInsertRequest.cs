@@ -14,6 +14,9 @@ namespace CareConnect.Models.Requests
         public string JobTitle { get; set; } = string.Empty;
 
         [JsonIgnore]
+        public bool Employed { get; set; } = true; 
+
+        [JsonIgnore]
         public DateTime ModifiedDate { get; set; } = DateTime.Now;
 
         public UserInsertRequest User {  get; set; }

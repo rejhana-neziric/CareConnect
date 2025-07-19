@@ -1,6 +1,5 @@
 import 'package:careconnect_admin/screens/client_list_screen.dart';
 import 'package:careconnect_admin/screens/employee_list_screen.dart';
-import 'package:careconnect_admin/theme/app_colors_extension.dart';
 import 'package:flutter/material.dart';
 
 class MasterScreen extends StatefulWidget {

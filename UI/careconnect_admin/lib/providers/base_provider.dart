@@ -9,12 +9,26 @@ abstract class BaseProvider<T> with ChangeNotifier {
   static String? _baseUrl;
   String _endpoint = "";
 
+  SearchResult<T> _items = SearchResult<T>();
+  SearchResult<T> get item => _items;
+
+  bool shouldRefresh = false;
+
   BaseProvider(String endpoint) {
     _endpoint = endpoint;
     _baseUrl = const String.fromEnvironment(
       "baseUrl",
       defaultValue: "http://localhost:5241/",
     );
+  }
+
+  void markShouldRefresh() {
+    shouldRefresh = true;
+    notifyListeners();
+  }
+
+  void markRefreshed() {
+    shouldRefresh = false;
   }
 
   Future<SearchResult<T>> get({dynamic filter}) async {
@@ -35,17 +49,21 @@ abstract class BaseProvider<T> with ChangeNotifier {
 
       var result = SearchResult<T>();
 
-      result.count = data['count'];
+      result.totalCount = data['totalCount'];
+
+      _items = SearchResult<T>();
 
       for (var item in data['resultList']) {
         result.result.add(fromJson(item));
+        _items = result;
       }
+
+      notifyListeners();
 
       return result;
     } else {
       throw new Exception("Unknown error");
     }
-    // print("response: ${response.request} ${response.statusCode}, ${response.body}");
   }
 
   Future<T> insert(dynamic request) async {
@@ -58,7 +76,10 @@ abstract class BaseProvider<T> with ChangeNotifier {
 
     if (isValidResponse(response)) {
       var data = jsonDecode(response.body);
-      return fromJson(data);
+      var inserted = fromJson(data);
+      _items.result.add(inserted);
+      notifyListeners();
+      return inserted;
     } else {
       throw new Exception("Unknown error");
     }
@@ -74,6 +95,12 @@ abstract class BaseProvider<T> with ChangeNotifier {
 
     if (isValidResponse(response)) {
       var data = jsonDecode(response.body);
+      var updated = fromJson(data);
+      var index = _items.result.indexWhere((e) => getId(e) == id);
+      if (index != -1) {
+        _items.result[index] = updated;
+        notifyListeners();
+      }
       return fromJson(data);
     } else {
       throw new Exception("Unknown error");
@@ -83,6 +110,12 @@ abstract class BaseProvider<T> with ChangeNotifier {
   T fromJson(data) {
     throw Exception("Method not implemented");
   }
+
+  int getId(T item) {
+    throw Exception("Method not implemented");
+  }
+
+  // todo: delete
 
   bool isValidResponse(Response response) {
     if (response.statusCode < 299) {
