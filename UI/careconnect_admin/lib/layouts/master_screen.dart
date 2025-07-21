@@ -128,7 +128,7 @@ class _MasterScreenState extends State<MasterScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Padding(
-                  padding: const EdgeInsets.all(64.0),
+                  padding: const EdgeInsets.all(32.0),
                   child: Text(
                     widget.title,
                     style: Theme.of(context).textTheme.titleMedium,

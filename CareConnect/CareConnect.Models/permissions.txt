@@ -3,7 +3,7 @@ Child: Get, GetById, Insert, Update, Delete
 ChildrenDiagnosis: Get, GetById, Insert, Update, Delete
 Client: Get, GetById, Insert, Update, Delete, GetChildren, AddChildren
 EmployeeAvailability: Get, GetById, Insert, Update, Delete
-Employee: Get, GetById, Insert, Update, Delete
+Employee: Get, GetById, Insert, Update, Delete, GetStatistics
 EmployeePayHistory: Get, GetById, Insert, Update, Delete
 Instructor: Get, GetById, Insert, Update, Delete
 Member: Get, GetById, Insert, Update, Delete

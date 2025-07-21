@@ -12,6 +12,8 @@ using Mapster;
 using CareConnect.Services.Helpers;
 using CareConnect.Models.SearchObjects;
 using System.Globalization;
+using CareConnect.Models.Responses;
+using Microsoft.EntityFrameworkCore.Internal;
 
 namespace CareConnect.Services
 {
@@ -85,7 +87,7 @@ namespace CareConnect.Services
             return query;
         }
 
-        protected override void AddInclude(EmployeeAdditionalData additionalData, ref IQueryable<Employee> query)
+        protected override void AddInclude(EmployeeAdditionalData additionalData, ref IQueryable<Database.Employee> query)
         {
             if (additionalData != null)
             {
@@ -108,7 +110,7 @@ namespace CareConnect.Services
             base.AddInclude(additionalData, ref query);
         }
 
-        public override void BeforeInsert(EmployeeInsertRequest request, Employee entity)
+        public override void BeforeInsert(EmployeeInsertRequest request, Database.Employee entity)
         {
             if (request.User.Password != request.User.ConfirmationPassword)
                 throw new Exception("Password and confirmation password must be same.");
@@ -119,7 +121,7 @@ namespace CareConnect.Services
             base.BeforeInsert(request, entity);
         }
 
-        public override void BeforeUpdate(EmployeeUpdateRequest request, ref Employee entity)
+        public override void BeforeUpdate(EmployeeUpdateRequest request, ref Database.Employee entity)
         {
             if (request.User != null)
             {
@@ -147,7 +149,7 @@ namespace CareConnect.Services
             base.BeforeUpdate(request, ref entity);
         }
 
-        public override Employee GetByIdWithIncludes(int id)
+        public override Database.Employee GetByIdWithIncludes(int id)
         {
             return Context.Employees
                 .Include(e => e.EmployeeAvailabilities)
@@ -159,7 +161,7 @@ namespace CareConnect.Services
                 .First(e => e.EmployeeId == id);
         }
 
-        public override void BeforeDelete(Employee entity)
+        public override void BeforeDelete(Database.Employee entity)
         {
             if (entity.Qualification != null)
                 Context.Remove(entity.Qualification);
@@ -184,6 +186,18 @@ namespace CareConnect.Services
             }
 
             base.AfterDelete(id);
+        }
+
+        public EmployeeStatistics GetStatistics()
+        {
+            var now = DateTime.Now;
+
+            return new EmployeeStatistics
+            {
+                TotalEmployees = Context.Employees.Count(),
+                EmployedThisMonth = Context.Employees.Count(e => e.HireDate.Month == now.Month && e.HireDate.Year == now.Year),
+                CurrentlyEmployed = Context.Employees.Count(e => e.EndDate == null),
+            };
         }
     }
 }

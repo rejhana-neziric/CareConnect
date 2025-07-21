@@ -72,6 +72,7 @@ class _EmployeeListScreenState extends State<EmployeeListScreen> {
   void initState() {
     super.initState();
     provider = context.read<EmployeeProvider>();
+    loadData();
 
     if (provider.shouldRefresh) {
       loadData();
@@ -105,15 +106,11 @@ class _EmployeeListScreenState extends State<EmployeeListScreen> {
 
     result = newResult;
 
-    if (page == 0) {
-      totalEmployees = result?.totalCount;
-      currentlyEmployeed = result?.result
-          .where((e) => e.endDate == null)
-          .length;
-      newThisMonth = result?.result
-          .where((e) => e.hireDate.month == DateTime.now().month)
-          .length;
-    }
+    final statistics = await provider.getStatistics();
+
+    totalEmployees = statistics['totalEmployees'];
+    currentlyEmployeed = statistics['currentlyEmployed'];
+    newThisMonth = statistics['employedThisMonth'];
 
     if (mounted) {
       setState(() {});
@@ -390,10 +387,10 @@ class _EmployeeListScreenState extends State<EmployeeListScreen> {
 }
 
 class EmployeeTable extends StatefulWidget {
-  SearchResult<Employee>? result;
+  final SearchResult<Employee>? result;
   final Future<SearchResult<Employee>?> Function({int page}) onPageChanged;
 
-  EmployeeTable({super.key, this.result, required this.onPageChanged});
+  const EmployeeTable({super.key, this.result, required this.onPageChanged});
 
   @override
   State<EmployeeTable> createState() => _EmployeeTableState();
@@ -435,19 +432,18 @@ class _EmployeeTableState extends State<EmployeeTable> {
   }
 
   Future<void> _fetchPage(int page) async {
-    if (_isLoading) return;
+    if (_isLoading || page == _currentPage) return;
 
     setState(() {
       _isLoading = true;
+      _currentPage = page;
     });
 
     try {
-      final result = await widget.onPageChanged(page: page);
+      await widget.onPageChanged(page: page);
 
       if (mounted) {
         setState(() {
-          _currentPage = page;
-          widget.result = result;
           _isLoading = false;
         });
       }
@@ -455,6 +451,7 @@ class _EmployeeTableState extends State<EmployeeTable> {
       if (mounted) {
         setState(() {
           _isLoading = false;
+          _currentPage = _currentPage > 0 ? _currentPage - 1 : 0;
         });
       }
 
@@ -467,7 +464,7 @@ class _EmployeeTableState extends State<EmployeeTable> {
   @override
   Widget build(BuildContext context) {
     final employees = widget.result?.result ?? [];
-    final totalCount = widget.result?.totalCount ?? 0;
+    //final totalCount = widget.result?.totalCount ?? 0;
 
     if (_isLoading && employees.isEmpty) {
       return const Center(child: CircularProgressIndicator());
@@ -480,7 +477,8 @@ class _EmployeeTableState extends State<EmployeeTable> {
     return Stack(
       children: [
         PaginatedDataTable2(
-          key: ValueKey(widget.result?.result.hashCode),
+          //key: ValueKey(widget.result?.result.hashCode),
+          key: ValueKey('${widget.result?.result.hashCode}_$_currentPage'),
           columns: const [
             DataColumn2(label: Text('Employee Name')),
             DataColumn2(label: Text('Job Title')),
@@ -501,9 +499,6 @@ class _EmployeeTableState extends State<EmployeeTable> {
           rowsPerPage: _pageSize,
           onPageChanged: (start) {
             final newPage = start ~/ _pageSize;
-            print(
-              'PaginatedDataTable2 page changed to: $newPage, start: $start',
-            );
             if (newPage != _currentPage && !_isLoading) {
               _fetchPage(newPage);
             }
@@ -543,87 +538,16 @@ class EmployeeDataSource extends DataTableSource {
     this.pageSize = 10,
     this.currentPage = 0,
   });
-  /*
-  @override
-  DataRow? getRow(int index) {
-    if (index >= employees.length) return null;
-    final employee = employees[index];
-
-    return DataRow.byIndex(
-      index: index,
-      cells: [
-        DataCell(Text("${employee.user.firstName} ${employee.user.lastName}")),
-        DataCell(Text(employee.jobTitle.toString())),
-        DataCell(Text(employee.user.email ?? " ")),
-        DataCell(Text(employee.user.phoneNumber ?? "")),
-        DataCell(
-          Container(
-            padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-            decoration: BoxDecoration(
-              color: employee.endDate == null
-                  ? Colors.green.shade50
-                  : Colors.red.shade50,
-              border: Border.all(
-                color: employee.endDate == null ? Colors.green : Colors.red,
-              ),
-              borderRadius: BorderRadius.circular(20),
-            ),
-            child: Text(
-              employee.endDate == null ? "Employed" : "Not Employed",
-              style: TextStyle(
-                color: employee.endDate == null ? Colors.green : Colors.red,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ),
-        ),
-        DataCell(
-          Row(
-            children: [
-              IconButton(
-                icon: const Icon(Icons.edit_outlined, color: Colors.grey),
-                tooltip: 'Edit',
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) =>
-                          EmployeeDetailsScreen(employee: employee),
-                    ),
-                  );
-                },
-              ),
-              IconButton(
-                icon: const Icon(
-                  Icons.delete_outline_outlined,
-                  color: Colors.grey,
-                ),
-                tooltip: 'Delete',
-                onPressed: () {
-                  // Handle delete
-                },
-              ),
-            ],
-          ),
-        ),
-      ],
-    );
-  }
-*/
 
   @override
   DataRow? getRow(int index) {
-    final pageStart = currentPage * pageSize;
-    final pageEnd = pageStart + pageSize;
-    if (index < pageStart || index >= pageEnd) {
-      return null;
-    }
+    final requestedPage = index ~/ pageSize;
 
-    final localIndex = index - pageStart;
+    if (requestedPage != currentPage) return null;
 
-    if (localIndex >= employees.length || localIndex < 0) {
-      return null;
-    }
+    final localIndex = index % pageSize;
+
+    if (localIndex < 0 || localIndex >= employees.length) return null;
 
     final employee = employees[localIndex];
 

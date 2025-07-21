@@ -6,6 +6,6 @@ namespace CareConnect.Services
 {
     public interface IEmployeeService : ICRUDService<Employee, EmployeeSearchObject, EmployeeAdditionalData, EmployeeInsertRequest, EmployeeUpdateRequest>
     {
-
+        public EmployeeStatistics GetStatistics(); 
     }
 }

@@ -12,6 +12,9 @@ abstract class BaseProvider<T> with ChangeNotifier {
   SearchResult<T> _items = SearchResult<T>();
   SearchResult<T> get item => _items;
 
+  String get baseUrl => _baseUrl ?? "";
+  String get endpoint => _endpoint;
+
   bool shouldRefresh = false;
 
   BaseProvider(String endpoint) {
