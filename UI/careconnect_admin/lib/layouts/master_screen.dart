@@ -1,12 +1,14 @@
 import 'package:careconnect_admin/screens/client_list_screen.dart';
 import 'package:careconnect_admin/screens/employee_list_screen.dart';
+import 'package:careconnect_admin/theme/app_colors.dart';
 import 'package:flutter/material.dart';
 
 class MasterScreen extends StatefulWidget {
-  MasterScreen(this.title, this.child, {super.key});
+  MasterScreen(this.title, this.child, {super.key, this.button});
 
   final String title;
   final Widget child;
+  final Widget? button;
 
   @override
   State<MasterScreen> createState() => _MasterScreenState();
@@ -16,12 +18,14 @@ class _MasterScreenState extends State<MasterScreen> {
   @override
   Widget build(BuildContext context) {
     //final appColors = Theme.of(context).extension<AppColors>()!;
+    // final theme = Theme.of(context);
+    // final colorScheme = theme.colorScheme;
     return Scaffold(
       body: Row(
         children: [
           Container(
             width: 250,
-            //color: appColors.primaryLight ?? Colors.purple,
+            color: AppColors.softLavender,
             child: Column(
               children: [
                 Container(
@@ -30,8 +34,9 @@ class _MasterScreenState extends State<MasterScreen> {
                   child: const Text(
                     'CareConnect',
                     style: TextStyle(
-                      color: Color.fromARGB(255, 49, 43, 43),
-                      fontSize: 20,
+                      color: AppColors.mauveGray,
+                      fontSize: 30,
+                      fontWeight: FontWeight.w700,
                     ),
                   ),
                 ),
@@ -128,11 +133,38 @@ class _MasterScreenState extends State<MasterScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Padding(
-                  padding: const EdgeInsets.all(32.0),
-                  child: Text(
-                    widget.title,
-                    style: Theme.of(context).textTheme.titleMedium,
+                  padding: const EdgeInsets.only(
+                    top: 32.0,
+                    left: 32.0,
+                    right: 32.0,
                   ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        widget.title,
+                        style: TextStyle(
+                          color: AppColors.mauveGray,
+                          fontSize: 25,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+
+                      if (widget.button != null) ...[
+                        const SizedBox(width: 8),
+                        widget.button!,
+                      ],
+                    ],
+                  ),
+
+                  // child: Text(
+                  //   widget.title,
+                  //   style: TextStyle(
+                  //     color: AppColors.mauveGray,
+                  //     fontSize: 25,
+                  //     fontWeight: FontWeight.w700,
+                  //   ),
+                  // ),
                 ),
                 Expanded(
                   child: Container(

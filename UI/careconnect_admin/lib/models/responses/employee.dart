@@ -1,5 +1,5 @@
-import 'package:careconnect_admin/models/qualification.dart';
-import 'package:careconnect_admin/models/user.dart';
+import 'package:careconnect_admin/models/responses/qualification.dart';
+import 'package:careconnect_admin/models/responses/user.dart';
 import 'package:json_annotation/json_annotation.dart';
 
 part 'employee.g.dart';
@@ -10,7 +10,7 @@ class Employee {
   final DateTime? endDate;
   final String jobTitle;
   final DateTime modifiedDate;
-  final User user;
+  final User? user;
   final Qualification? qualification;
 
   bool get employed => endDate == null;
@@ -20,7 +20,7 @@ class Employee {
     this.endDate,
     required this.jobTitle,
     required this.modifiedDate,
-    required this.user,
+    this.user,
     this.qualification,
   });
 

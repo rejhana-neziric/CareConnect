@@ -45,9 +45,16 @@ namespace CareConnect.Services
                 query = query.Where(x => x.BirthDate <= mappedBirthDate);
             }
 
-            if (search?.Gender.HasValue == true)
+            
+
+            //if (search?.Gender.HasValue == true)
+            //{
+            //    query = query.Where(x => search.Gender.Value.ToString().StartsWith(x.Gender.ToString()));
+            //}
+
+            if (!string.IsNullOrWhiteSpace(search?.Gender))
             {
-                query = query.Where(x => search.Gender.Value.ToString().StartsWith(x.Gender.ToString()));
+                query = query.Where(x => search.Gender.StartsWith(x.Gender.ToString()));
             }
 
             return query;

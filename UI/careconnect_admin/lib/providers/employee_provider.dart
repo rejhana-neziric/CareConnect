@@ -1,6 +1,6 @@
 import 'dart:convert';
 
-import 'package:careconnect_admin/models/employee.dart';
+import 'package:careconnect_admin/models/responses/employee.dart';
 import 'package:careconnect_admin/providers/base_provider.dart';
 import 'package:http/http.dart' as http;
 
@@ -13,8 +13,8 @@ class EmployeeProvider extends BaseProvider<Employee> {
   }
 
   @override
-  int getId(Employee item) {
-    return item.user.userId;
+  int? getId(Employee item) {
+    return item.user?.userId;
   }
 
   Future<dynamic> getStatistics() async {

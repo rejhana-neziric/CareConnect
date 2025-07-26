@@ -1,15 +1,18 @@
 import 'package:careconnect_admin/layouts/master_screen.dart';
-import 'package:careconnect_admin/models/attendance_status.dart';
-import 'package:careconnect_admin/models/employee.dart';
+import 'package:careconnect_admin/models/responses/attendance_status.dart';
+import 'package:careconnect_admin/models/responses/employee.dart';
 import 'package:careconnect_admin/models/search_objects/employee_additional_data.dart';
 import 'package:careconnect_admin/models/search_objects/employee_search_object.dart';
-import 'package:careconnect_admin/models/search_result.dart';
+import 'package:careconnect_admin/models/responses/search_result.dart';
 import 'package:careconnect_admin/providers/attendance_status_provider.dart';
 import 'package:careconnect_admin/providers/employee_form_provider.dart';
 import 'package:careconnect_admin/providers/employee_provider.dart';
+import 'package:careconnect_admin/widgets/custom_date_field.dart';
+import 'package:careconnect_admin/widgets/custom_dropdown_field.dart';
+import 'package:careconnect_admin/widgets/custom_text_field.dart';
+import 'package:careconnect_admin/widgets/primary_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
-import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
 class EmployeeDetailsScreen extends StatefulWidget {
@@ -77,13 +80,13 @@ class _EmployeeDetailsScreenState extends State<EmployeeDetailsScreen> {
       employeeFormProvider.setForInsert();
     } else {
       employeeFormProvider.setForUpdate({
-        "username": widget.employee?.user.username,
-        "firstName": widget.employee?.user.firstName,
-        "lastName": widget.employee?.user.lastName,
-        "status": widget.employee?.user.status,
-        "email": widget.employee?.user.email,
-        "phoneNumber": widget.employee?.user.phoneNumber,
-        "address": widget.employee?.user.address,
+        "username": widget.employee?.user?.username,
+        "firstName": widget.employee?.user?.firstName,
+        "lastName": widget.employee?.user?.lastName,
+        "status": widget.employee?.user?.status,
+        "email": widget.employee?.user?.email,
+        "phoneNumber": widget.employee?.user?.phoneNumber,
+        "address": widget.employee?.user?.address,
         "hireDate": widget.employee?.hireDate,
         "jobTitle": widget.employee?.jobTitle,
         "qualificationName": widget.employee?.qualification?.name,
@@ -91,8 +94,8 @@ class _EmployeeDetailsScreenState extends State<EmployeeDetailsScreen> {
             widget.employee?.qualification?.instituteName,
         "qualificationProcurementYear":
             widget.employee?.qualification?.procurementYear,
-        "birthDate": widget.employee?.user.birthDate,
-        "gender": widget.employee?.user.gender,
+        "birthDate": widget.employee?.user?.birthDate,
+        "gender": widget.employee?.user?.gender,
       });
     }
 
@@ -156,32 +159,32 @@ class _EmployeeDetailsScreenState extends State<EmployeeDetailsScreen> {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  customTextField(
+                  CustomTextField(
                     width: 400,
                     name: 'firstName',
                     label: 'First Name',
                     validator: employeeFormProvider.validateName,
                     enabled: !employeeFormProvider.isUpdate,
                   ),
-                  customDateField(
+                  CustomTextField(
                     width: 400,
                     name: 'birthDate',
                     label: 'Birth Date',
                     enabled: !employeeFormProvider.isUpdate,
                   ),
-                  customTextField(
+                  CustomTextField(
                     width: 400,
                     name: 'address',
                     label: 'Address',
                     validator: employeeFormProvider.validateAddress,
                   ),
-                  customTextField(
+                  CustomTextField(
                     width: 400,
                     name: 'email',
                     label: 'Email',
                     validator: employeeFormProvider.validateEmail,
                   ),
-                  customTextField(
+                  CustomTextField(
                     width: 400,
                     name: 'username',
                     label: 'Username',
@@ -193,14 +196,14 @@ class _EmployeeDetailsScreenState extends State<EmployeeDetailsScreen> {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  customTextField(
+                  CustomTextField(
                     width: 400,
                     name: 'lastName',
                     label: 'Last Name',
                     validator: employeeFormProvider.validateName,
                     enabled: !employeeFormProvider.isUpdate,
                   ),
-                  customDropdownField<String>(
+                  CustomDropdownField<String>(
                     width: 400,
                     name: 'gender',
                     label: 'Gender',
@@ -211,7 +214,7 @@ class _EmployeeDetailsScreenState extends State<EmployeeDetailsScreen> {
                     validator: employeeFormProvider.validateNonEmpty,
                     enabled: !employeeFormProvider.isUpdate,
                   ),
-                  customTextField(
+                  CustomTextField(
                     width: 400,
                     name: 'phoneNumber',
                     hintText: '61234567',
@@ -219,14 +222,14 @@ class _EmployeeDetailsScreenState extends State<EmployeeDetailsScreen> {
                     label: 'Phone Number',
                     validator: employeeFormProvider.validatePhoneNumber,
                   ),
-                  customTextField(
+                  CustomTextField(
                     width: 400,
                     name: 'password',
                     label: 'Password',
                     validator: (value) =>
                         employeeFormProvider.validatePassword(value),
                   ),
-                  customTextField(
+                  CustomTextField(
                     width: 400,
                     name: 'confirmationPassword',
                     label: 'Confirmation Password',
@@ -245,7 +248,7 @@ class _EmployeeDetailsScreenState extends State<EmployeeDetailsScreen> {
                     enabled: !employeeFormProvider.isUpdate,
                   ),
                   if (employeeFormProvider.isUpdate)
-                    customDropdownField<bool>(
+                    CustomDropdownField<bool>(
                       width: 400,
                       name: 'status',
                       label: 'Status',
@@ -267,13 +270,13 @@ class _EmployeeDetailsScreenState extends State<EmployeeDetailsScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   _buildSectionTitle("Job Details"),
-                  customTextField(
+                  CustomTextField(
                     width: 400,
                     name: 'jobTitle',
                     label: 'Job Title',
                     validator: employeeFormProvider.validateNonEmpty,
                   ),
-                  customDateField(
+                  CustomDateField(
                     width: 400,
                     name: 'hireDate',
                     label: 'Hire Date',
@@ -287,19 +290,19 @@ class _EmployeeDetailsScreenState extends State<EmployeeDetailsScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   _buildSectionTitle("Qualification"),
-                  customTextField(
+                  CustomTextField(
                     width: 400,
                     name: 'qualificationName',
                     label: 'Qualification Name',
                     validator: employeeFormProvider.validateNonEmpty,
                   ),
-                  customTextField(
+                  CustomTextField(
                     width: 400,
                     name: 'qualificationInstituteName',
                     label: 'Qualification Institute Name',
                     validator: employeeFormProvider.validateNonEmpty,
                   ),
-                  customDateField(
+                  CustomDateField(
                     width: 400,
                     name: 'qualificationProcurementYear',
                     label: 'Qualification Procurement Year',
@@ -334,27 +337,14 @@ class _EmployeeDetailsScreenState extends State<EmployeeDetailsScreen> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.end,
         children: [
-          TextButton.icon(
-            onPressed: () {
+          PrimaryButton(
+            onPressed: () async {
               Navigator.pop(context);
             },
-            label: Text(
-              'Cancel',
-              style: TextStyle(
-                color: Colors.white,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-            style: TextButton.styleFrom(
-              backgroundColor: Color(0xFF6A5AE0),
-              padding: EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-            ),
+            label: 'Cancel',
           ),
           SizedBox(width: 10),
-          TextButton.icon(
+          PrimaryButton(
             onPressed: () async {
               final formState = employeeFormProvider.formKey.currentState;
 
@@ -364,7 +354,7 @@ class _EmployeeDetailsScreenState extends State<EmployeeDetailsScreen> {
               }
 
               if (formState.saveAndValidate()) {
-                final id = widget.employee?.user.userId;
+                final id = widget.employee?.user?.userId;
 
                 final isInsert = widget.employee == null;
 
@@ -426,269 +416,10 @@ class _EmployeeDetailsScreenState extends State<EmployeeDetailsScreen> {
                 ).markShouldRefresh();
               }
             },
-            label: Text(
-              'Save',
-              style: TextStyle(
-                color: Colors.white,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-            style: TextButton.styleFrom(
-              backgroundColor: Color(0xFF6A5AE0),
-              padding: EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-            ),
+            label: 'Save',
           ),
         ],
       ),
     );
   }
-}
-
-/*
-class CustomFormField extends StatelessWidget {
-  final String name;
-  final Widget child;
-  final double width;
-
-  const CustomFormField({
-    super.key,
-    required this.name,
-    required this.child,
-    required this.width,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return FormBuilderField<dynamic>(
-      name: name,
-      builder: (FormFieldState<dynamic> field) {
-        return Padding(
-          padding: const EdgeInsets.only(bottom: 16.0),
-          child: SizedBox(
-            width: width,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Border box
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 8,
-                  ),
-                  decoration: BoxDecoration(
-                    border: Border.all(
-                      color: field.hasError ? Colors.red : Colors.grey.shade400,
-                    ),
-                    borderRadius: BorderRadius.circular(8),
-                    color: Colors.white,
-                  ),
-                  child: child,
-                ),
-
-                if (field.hasError)
-                  Padding(
-                    padding: const EdgeInsets.only(top: 4.0, left: 4.0),
-                    child: Text(
-                      field.errorText ?? '',
-                      style: const TextStyle(color: Colors.red, fontSize: 12),
-                    ),
-                  ),
-              ],
-            ),
-          ),
-        );
-      },
-    );
-  }
-}*/
-
-Widget customTextField({
-  required double width,
-  required String name,
-  required String label,
-  String? hintText,
-  String? prefixText,
-  String? Function(String?)? validator,
-  bool enabled = true,
-}) {
-  return Padding(
-    padding: const EdgeInsets.only(bottom: 16.0),
-    child: SizedBox(
-      width: width,
-      child: FormBuilderField<String>(
-        name: name,
-        validator: validator,
-        autovalidateMode: AutovalidateMode.onUserInteraction,
-        builder: (FormFieldState<String?> field) {
-          final controller = TextEditingController(text: field.value);
-          controller.selection = TextSelection.fromPosition(
-            TextPosition(offset: controller.text.length),
-          );
-          return Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 4,
-                ),
-                decoration: BoxDecoration(
-                  border: Border.all(color: Colors.grey.shade400),
-                  borderRadius: BorderRadius.circular(8),
-                  color: Colors.white,
-                ),
-                child: TextField(
-                  controller: controller,
-                  enabled: enabled,
-                  onChanged: field.didChange,
-                  decoration: InputDecoration(
-                    labelText: label,
-                    border: InputBorder.none,
-                    hintText: hintText,
-                    prefixText: prefixText,
-                  ),
-                ),
-              ),
-              if (field.hasError)
-                Padding(
-                  padding: const EdgeInsets.only(top: 4.0, left: 4.0),
-                  child: Text(
-                    field.errorText ?? '',
-                    style: const TextStyle(color: Colors.red, fontSize: 12),
-                  ),
-                ),
-            ],
-          );
-        },
-      ),
-    ),
-  );
-}
-
-Widget customDropdownField<T>({
-  required double width,
-  required String name,
-  required String label,
-  required List<DropdownMenuItem<T>> items,
-  String? Function(T?)? validator,
-  bool enabled = true,
-}) {
-  return Padding(
-    padding: const EdgeInsets.only(bottom: 16.0),
-    child: SizedBox(
-      width: width,
-      child: FormBuilderField<T>(
-        name: name,
-        validator: validator,
-        autovalidateMode: AutovalidateMode.onUserInteraction,
-        builder: (FormFieldState<T?> field) {
-          return Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 4,
-                ),
-                decoration: BoxDecoration(
-                  border: Border.all(color: Colors.grey.shade400),
-                  borderRadius: BorderRadius.circular(8),
-                  color: Colors.white,
-                ),
-                child: DropdownButton<T>(
-                  isExpanded: true,
-                  value: field.value,
-                  onChanged: enabled ? field.didChange : null,
-                  hint: Text(label),
-                  underline: const SizedBox(),
-                  items: items,
-                ),
-              ),
-              if (field.hasError)
-                Padding(
-                  padding: const EdgeInsets.only(top: 4.0, left: 4.0),
-                  child: Text(
-                    field.errorText ?? '',
-                    style: const TextStyle(color: Colors.red, fontSize: 12),
-                  ),
-                ),
-            ],
-          );
-        },
-      ),
-    ),
-  );
-}
-
-Widget customDateField({
-  required double width,
-  required String name,
-  required String label,
-  String? Function(DateTime?)? validator,
-  bool enabled = true,
-}) {
-  return Padding(
-    padding: const EdgeInsets.only(bottom: 16.0),
-
-    child: SizedBox(
-      width: width,
-      child: FormBuilderField<DateTime>(
-        name: name,
-        validator: validator,
-        autovalidateMode: AutovalidateMode.onUserInteraction,
-        builder: (field) {
-          return Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 17,
-                ),
-                decoration: BoxDecoration(
-                  border: Border.all(color: Colors.grey.shade400),
-                  borderRadius: BorderRadius.circular(8),
-                  color: Colors.white,
-                ),
-                child: InkWell(
-                  onTap: enabled
-                      ? () async {
-                          final picked = await showDatePicker(
-                            context: field.context,
-                            initialDate: field.value ?? DateTime.now(),
-                            firstDate: DateTime(1900),
-                            lastDate: DateTime(2100),
-                          );
-                          if (picked != null) field.didChange(picked);
-                        }
-                      : null,
-                  child: Align(
-                    alignment: Alignment.centerLeft,
-                    child: Text(
-                      field.value != null
-                          ? DateFormat('dd/MM/yyyy').format(field.value!)
-                          : label,
-                      style: TextStyle(fontSize: 16),
-                    ),
-                  ),
-                ),
-              ),
-              if (field.hasError)
-                Padding(
-                  padding: const EdgeInsets.only(top: 4.0, left: 4.0),
-                  child: Text(
-                    field.errorText ?? '',
-                    style: const TextStyle(color: Colors.red, fontSize: 12),
-                  ),
-                ),
-            ],
-          );
-        },
-      ),
-    ),
-  );
 }

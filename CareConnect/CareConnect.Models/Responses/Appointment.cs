@@ -21,5 +21,6 @@ namespace CareConnect.Models.Responses
         public virtual EmployeeAvailability EmployeeAvailability { get; set; } = null!;
 
         public virtual User User { get; set; } = null!;
+
     }
 }

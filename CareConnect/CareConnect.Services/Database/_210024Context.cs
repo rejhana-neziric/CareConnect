@@ -90,7 +90,7 @@ public partial class CareConnectContext : DbContext
                 .HasColumnType("text")
                 .HasColumnName("NOTE");
             entity.Property(e => e.StateMachine).HasMaxLength(50);
-            entity.Property(e => e.UserId).HasColumnName("UserID");
+            
 
             entity.HasOne(d => d.AttendanceStatus).WithMany(p => p.Appointments)
                 .HasForeignKey(d => d.AttendanceStatusId)
@@ -102,10 +102,12 @@ public partial class CareConnectContext : DbContext
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_Appointments_EmployeeAvailability");
 
-            entity.HasOne(d => d.User).WithMany(p => p.Appointments)
-                .HasForeignKey(d => d.UserId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK_Appointments_Users");
+            entity.HasOne(d => d.ClientsChild)
+                     .WithMany(p => p.Appointments)
+                     .HasForeignKey(d => new { d.ClientId, d.ChildId })
+                     .OnDelete(DeleteBehavior.Cascade)
+                     .HasConstraintName("FK_Appointments_ClientsChildren");
+
         });
 
         modelBuilder.Entity<AttendanceStatus>(entity =>

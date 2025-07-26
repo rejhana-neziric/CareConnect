@@ -66,15 +66,15 @@ namespace CareConnect.Services
                 query = query.Where(x => x.EmployeeAvailability.EndTime == search.EndTime);
             }
 
-            if (!string.IsNullOrWhiteSpace(search?.UserFirstNameGTE))
-            {
-                query = query.Where(x => x.User.FirstName.StartsWith(search.UserFirstNameGTE));
-            }
+            //if (!string.IsNullOrWhiteSpace(search?.UserFirstNameGTE))
+            //{
+            //    query = query.Where(x => x.User.FirstName.StartsWith(search.UserFirstNameGTE));
+            //}
 
-            if (!string.IsNullOrWhiteSpace(search?.UserLastNameGTE))
-            {
-                query = query.Where(x => x.User.LastName.StartsWith(search.UserLastNameGTE));
-            }
+            //if (!string.IsNullOrWhiteSpace(search?.UserLastNameGTE))
+            //{
+            //    query = query.Where(x => x.User.LastName.StartsWith(search.UserLastNameGTE));
+            //}
 
             return query;
         }
@@ -111,7 +111,7 @@ namespace CareConnect.Services
         public override Database.Appointment GetByIdWithIncludes(int id)
         {
             return Context.Appointments
-                .Include(u => u.User)
+                //.Include(u => u.User)
                 .Include(e => e.EmployeeAvailability)
                 .Include(a => a.AttendanceStatus)
                 .First(a => a.AppointmentId == id);

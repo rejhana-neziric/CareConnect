@@ -1,10 +1,14 @@
 import 'package:careconnect_admin/layouts/master_screen.dart';
-import 'package:careconnect_admin/models/employee.dart';
+import 'package:careconnect_admin/models/responses/employee.dart';
 import 'package:careconnect_admin/models/search_objects/employee_additional_data.dart';
 import 'package:careconnect_admin/models/search_objects/employee_search_object.dart';
-import 'package:careconnect_admin/models/search_result.dart';
+import 'package:careconnect_admin/models/responses/search_result.dart';
 import 'package:careconnect_admin/providers/employee_provider.dart';
 import 'package:careconnect_admin/screens/employee_details_screen.dart';
+import 'package:careconnect_admin/theme/app_colors.dart';
+import 'package:careconnect_admin/widgets/custom_dropdown_fliter.dart';
+import 'package:careconnect_admin/widgets/primary_button.dart';
+
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
@@ -123,6 +127,9 @@ class _EmployeeListScreenState extends State<EmployeeListScreen> {
   Widget build(BuildContext context) {
     return MasterScreen(
       "Employees",
+      // SingleChildScrollView(
+      //   padding: const EdgeInsets.all(16), // optional for spacing
+      //   child:
       Column(
         children: [
           _buildOverview(),
@@ -138,42 +145,47 @@ class _EmployeeListScreenState extends State<EmployeeListScreen> {
           ),
         ],
       ),
+      button: SizedBox(
+        child: Align(
+          alignment: Alignment.topRight,
+          child: PrimaryButton(
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => EmployeeDetailsScreen(employee: null),
+                ),
+              );
+            },
+            label: 'Add Employee',
+            icon: Icons.person_add_alt_1,
+          ),
+        ),
+      ),
+      // ),
     );
   }
 
   Widget _buildOverview() {
     return Column(
       children: [
-        SizedBox(
-          child: Align(
-            alignment: Alignment.topRight,
-            child: TextButton.icon(
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => EmployeeDetailsScreen(employee: null),
-                  ),
-                );
-              },
-              icon: Icon(Icons.person_add_alt_1, color: Colors.white),
-              label: Text(
-                'Add Employee',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-              style: TextButton.styleFrom(
-                backgroundColor: Color(0xFF6A5AE0),
-                padding: EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-              ),
-            ),
-          ),
-        ),
+        // SizedBox(
+        //   child: Align(
+        //     alignment: Alignment.topRight,
+        //     child: PrimaryButton(
+        //       onPressed: () {
+        //         Navigator.push(
+        //           context,
+        //           MaterialPageRoute(
+        //             builder: (context) => EmployeeDetailsScreen(employee: null),
+        //           ),
+        //         );
+        //       },
+        //       label: 'Add Employee',
+        //       icon: Icons.person_add_alt_1,
+        //     ),
+        //   ),
+        // ),
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
@@ -187,12 +199,14 @@ class _EmployeeListScreenState extends State<EmployeeListScreen> {
               'Currently Employed',
               currentlyEmployeed,
               Icons.verified_user,
+
               Colors.orange,
             ),
             _buildStatCard(
               'New This Month',
               newThisMonth,
               Icons.person_add,
+
               Colors.red,
             ),
           ],
@@ -210,7 +224,7 @@ class _EmployeeListScreenState extends State<EmployeeListScreen> {
     return Card(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       elevation: 1.5,
-      color: Colors.white,
+      color: AppColors.lightGray,
       child: ConstrainedBox(
         constraints: BoxConstraints(maxWidth: 400),
         child: Container(
@@ -300,8 +314,8 @@ class _EmployeeListScreenState extends State<EmployeeListScreen> {
             SizedBox(width: 8),
             // Employment Status
             Container(
-              width: 250,
-              child: StatusDropdown(
+              width: 270,
+              child: CustomDropdownFliter(
                 selectedValue: selectedEmploymentStatusOption,
                 options: employmentStatusOptions,
                 name: "Employment Status: ",
@@ -324,7 +338,7 @@ class _EmployeeListScreenState extends State<EmployeeListScreen> {
             // Sort by
             Container(
               width: 200,
-              child: StatusDropdown(
+              child: CustomDropdownFliter(
                 selectedValue: selectedSortingOption,
                 options: sortingOptions,
                 name: "Sort by: ",
@@ -358,6 +372,11 @@ class _EmployeeListScreenState extends State<EmployeeListScreen> {
               onPressed: () async {
                 _ftsController.clear();
                 _sortBy = null;
+                selectedSortingOption = null;
+                selectedEmploymentStatusOption = null;
+                employed = null;
+                _pickerKey.currentState?.clear();
+                _applyHireDateFilter(null, null);
                 loadData();
               },
               label: Text("Refresh", style: TextStyle(color: Colors.black)),
@@ -477,8 +496,8 @@ class _EmployeeTableState extends State<EmployeeTable> {
     return Stack(
       children: [
         PaginatedDataTable2(
-          //key: ValueKey(widget.result?.result.hashCode),
           key: ValueKey('${widget.result?.result.hashCode}_$_currentPage'),
+
           columns: const [
             DataColumn2(label: Text('Employee Name')),
             DataColumn2(label: Text('Job Title')),
@@ -554,27 +573,32 @@ class EmployeeDataSource extends DataTableSource {
     return DataRow.byIndex(
       index: index,
       cells: [
-        DataCell(Text("${employee.user.firstName} ${employee.user.lastName}")),
+        DataCell(
+          Text("${employee.user?.firstName} ${employee.user?.lastName}"),
+        ),
         DataCell(Text(employee.jobTitle.toString())),
-        DataCell(Text(employee.user.email ?? " ")),
-        DataCell(Text(employee.user.phoneNumber ?? "")),
+        DataCell(Text(employee.user?.email ?? " ")),
+        DataCell(Text(employee.user?.phoneNumber ?? "")),
         DataCell(
           Container(
             padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
             decoration: BoxDecoration(
               color: employee.endDate == null
-                  ? Colors.green.shade50
+                  ? const Color.fromRGBO(204, 245, 215, 1)
                   : Colors.red.shade50,
-              border: Border.all(
-                color: employee.endDate == null ? Colors.green : Colors.red,
-              ),
+              border: null, //Border.all(
+              //color: employee.endDate == null ? Colors.black : Colors.red,
+              //),
               borderRadius: BorderRadius.circular(20),
             ),
             child: Text(
               employee.endDate == null ? "Employed" : "Not Employed",
               style: TextStyle(
-                color: employee.endDate == null ? Colors.green : Colors.red,
-                fontWeight: FontWeight.bold,
+                color: employee.endDate == null
+                    ? Color.fromARGB(255, 80, 80, 80)
+                    : Colors.red,
+
+                ///fontWeight: FontWeight.bold,
               ),
             ),
           ),
@@ -624,107 +648,6 @@ class EmployeeDataSource extends DataTableSource {
   @override
   void notifyListeners() {
     super.notifyListeners();
-  }
-}
-
-class StatusDropdown extends StatelessWidget {
-  const StatusDropdown({
-    super.key,
-    required this.name,
-    required this.selectedValue,
-    required this.options,
-    required this.onChanged,
-  });
-
-  final String name;
-  final String? selectedValue;
-  final Map<String, String?> options;
-  final ValueChanged<String?> onChanged;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        border: Border.all(color: Colors.grey.shade300),
-        borderRadius: BorderRadius.circular(4),
-      ),
-      child: DropdownButtonHideUnderline(
-        child: DropdownButton<String>(
-          value: selectedValue,
-          icon: Icon(Icons.keyboard_arrow_down, color: Colors.grey.shade600),
-          isExpanded: true,
-          style: TextStyle(color: Colors.black87, fontSize: 14),
-          dropdownColor: Colors.white,
-          items: options.entries.map((entry) {
-            return DropdownMenuItem<String>(
-              value: entry.value,
-              child: Padding(
-                padding: EdgeInsets.symmetric(horizontal: 12),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      name,
-                      style: TextStyle(
-                        color: Colors.grey.shade600,
-                        fontSize: 14,
-                      ),
-                    ),
-                    Flexible(
-                      child: Text(
-                        entry.key,
-                        style: TextStyle(
-                          color: Colors.black87,
-                          fontSize: 14,
-                          fontWeight: FontWeight.w500,
-                        ),
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            );
-          }).toList(),
-          onChanged: (String? newValue) {
-            //if (newValue != null) {
-            onChanged(newValue);
-            //}
-          },
-          selectedItemBuilder: (BuildContext context) {
-            return options.entries.map((entry) {
-              return Container(
-                alignment: Alignment.centerLeft,
-                padding: EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      name,
-                      style: TextStyle(
-                        color: Colors.grey.shade600,
-                        fontSize: 14,
-                      ),
-                    ),
-                    Flexible(
-                      child: Text(
-                        entry.key,
-                        style: TextStyle(
-                          color: Colors.black87,
-                          fontSize: 14,
-                          fontWeight: FontWeight.w500,
-                        ),
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                  ],
-                ),
-              );
-            }).toList();
-          },
-        ),
-      ),
-    );
   }
 }
 

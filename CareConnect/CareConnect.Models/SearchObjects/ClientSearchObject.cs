@@ -13,6 +13,6 @@ namespace CareConnect.Models.SearchObjects
 
         public string? Email { get; set; }
 
-        public bool? EmploymentStatus { get; set; }
+        public bool? EmploymentStatus { get; set; } 
     }
 }

@@ -40,6 +40,12 @@ namespace CareConnect.Services.Migrations
                         .HasColumnType("int")
                         .HasColumnName("AttendanceStatusID");
 
+                    b.Property<int>("ChildId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("ClientId")
+                        .HasColumnType("int");
+
                     b.Property<DateTime>("Date")
                         .HasColumnType("datetime");
 
@@ -63,9 +69,8 @@ namespace CareConnect.Services.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
-                    b.Property<int>("UserId")
-                        .HasColumnType("int")
-                        .HasColumnName("UserID");
+                    b.Property<int?>("UserId")
+                        .HasColumnType("int");
 
                     b.HasKey("AppointmentId")
                         .HasName("PK__Appointm__8ECDFCA2BDE101EB");
@@ -75,6 +80,8 @@ namespace CareConnect.Services.Migrations
                     b.HasIndex("EmployeeAvailabilityId");
 
                     b.HasIndex("UserId");
+
+                    b.HasIndex("ClientId", "ChildId");
 
                     b.ToTable("Appointments");
                 });
@@ -976,17 +983,22 @@ namespace CareConnect.Services.Migrations
                         .IsRequired()
                         .HasConstraintName("FK_Appointments_EmployeeAvailability");
 
-                    b.HasOne("CareConnect.Services.Database.User", "User")
+                    b.HasOne("CareConnect.Services.Database.User", null)
                         .WithMany("Appointments")
-                        .HasForeignKey("UserId")
+                        .HasForeignKey("UserId");
+
+                    b.HasOne("CareConnect.Services.Database.ClientsChild", "ClientsChild")
+                        .WithMany("Appointments")
+                        .HasForeignKey("ClientId", "ChildId")
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
-                        .HasConstraintName("FK_Appointments_Users");
+                        .HasConstraintName("FK_Appointments_ClientsChildren");
 
                     b.Navigation("AttendanceStatus");
 
-                    b.Navigation("EmployeeAvailability");
+                    b.Navigation("ClientsChild");
 
-                    b.Navigation("User");
+                    b.Navigation("EmployeeAvailability");
                 });
 
             modelBuilder.Entity("CareConnect.Services.Database.ChildrenDiagnosis", b =>
@@ -1264,6 +1276,11 @@ namespace CareConnect.Services.Migrations
                     b.Navigation("ClientsChildren");
 
                     b.Navigation("Members");
+                });
+
+            modelBuilder.Entity("CareConnect.Services.Database.ClientsChild", b =>
+                {
+                    b.Navigation("Appointments");
                 });
 
             modelBuilder.Entity("CareConnect.Services.Database.Diagnosis", b =>

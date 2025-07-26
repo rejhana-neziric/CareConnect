@@ -15,6 +15,6 @@ namespace CareConnect.Models.SearchObjects
 
         public DateTime? BirthDateLTE { get; set; }
 
-        public Gender? Gender { get; set; }
+        public String? Gender { get; set; }
     }
 }

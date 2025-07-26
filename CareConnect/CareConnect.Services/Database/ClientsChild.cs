@@ -14,4 +14,6 @@ public partial class ClientsChild
     public virtual Child Child { get; set; } = null!;
 
     public virtual Client Client { get; set; } = null!;
+
+    public virtual ICollection<Appointment> Appointments { get; set; } = new List<Appointment>();
 }

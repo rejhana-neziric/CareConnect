@@ -12,16 +12,27 @@ using Mapster;
 using CareConnect.Services.Helpers;
 using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using CareConnect.Models.SearchObjects;
+using System.Security.Permissions;
 
 namespace CareConnect.Services
 {
     public class ClientService : BaseCRUDService<Models.Responses.Client, ClientSearchObject, ClientAdditionalData, Database.Client, ClientInsertRequest, ClientUpdateRequest>, IClientService
     {
-        public ClientService(CareConnectContext context, IMapper mapper) : base(context, mapper) { }
+        private readonly IChildService _childService;   
+
+        public ClientService(CareConnectContext context, IMapper mapper, IChildService childService) : base(context, mapper)
+        {
+            _childService = childService;
+        }
 
         public override IQueryable<Database.Client> AddFilter(ClientSearchObject search, IQueryable<Database.Client> query)
         {
             query = base.AddFilter(search, query);
+
+            if (!string.IsNullOrWhiteSpace(search?.FTS))
+            {
+                query = query.Where(x => x.User.FirstName.StartsWith(search.FTS) || x.User.LastName.StartsWith(search.FTS) || x.User.Email == search.FTS);
+            }
 
             if (!string.IsNullOrWhiteSpace(search?.FirstNameGTE))
             {
@@ -55,12 +66,12 @@ namespace CareConnect.Services
                     additionalData.IncludeList.Add("User");
                 }
 
-                /*
+                
                 if (additionalData.IsChildrenIncluded.HasValue && additionalData.IsChildrenIncluded == true)
                 {
                     additionalData.IncludeList.Add("ClientsChildren.Child");
                 }
-                */
+                
             }
 
             base.AddInclude(additionalData, ref query);

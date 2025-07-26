@@ -97,8 +97,10 @@ namespace CareConnect.API.Configuration
             TypeAdapterConfig<EmployeeAvailabilityUpdateRequest, EmployeeAvailability>
                 .NewConfig()
                 .PreserveReference(true)
-                .IgnoreNullValues(true); 
+                .IgnoreNullValues(true);
 
+            //TypeAdapterConfig<ClientsChild, Models.Responses.ClientsChild>.NewConfig()
+            //    .Map(dest => dest.LastAppointment, src => src.Appointments.OrderByDescending(a => a.Date).FirstOrDefault().Date);
         }
     }
 }

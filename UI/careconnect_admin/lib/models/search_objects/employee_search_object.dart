@@ -1,5 +1,10 @@
 import 'package:careconnect_admin/models/search_objects/employee_additional_data.dart';
 
+import 'package:json_annotation/json_annotation.dart';
+
+part 'employee_search_object.g.dart';
+
+@JsonSerializable(explicitToJson: true)
 class EmployeeSearchObject {
   String? fts;
   String? firstNameGTE;
@@ -31,19 +36,8 @@ class EmployeeSearchObject {
     this.includeTotalCount,
   });
 
-  Map<String, dynamic> toJson() => {
-    'fts': fts,
-    'firstNameGTE': firstNameGTE,
-    'lastNameGTE': lastNameGTE,
-    'email': email,
-    'jobTitle': jobTitle,
-    'hireDateGTE': hireDateGTE?.toIso8601String(),
-    'hireDateLTE': hireDateLTE?.toIso8601String(),
-    'employed': employed?.toString(),
-    'page': page?.toString(),
-    'sortBy': sortBy,
-    'sortAscending': sortAscending,
-    'additionalData': additionalData?.toJson(),
-    'includeTotalCount': includeTotalCount?.toString(),
-  };
+  factory EmployeeSearchObject.fromJson(Map<String, dynamic> json) =>
+      _$EmployeeSearchObjectFromJson(json);
+
+  Map<String, dynamic> toJson() => _$EmployeeSearchObjectToJson(this);
 }

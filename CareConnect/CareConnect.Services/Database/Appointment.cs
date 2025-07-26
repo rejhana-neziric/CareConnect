@@ -7,9 +7,11 @@ public partial class Appointment
 {
     public int AppointmentId { get; set; }
 
-    public int UserId { get; set; }
-
     public int EmployeeAvailabilityId { get; set; }
+
+    public int ClientId { get; set; }
+
+    public int ChildId { get; set; }
 
     public string AppointmentType { get; set; } = null!;
 
@@ -29,5 +31,5 @@ public partial class Appointment
 
     public virtual EmployeeAvailability EmployeeAvailability { get; set; } = null!;
 
-    public virtual User User { get; set; } = null!;
+    public virtual ClientsChild ClientsChild { get; set; } = null!;
 }

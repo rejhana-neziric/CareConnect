@@ -9,5 +9,7 @@ namespace CareConnect.Models.Responses
         public virtual Child Child { get; set; } = null!;
 
         public virtual Client Client { get; set; } = null!;
+
+        //public DateTime? LastAppointment { get; set; }
     }
 }

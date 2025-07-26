@@ -32,6 +32,15 @@ public static class Permissions
         public const string Update = "Permissions.ChildrenDiagnosis.Update";
         public const string Delete = "Permissions.ChildrenDiagnosis.Delete";
     }
+    public static class ClientsChild
+    {
+        public const string Get = "Permissions.ClientsChild.Get";
+        public const string GetById = "Permissions.ClientsChild.GetById";
+        public const string Insert = "Permissions.ClientsChild.Insert";
+        public const string Update = "Permissions.ClientsChild.Update";
+        public const string Delete = "Permissions.ClientsChild.Delete";
+        public const string GetStatistics = "Permissions.ClientsChild.GetStatistics";
+    }
     public static class Client
     {
         public const string Get = "Permissions.Client.Get";

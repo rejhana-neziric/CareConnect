@@ -11,7 +11,7 @@ namespace CareConnect.Models.Responses
         public virtual User User { get; set; } = null!;
 
         //public virtual ICollection<ClientsChild> ClientsChildren { get; set; } = new List<ClientsChild>();
-        //public virtual ICollection<Child> Children { get; set; } = new List<Child>();
+
 
     }
 }

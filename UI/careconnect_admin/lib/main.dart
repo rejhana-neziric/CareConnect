@@ -1,8 +1,11 @@
 import 'package:careconnect_admin/providers/attendance_status_provider.dart';
 import 'package:careconnect_admin/providers/auth_provider.dart';
+import 'package:careconnect_admin/providers/client_provider.dart';
+import 'package:careconnect_admin/providers/clients_child_provider.dart';
 import 'package:careconnect_admin/providers/employee_form_provider.dart';
 import 'package:careconnect_admin/providers/employee_provider.dart';
 import 'package:careconnect_admin/screens/employee_list_screen.dart';
+import 'package:careconnect_admin/theme/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -17,6 +20,10 @@ void main() {
           create: (_) => AttendanceStatusProvider(),
         ),
         ChangeNotifierProvider(create: (_) => EmployeeFormProvider()),
+        ChangeNotifierProvider<ClientProvider>(create: (_) => ClientProvider()),
+        ChangeNotifierProvider<ClientsChildProvider>(
+          create: (_) => ClientsChildProvider(),
+        ),
       ],
       child: const MyApp(),
     ),
@@ -30,7 +37,10 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Flutter Demo',
-      theme: ThemeData(useMaterial3: true),
+      //theme: ThemeData(useMaterial3: true),
+      theme: AppTheme.lightTheme,
+      //darkTheme: AppTheme.darkTheme,
+      //themeMode: ThemeMode.system,
       home: Center(
         child: LoginPage(),
       ), //const MyHomePage(title: 'Flutter Demo Home Page'),

@@ -1,5 +1,5 @@
 import 'dart:convert';
-import 'package:careconnect_admin/models/search_result.dart';
+import 'package:careconnect_admin/models/responses/search_result.dart';
 import 'package:careconnect_admin/providers/auth_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
@@ -49,6 +49,8 @@ abstract class BaseProvider<T> with ChangeNotifier {
 
     if (isValidResponse(response)) {
       var data = jsonDecode(response.body);
+
+      print('Decoded data: $data');
 
       var result = SearchResult<T>();
 
@@ -114,7 +116,7 @@ abstract class BaseProvider<T> with ChangeNotifier {
     throw Exception("Method not implemented");
   }
 
-  int getId(T item) {
+  int? getId(T item) {
     throw Exception("Method not implemented");
   }
 
