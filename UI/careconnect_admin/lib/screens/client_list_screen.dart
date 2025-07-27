@@ -233,7 +233,7 @@ class _ClientListScreenState extends State<ClientListScreen> {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => ClientDetailsScreen(client: null),
+                  builder: (context) => ClientDetailsScreen(clientsChild: null),
                 ),
               );
             },
@@ -935,7 +935,7 @@ class ClientsChildDataSource extends DataTableSource {
                     context,
                     MaterialPageRoute(
                       builder: (context) =>
-                          ClientDetailsScreen(client: clientChild.client),
+                          ClientDetailsScreen(clientsChild: clientChild),
                     ),
                   );
                 },

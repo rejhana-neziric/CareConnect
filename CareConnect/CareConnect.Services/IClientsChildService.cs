@@ -4,7 +4,7 @@ using CareConnect.Models.SearchObjects;
 
 namespace CareConnect.Services
 {
-    public interface IClientsChildService : ICRUDService<ClientsChild, ClientsChildSearchObject, ClientsChildAdditionalData, ClientsChildInsertRequest, NoRequest>
+    public interface IClientsChildService : ICRUDService<ClientsChild, ClientsChildSearchObject, ClientsChildAdditionalData, ClientsChildInsertRequest, ClientsChildUpdateRequest>
     {
         public List<Child> GetChildren(int clientId);
 

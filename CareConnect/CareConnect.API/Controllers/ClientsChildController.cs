@@ -9,16 +9,12 @@ namespace CareConnect.API.Controllers
 {
     [ApiController]
     [Route("[controller]")]
-    public class ClientsChildController : BaseCRUDController<ClientsChild, ClientsChildSearchObject, ClientsChildAdditionalData, ClientsChildInsertRequest, NoRequest>
+    public class ClientsChildController : BaseCRUDController<ClientsChild, ClientsChildSearchObject, ClientsChildAdditionalData, ClientsChildInsertRequest, ClientsChildUpdateRequest>
     {
         public ClientsChildController(IClientsChildService service) : base(service)
         {
         }
 
-        public override ClientsChild Update(int id, NoRequest request)
-        {
-            throw new NotImplementedException();    
-        }
 
         [HttpGet("statistics")]
         [PermissionAuthorize("GetStatistics")]

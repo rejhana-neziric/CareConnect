@@ -11,6 +11,8 @@ public partial class ClientsChild
 
     public DateTime ModifiedDate { get; set; }
 
+    public DateTime CreatedAt { get; set; }
+
     public virtual Child Child { get; set; } = null!;
 
     public virtual Client Client { get; set; } = null!;

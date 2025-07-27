@@ -6,6 +6,8 @@ namespace CareConnect.Models.Responses
 {
     public class Child
     {
+        public int ChildId { get; set; }
+
         public string FirstName { get; set; } = null!;
 
         public string LastName { get; set; } = null!;

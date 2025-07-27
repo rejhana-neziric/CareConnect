@@ -2,6 +2,7 @@ using CareConnect.Models.Requests;
 using CareConnect.Models.Responses;
 using CareConnect.Models.SearchObjects;
 using CareConnect.Services.Database;
+using EasyNetQ.Logging;
 using MapsterMapper;
 using Microsoft.EntityFrameworkCore;
 using System.Linq.Dynamic.Core;
@@ -11,11 +12,11 @@ using System.Xml;
 namespace CareConnect.Services
 {
     public class ClientsChildService 
-        : BaseCRUDService<Models.Responses.ClientsChild, ClientsChildSearchObject, ClientsChildAdditionalData, Database.ClientsChild, ClientsChildInsertRequest, NoRequest>, IClientsChildService
+        : BaseCRUDService<Models.Responses.ClientsChild, ClientsChildSearchObject, ClientsChildAdditionalData, Database.ClientsChild, ClientsChildInsertRequest, ClientsChildUpdateRequest>, IClientsChildService
     {
-        //public CareConnectContext Context { get; set; }
+        public CareConnectContext Context { get; set; }
 
-        //public IMapper Mapper { get; }
+        public IMapper Mapper { get; }
 
         //public ClientsChildService(CareConnectContext context, IMapper mapper)
         //{
@@ -30,6 +31,9 @@ namespace CareConnect.Services
         {
             _childService = childService;
             _clientService = clientService;   
+
+            Mapper = mapper;
+            Context = context;
         }
 
 
@@ -161,6 +165,49 @@ namespace CareConnect.Services
         public bool RemoveChildFromClient(int clientId, int childId)
         {
             return true;
+        }
+
+
+        //todo: maybe change to async
+        public override Models.Responses.ClientsChild Insert(ClientsChildInsertRequest request)
+        {
+            using var transaction = Context.Database.BeginTransaction();
+
+            try
+            {
+                var client = _clientService.Insert(request.clientInsertRequest); 
+                var child = _childService.Insert(request.childInsertRequest);   
+
+                var clientsChild = new Database.ClientsChild
+                {
+                    ClientId = client.User.UserId,
+                    ChildId = child.ChildId, 
+                    CreatedAt = request.CreatedAt
+                };  
+
+                Context.ClientsChildren.Add(clientsChild);
+                Context.SaveChanges();  
+
+                transaction.Commit();
+
+                return Mapper.Map<Models.Responses.ClientsChild>(clientsChild);
+
+            }
+            catch (Exception ex)
+            {
+
+               transaction.Rollback();
+                throw; 
+            }
+        }
+
+        public override Models.Responses.ClientsChild Update(int id, ClientsChildUpdateRequest request)
+        {
+            var response = _clientService.Update(id, request.clientUpdateRequest);
+
+            var clientsChild = Context.ClientsChildren.Include(x => x.Child).Include(x => x.Client).ThenInclude(x => x.User).Where(x => x.ClientId == id).FirstOrDefault(); 
+
+            return Mapper.Map<Models.Responses.ClientsChild>(clientsChild);
         }
 
 

@@ -34,4 +34,43 @@ class ClientsChildProvider extends BaseProvider<ClientsChild> {
       throw new Exception("Unknown error");
     }
   }
+
+  Future<ClientsChild> updateComposite(
+    int clientId,
+    int childId, [
+    dynamic request,
+  ]) async {
+    var url = "$baseUrl$endpoint/$clientId";
+    var uri = Uri.parse(url);
+    var headers = super.createHeaders();
+
+    var jsonRequest = jsonEncode(request);
+    var response = await http.put(uri, headers: headers, body: jsonRequest);
+
+    if (isValidResponse(response)) {
+      var data = jsonDecode(response.body);
+      var updated = fromJson(data);
+
+      var index = item.result.indexWhere(
+        (e) => getClientId(e) == clientId && getChildId(e) == childId,
+      );
+
+      if (index != -1) {
+        item.result[index] = updated;
+        notifyListeners();
+      }
+
+      return updated;
+    } else {
+      throw Exception("Unknown error");
+    }
+  }
+
+  int? getClientId(ClientsChild item) {
+    return item.client.user?.userId;
+  }
+
+  int? getChildId(ClientsChild item) {
+    return item.child.childId;
+  }
 }

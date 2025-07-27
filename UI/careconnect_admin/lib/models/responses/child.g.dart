@@ -7,6 +7,7 @@ part of 'child.dart';
 // **************************************************************************
 
 Child _$ChildFromJson(Map<String, dynamic> json) => Child(
+  childId: (json['childId'] as num).toInt(),
   firstName: json['firstName'] as String,
   lastName: json['lastName'] as String,
   birthDate: DateTime.parse(json['birthDate'] as String),
@@ -14,6 +15,7 @@ Child _$ChildFromJson(Map<String, dynamic> json) => Child(
 );
 
 Map<String, dynamic> _$ChildToJson(Child instance) => <String, dynamic>{
+  'childId': instance.childId,
   'firstName': instance.firstName,
   'lastName': instance.lastName,
   'birthDate': instance.birthDate.toIso8601String(),

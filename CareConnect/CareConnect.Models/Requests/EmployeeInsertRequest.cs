@@ -17,7 +17,7 @@ namespace CareConnect.Models.Requests
         public bool Employed { get; set; } = true; 
 
         [JsonIgnore]
-        public DateTime ModifiedDate { get; set; } = DateTime.Now;
+        public DateTime CreatedAt { get; set; } = DateTime.Now;
 
         public UserInsertRequest User {  get; set; }
 

@@ -5,11 +5,11 @@ namespace CareConnect.Models.Requests
 {
     public class ClientsChildInsertRequest
     {
-        public int ClientId { get; set; }
+        public ClientInsertRequest clientInsertRequest { get; set; }
 
-        public int ChildId { get; set; }
+        public ChildInsertRequest childInsertRequest { get; set; }
 
         [JsonIgnore]
-        public DateTime? ModifiedDate { get; set; } = DateTime.Now;
+        public DateTime CreatedAt { get; set; } = DateTime.Now;
     }
 }

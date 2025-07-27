@@ -4,7 +4,7 @@ import 'package:careconnect_admin/theme/app_colors.dart';
 import 'package:flutter/material.dart';
 
 class MasterScreen extends StatefulWidget {
-  MasterScreen(this.title, this.child, {super.key, this.button});
+  const MasterScreen(this.title, this.child, {super.key, this.button});
 
   final String title;
   final Widget child;

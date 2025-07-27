@@ -19,11 +19,8 @@ class EmployeeInsertRequest {
     this.qualification,
   });
 
-  /// Connect the generated [_$UserInsertRequestFromJson] function to the `fromJson`
-  /// factory.
   factory EmployeeInsertRequest.fromJson(Map<String, dynamic> json) =>
       _$EmployeeInsertRequestFromJson(json);
 
-  /// Connect the generated [_$UserToJson] function to the `toJson` method.
   Map<String, dynamic> toJson() => _$EmployeeInsertRequestToJson(this);
 }

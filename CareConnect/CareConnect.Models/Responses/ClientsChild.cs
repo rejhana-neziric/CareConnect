@@ -4,7 +4,6 @@ namespace CareConnect.Models.Responses
 {
     public class ClientsChild
     {
-        public DateTime ModifiedDate { get; set; }
 
         public virtual Child Child { get; set; } = null!;
 

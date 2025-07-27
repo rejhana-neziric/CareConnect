@@ -1,14 +1,15 @@
-import 'package:careconnect_admin/models/requests/employee_insert_request.dart';
-import 'package:careconnect_admin/models/requests/employee_update_request.dart';
-import 'package:careconnect_admin/models/requests/qualification_insert_request.dart';
-import 'package:careconnect_admin/models/requests/qualification_update_request.dart';
+import 'package:careconnect_admin/models/requests/child_insert_request.dart';
+import 'package:careconnect_admin/models/requests/client_insert_request.dart';
+import 'package:careconnect_admin/models/requests/client_update_request.dart';
+import 'package:careconnect_admin/models/requests/clients_child_insert_request.dart';
+import 'package:careconnect_admin/models/requests/clients_child_update_request.dart';
 import 'package:careconnect_admin/models/requests/user_insert_request.dart';
 import 'package:careconnect_admin/models/requests/user_update_request.dart';
-import 'package:careconnect_admin/providers/employee_provider.dart';
+import 'package:careconnect_admin/providers/clients_child_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 
-class EmployeeFormProvider with ChangeNotifier {
+class ClientsChildFormProvider with ChangeNotifier {
   GlobalKey<FormBuilderState> formKey = GlobalKey<FormBuilderState>();
 
   bool isUpdate = false;
@@ -23,9 +24,9 @@ class EmployeeFormProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  void setForUpdate(Map<String, dynamic> employeeData) {
+  void setForUpdate(Map<String, dynamic> clientsChildData) {
     isUpdate = true;
-    initialData = Map<String, dynamic>.from(employeeData);
+    initialData = Map<String, dynamic>.from(clientsChildData);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (formKey.currentState != null) {
         formKey.currentState!.patchValue(initialData);
@@ -134,62 +135,68 @@ class EmployeeFormProvider with ChangeNotifier {
   }
 
   Future<bool> saveOrUpdate(
-    EmployeeFormProvider employeeFormProvider,
-    EmployeeProvider employeeProvider,
-    int? id, {
+    ClientsChildFormProvider clientsChildFormProvider,
+    ClientsChildProvider clientsChildProvider,
+    int? clientId,
+    int? childId, {
     VoidCallback? onSaved,
   }) async {
     try {
-      final formData = employeeFormProvider.formKey.currentState?.value;
+      final formData = clientsChildFormProvider.formKey.currentState?.value;
 
       if (formData == null) {
         return false;
       }
 
-      if (!employeeFormProvider.isUpdate) {
-        final insertRequest = EmployeeInsertRequest(
-          hireDate: formData['hireDate'],
-          jobTitle: formData['jobTitle'],
-          user: UserInsertRequest(
-            firstName: formData['firstName'],
-            lastName: formData['lastName'],
-            email: formData['email'],
-            phoneNumber: formData['phoneNumber'],
-            username: formData['username'],
-            password: formData['password'],
-            confirmationPassword: formData['confirmationPassword'],
-            birthDate: formData['birthDate'],
-            gender: formData['gender'],
-            address: formData['address'],
+      if (!clientsChildFormProvider.isUpdate) {
+        final insertRequest = ClientsChildInsertRequest(
+          clientInsertRequest: ClientInsertRequest(
+            employmentStatus: formData['employmentStatus'],
+            user: UserInsertRequest(
+              firstName: formData['firstName'],
+              lastName: formData['lastName'],
+              email: formData['email'],
+              phoneNumber: formData['phoneNumber'],
+              username: formData['username'],
+              password: formData['password'],
+              confirmationPassword: formData['confirmationPassword'],
+              birthDate: formData['birthDate'],
+              gender: formData['gender'],
+              address: formData['address'],
+            ),
           ),
-          qualification: QualificationInsertRequest(
-            name: formData['qualificationName'],
-            instituteName: formData['qualificationInstituteName'],
-            procurementYear: formData['qualificationProcurementYear'],
+          childInsertRequest: ChildInsertRequest(
+            firstName: formData['childFirstName'],
+            lastName: formData['childLastName'],
+            birthDate: formData['childBirthDate'],
+            gender: formData['childGender'],
           ),
         );
 
-        await employeeProvider.insert(insertRequest);
+        await clientsChildProvider.insert(insertRequest);
       } else {
-        final updateRequest = EmployeeUpdateRequest(
-          jobTitle: formData['jobTitle'],
-          user: UserUpdateRequest(
-            phoneNumber: formData['phoneNumber'],
-            username: formData['username'],
-            status: formData['status'],
-            address: formData['address'],
-            password: formData['password'],
-            confirmationPassword: formData['confirmationPassword'],
-            email: formData['email'],
-          ),
-          qualification: QualificationUpdateRequest(
-            name: formData['qualificationName'],
-            instituteName: formData['qualificationInstituteName'],
-            procurementYear: formData['qualificationProcurementYear'],
+        final updateRequest = ClientsChildUpdateRequest(
+          clientUpdateRequest: ClientUpdateRequest(
+            employmentStatus: formData['employmentStatus'],
+            user: UserUpdateRequest(
+              phoneNumber: formData['phoneNumber'],
+              username: formData['username'],
+              status: formData['status'],
+              address: formData['address'],
+              password: formData['password'],
+              confirmationPassword: formData['confirmationPassword'],
+              email: formData['email'],
+            ),
           ),
         );
 
-        if (id != null) await employeeProvider.update(id, updateRequest);
+        if (clientId != null && childId != null) {
+          await clientsChildProvider.updateComposite(
+            clientId,
+            childId,
+            updateRequest,
+          );
+        }
       }
 
       onSaved?.call();

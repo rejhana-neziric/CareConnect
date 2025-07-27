@@ -1,12 +1,11 @@
 import 'package:careconnect_admin/layouts/master_screen.dart';
-import 'package:careconnect_admin/models/responses/attendance_status.dart';
 import 'package:careconnect_admin/models/responses/employee.dart';
 import 'package:careconnect_admin/models/search_objects/employee_additional_data.dart';
 import 'package:careconnect_admin/models/search_objects/employee_search_object.dart';
 import 'package:careconnect_admin/models/responses/search_result.dart';
-import 'package:careconnect_admin/providers/attendance_status_provider.dart';
 import 'package:careconnect_admin/providers/employee_form_provider.dart';
 import 'package:careconnect_admin/providers/employee_provider.dart';
+import 'package:careconnect_admin/utils.dart';
 import 'package:careconnect_admin/widgets/custom_date_field.dart';
 import 'package:careconnect_admin/widgets/custom_dropdown_field.dart';
 import 'package:careconnect_admin/widgets/custom_text_field.dart';
@@ -27,10 +26,8 @@ class EmployeeDetailsScreen extends StatefulWidget {
 class _EmployeeDetailsScreenState extends State<EmployeeDetailsScreen> {
   Map<String, dynamic> _initialValue = {};
   SearchResult<Employee>? result;
-  late AttendanceStatusProvider attendanceStatusProvider;
   late EmployeeProvider employeeProvider;
   late EmployeeFormProvider employeeFormProvider;
-  SearchResult<AttendanceStatus>? attendaceStatusResult;
   bool isLoading = true;
 
   @override
@@ -151,7 +148,7 @@ class _EmployeeDetailsScreenState extends State<EmployeeDetailsScreen> {
         children: [
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
-            children: [_buildSectionTitle("Personal Information")],
+            children: [buildSectionTitle("Personal Information")],
           ),
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -166,7 +163,7 @@ class _EmployeeDetailsScreenState extends State<EmployeeDetailsScreen> {
                     validator: employeeFormProvider.validateName,
                     enabled: !employeeFormProvider.isUpdate,
                   ),
-                  CustomTextField(
+                  CustomDateField(
                     width: 400,
                     name: 'birthDate',
                     label: 'Birth Date',
@@ -269,7 +266,7 @@ class _EmployeeDetailsScreenState extends State<EmployeeDetailsScreen> {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _buildSectionTitle("Job Details"),
+                  buildSectionTitle("Job Details"),
                   CustomTextField(
                     width: 400,
                     name: 'jobTitle',
@@ -289,7 +286,7 @@ class _EmployeeDetailsScreenState extends State<EmployeeDetailsScreen> {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _buildSectionTitle("Qualification"),
+                  buildSectionTitle("Qualification"),
                   CustomTextField(
                     width: 400,
                     name: 'qualificationName',
@@ -313,20 +310,6 @@ class _EmployeeDetailsScreenState extends State<EmployeeDetailsScreen> {
             ],
           ),
         ],
-      ),
-    );
-  }
-
-  Widget _buildSectionTitle(String title) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 12.0, top: 8),
-      child: Text(
-        title,
-        style: TextStyle(
-          fontSize: 18,
-          fontWeight: FontWeight.bold,
-          color: Colors.black87,
-        ),
       ),
     );
   }
