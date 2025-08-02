@@ -1,4 +1,5 @@
 import 'package:careconnect_admin/layouts/master_screen.dart';
+import 'package:careconnect_admin/models/responses/child.dart';
 import 'package:careconnect_admin/models/responses/clients_child.dart';
 import 'package:careconnect_admin/models/responses/search_result.dart';
 import 'package:careconnect_admin/models/search_objects/child_search_object.dart';
@@ -8,6 +9,9 @@ import 'package:careconnect_admin/models/search_objects/clients_child_additional
 import 'package:careconnect_admin/models/search_objects/clients_child_search_object.dart';
 import 'package:careconnect_admin/providers/clients_child_form_provider.dart';
 import 'package:careconnect_admin/providers/clients_child_provider.dart';
+import 'package:careconnect_admin/screens/add_child_for_client_screen.dart';
+import 'package:careconnect_admin/screens/child_details_screen.dart';
+import 'package:careconnect_admin/theme/app_colors.dart';
 import 'package:careconnect_admin/utils.dart';
 import 'package:careconnect_admin/widgets/custom_date_field.dart';
 import 'package:careconnect_admin/widgets/custom_dropdown_field.dart';
@@ -29,6 +33,7 @@ class ClientDetailsScreen extends StatefulWidget {
 class _ClientDetailsScreenState extends State<ClientDetailsScreen> {
   Map<String, dynamic> _initialValue = {};
   SearchResult<ClientsChild>? result;
+  List<Child>? otherChildren;
   late ClientsChildProvider clientsChildProvider;
   late ClientsChildFormProvider clientsChildFormProvider;
   bool isLoading = true;
@@ -107,14 +112,24 @@ class _ClientDetailsScreenState extends State<ClientDetailsScreen> {
       });
     }
 
+    dynamic children;
+
+    if (widget.clientsChild?.client.user != null) {
+      children = await clientsChildProvider.getChildren(
+        widget.clientsChild!.client.user!.userId,
+      );
+    }
+
     setState(() {
       _initialValue = Map<String, dynamic>.from(
         clientsChildFormProvider.initialData,
       );
       isLoading = false;
+
+      otherChildren = children;
     });
 
-    WidgetsBinding.instance.addPostFrameCallback((_) {
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
       if (clientsChildFormProvider.formKey.currentState != null) {
         clientsChildFormProvider.formKey.currentState!.patchValue(
           _initialValue,
@@ -162,12 +177,24 @@ class _ClientDetailsScreenState extends State<ClientDetailsScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           ExpansionTile(
-            title: const Text("Client/Parent Information"),
+            title: Container(
+              color: AppColors.mauveGray,
+              child: Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Text(
+                  "Client/Parent Information",
+                  style: TextStyle(
+                    color: AppColors.white,
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ),
             initiallyExpanded: true,
             children: [
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
-
                 children: [
                   Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -325,76 +352,180 @@ class _ClientDetailsScreenState extends State<ClientDetailsScreen> {
                       ),
                     ],
                   ),
+                  const SizedBox(width: 40, height: 20),
+                  if (clientsChildFormProvider.isUpdate)
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+
+                      children: [
+                        PrimaryButton(
+                          onPressed: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => ChangeNotifierProvider(
+                                  create: (_) =>
+                                      ClientsChildFormProvider()
+                                        ..setForInsert(),
+                                  child: AddChildForClientScreen(
+                                    client: widget.clientsChild!.client,
+                                  ),
+                                ),
+                              ),
+                            );
+                          },
+                          label: 'Add Child',
+                          icon: Icons.person_add_alt_1,
+                        ),
+                      ],
+                    ),
+                  const SizedBox(width: 40, height: 20),
                 ],
               ),
             ],
           ),
           const SizedBox(height: 16),
           // Sekcija: Dijete
-          ExpansionTile(
-            title: const Text("Child Information"),
-            children: [
-              Column(
-                children: [
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [buildSectionTitle("Personal Information")],
+          if (!clientsChildFormProvider.isUpdate)
+            ExpansionTile(
+              title: Container(
+                color: AppColors.mauveGray,
+                child: Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Text(
+                    "Child Information",
+                    style: TextStyle(
+                      color: AppColors.white,
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
-                  Row(
-                    children: [
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          CustomTextField(
-                            width: 400,
-                            name: 'childFirstName',
-                            label: 'First Name',
-                            validator: clientsChildFormProvider.validateName,
-                            enabled: !clientsChildFormProvider.isUpdate,
-                          ),
-                          CustomDateField(
-                            width: 400,
-                            name: 'childBirthDate',
-                            label: 'Birth Date',
-                            validator: clientsChildFormProvider.validateDate,
-                            enabled: !clientsChildFormProvider.isUpdate,
-                          ),
-                        ],
-                      ),
-                      const SizedBox(width: 60),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          CustomTextField(
-                            width: 400,
-                            name: 'childLastName',
-                            label: 'Last Name',
-                            validator: clientsChildFormProvider.validateName,
-                            enabled: !clientsChildFormProvider.isUpdate,
-                          ),
-                          CustomDropdownField<String>(
-                            width: 400,
-                            name: 'childGender',
-                            label: 'Gender',
-                            items: [
-                              DropdownMenuItem(value: 'M', child: Text('Male')),
-                              DropdownMenuItem(
-                                value: 'F',
-                                child: Text('Female'),
-                              ),
-                            ],
-                            validator:
-                                clientsChildFormProvider.validateNonEmpty,
-                            enabled: !clientsChildFormProvider.isUpdate,
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ],
+                ),
               ),
-            ],
-          ),
+              initiallyExpanded: true,
+              children: [
+                Column(
+                  children: [
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [buildSectionTitle("Personal Information")],
+                    ),
+                    Row(
+                      children: [
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            CustomTextField(
+                              width: 400,
+                              name: 'childFirstName',
+                              label: 'First Name',
+                              validator: clientsChildFormProvider.validateName,
+                              enabled: !clientsChildFormProvider.isUpdate,
+                            ),
+                            CustomDateField(
+                              width: 400,
+                              name: 'childBirthDate',
+                              label: 'Birth Date',
+                              validator: clientsChildFormProvider.validateDate,
+                              enabled: !clientsChildFormProvider.isUpdate,
+                            ),
+                          ],
+                        ),
+                        const SizedBox(width: 60),
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            CustomTextField(
+                              width: 400,
+                              name: 'childLastName',
+                              label: 'Last Name',
+                              validator: clientsChildFormProvider.validateName,
+                              enabled: !clientsChildFormProvider.isUpdate,
+                            ),
+                            CustomDropdownField<String>(
+                              width: 400,
+                              name: 'childGender',
+                              label: 'Gender',
+                              items: [
+                                DropdownMenuItem(
+                                  value: 'M',
+                                  child: Text('Male'),
+                                ),
+                                DropdownMenuItem(
+                                  value: 'F',
+                                  child: Text('Female'),
+                                ),
+                              ],
+                              validator:
+                                  clientsChildFormProvider.validateNonEmpty,
+                              enabled: !clientsChildFormProvider.isUpdate,
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          const SizedBox(height: 16),
+          if (clientsChildFormProvider.isUpdate)
+            ExpansionTile(
+              title: Container(
+                color: AppColors.mauveGray,
+                child: Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Text(
+                    "Children",
+                    style: TextStyle(
+                      color: AppColors.white,
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ),
+              initiallyExpanded: true,
+              children: [
+                if (otherChildren == null || otherChildren?.isEmpty == true)
+                  Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Text("No other children found."),
+                  )
+                else
+                  ...otherChildren!.map(
+                    (child) => Material(
+                      color: Colors.transparent,
+                      child: Tooltip(
+                        message: "Click to view child details.",
+                        child: ListTile(
+                          title: Text("${child.firstName} ${child.lastName}"),
+                          subtitle: Text(
+                            "Birthdate: ${child.birthDate.day}. ${child.birthDate.month}. ${child.birthDate.year}",
+                          ),
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => ChangeNotifierProvider(
+                                  create: (_) =>
+                                      ClientsChildFormProvider()
+                                        ..setForInsert(),
+                                  child: ChildDetailsScreen(
+                                    client: widget.clientsChild!.client,
+                                    child: child,
+                                  ),
+                                ),
+                              ),
+                            );
+                          },
+                          hoverColor: AppColors.softLavender,
+                        ),
+                      ),
+                    ),
+                  ),
+              ],
+            ),
         ],
       ),
     );

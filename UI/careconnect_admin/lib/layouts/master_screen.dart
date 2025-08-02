@@ -25,7 +25,7 @@ class _MasterScreenState extends State<MasterScreen> {
         children: [
           Container(
             width: 250,
-            color: AppColors.softLavender,
+            color: AppColors.white,
             child: Column(
               children: [
                 Container(
@@ -134,9 +134,10 @@ class _MasterScreenState extends State<MasterScreen> {
               children: [
                 Padding(
                   padding: const EdgeInsets.only(
-                    top: 32.0,
+                    top: 16.0,
                     left: 32.0,
                     right: 32.0,
+                    bottom: 16.0,
                   ),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -168,7 +169,7 @@ class _MasterScreenState extends State<MasterScreen> {
                 ),
                 Expanded(
                   child: Container(
-                    color: Colors.white,
+                    color: AppColors.lightGray,
                     child: Padding(
                       padding: const EdgeInsets.all(32.0),
 

@@ -212,4 +212,35 @@ class ClientsChildFormProvider with ChangeNotifier {
     formKey = GlobalKey<FormBuilderState>();
     notifyListeners();
   }
+
+  Future<bool> addChild(
+    ClientsChildFormProvider clientsChildFormProvider,
+    ClientsChildProvider clientsChildProvider,
+    int? clientId, {
+    VoidCallback? onSaved,
+  }) async {
+    try {
+      final formData = clientsChildFormProvider.formKey.currentState?.value;
+
+      if (formData == null || clientId == null) {
+        return false;
+      }
+
+      final insertRequest = ChildInsertRequest(
+        firstName: formData['childFirstName'],
+        lastName: formData['childLastName'],
+        birthDate: formData['childBirthDate'],
+        gender: formData['childGender'],
+      );
+
+      await clientsChildProvider.addChildToClient(clientId, insertRequest);
+
+      onSaved?.call();
+
+      return true;
+    } catch (e) {
+      debugPrint("Error: $e");
+      return false;
+    }
+  }
 }

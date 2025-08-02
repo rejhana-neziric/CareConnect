@@ -1,5 +1,4 @@
-import 'package:careconnect_admin/models/search_objects/client_additional_data.dart';
-
+import 'package:careconnect_admin/models/search_objects/child_additional_data.dart';
 import 'package:json_annotation/json_annotation.dart';
 
 part 'child_search_object.g.dart';
@@ -15,7 +14,7 @@ class ChildSearchObject {
   int? page;
   String? sortBy;
   bool? sortAscending;
-  ClientAdditionalData? additionalData;
+  ChildAdditionalData? additionalData;
   bool? includeTotalCount;
 
   ChildSearchObject({

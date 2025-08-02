@@ -83,10 +83,10 @@ namespace CareConnect.Services
         {
             if (additionalData != null)
             {
-                if (additionalData.IsUserIncluded.HasValue && additionalData.IsUserIncluded == true)
-                {
-                    additionalData.IncludeList.Add("User");
-                }
+                //if (additionalData.IsUserIncluded.HasValue && additionalData.IsUserIncluded == true)
+                //{
+                //    additionalData.IncludeList.Add("User");
+                //}
 
                 if (additionalData.IsEmployeeAvailabilityIncluded.HasValue && additionalData.IsEmployeeAvailabilityIncluded == true)
                 {

@@ -32,9 +32,9 @@ namespace CareConnect.API.Controllers
         [PermissionAuthorize("AddChildren")]
         public ClientsChild AddChildToClient(int id, [FromBody] ChildInsertRequest childInsertRequest)
         {
-            var childId = _childService.InsertAndReturnId(childInsertRequest);
+            //var childId = _childService.InsertAndReturnId(childInsertRequest);
 
-            var clientsChild = _clientsChildService.AddChildToClient(id, childId); 
+            var clientsChild = _clientsChildService.AddChildToClient(id, childInsertRequest); 
 
             return clientsChild; 
         }   

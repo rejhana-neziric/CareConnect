@@ -139,26 +139,63 @@ namespace CareConnect.Services
             return Mapper.Map<List<Models.Responses.Child>>(children);
         }
 
-        public Models.Responses.ClientsChild AddChildToClient(int clientId, int childId)
+        //public Models.Responses.ClientsChild AddChildToClient(int clientId, int childId)
+        //{
+        //    var clientsChild = new Database.ClientsChild()
+        //    {
+        //        ClientId = clientId,
+        //        ChildId = childId,
+        //        ModifiedDate = DateTime.Now
+        //    };
+
+        //    Context.Add(clientsChild);
+        //    Context.SaveChanges();
+
+        //    var response = Context.ClientsChildren.Include(c => c.Client)
+        //                                            .ThenInclude(u => u.User)
+        //                                          .Include(c => c.Child)
+        //                                          .FirstOrDefault(c => c.ClientId == clientId && c.ChildId == childId);
+
+        //    if (response == null) return null;
+
+        //    return Mapper.Map<Models.Responses.ClientsChild>(response);
+        //}
+
+        public Models.Responses.ClientsChild AddChildToClient(int clientId, ChildInsertRequest childInsertRequest)
         {
-            var clientsChild = new Database.ClientsChild()
+
+            using var transaction = Context.Database.BeginTransaction();
+
+            try
             {
-                ClientId = clientId,
-                ChildId = childId,
-                ModifiedDate = DateTime.Now
-            };
+                var child = _childService.Insert(childInsertRequest);
 
-            Context.Add(clientsChild);
-            Context.SaveChanges();
+                var clientsChild = new Database.ClientsChild
+                {
+                    ClientId = clientId,
+                    ChildId = child.ChildId,
+                    CreatedAt = DateTime.Now
+                };
 
-            var response = Context.ClientsChildren.Include(c => c.Client)
-                                                    .ThenInclude(u => u.User)
-                                                  .Include(c => c.Child)
-                                                  .FirstOrDefault(c => c.ClientId == clientId && c.ChildId == childId);
+                Context.ClientsChildren.Add(clientsChild);
+                Context.SaveChanges();
 
-            if (response == null) return null;
 
-            return Mapper.Map<Models.Responses.ClientsChild>(response);
+                var response = Context.ClientsChildren.Include(x => x.Client)
+                                            .ThenInclude(x => x.User).Include(x => x.Child)
+                                        .FirstOrDefault(x => x.ClientId == clientId && x.ChildId == child.ChildId);
+
+                transaction.Commit();
+
+                return Mapper.Map<Models.Responses.ClientsChild>(response);
+
+            }
+            catch (Exception ex)
+            {
+
+                transaction.Rollback();
+                throw;
+            }
         }
 
         // to think about 
@@ -234,5 +271,19 @@ namespace CareConnect.Services
                 ChildrenPerGender = Context.Children.GroupBy(x => x.Gender).Select(g => new GenderGroup { Gender = g.Key, Number = g.Count() }).ToList(),
             }; 
         }
+
+        public Models.Responses.ClientsChild GetClientAndChildByIds(int clientId, int childId)
+        {
+            var response = Context.ClientsChildren.Where(x => x.ClientId == clientId && x.ChildId == childId).Include(x => x.Client)
+                                                                                                              .Include(x => x.Client.User)
+                                                                                                              .Include(x => x.Appointments)
+                                                                                                              .Include(x => x.Child)
+                                                                                                              .FirstOrDefault();
+
+            if (response == null) return null;
+
+            return Mapper.Map<Models.Responses.ClientsChild>(response);
+        }
+
     }
 }

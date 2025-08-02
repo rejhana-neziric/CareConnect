@@ -40,6 +40,7 @@ public static class Permissions
         public const string Update = "Permissions.ClientsChild.Update";
         public const string Delete = "Permissions.ClientsChild.Delete";
         public const string GetStatistics = "Permissions.ClientsChild.GetStatistics";
+        public const string GetClientAndChildByIds = "Permissions.ClientsChild.GetClientAndChildByIds";
     }
     public static class Client
     {

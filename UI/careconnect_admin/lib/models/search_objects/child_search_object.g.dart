@@ -23,7 +23,7 @@ ChildSearchObject _$ChildSearchObjectFromJson(Map<String, dynamic> json) =>
       sortAscending: json['sortAscending'] as bool?,
       additionalData: json['additionalData'] == null
           ? null
-          : ClientAdditionalData.fromJson(
+          : ChildAdditionalData.fromJson(
               json['additionalData'] as Map<String, dynamic>,
             ),
       includeTotalCount: json['includeTotalCount'] as bool?,

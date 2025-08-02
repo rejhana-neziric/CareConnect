@@ -6,8 +6,13 @@ part 'clients_child_additional_data.g.dart';
 class ClientsChildAdditionalData {
   bool? isClientIncluded;
   bool? isChildIncluded;
+  bool? isAppoinmentIncluded;
 
-  ClientsChildAdditionalData({this.isClientIncluded, this.isChildIncluded});
+  ClientsChildAdditionalData({
+    this.isClientIncluded,
+    this.isChildIncluded,
+    this.isAppoinmentIncluded,
+  });
 
   factory ClientsChildAdditionalData.fromJson(Map<String, dynamic> json) =>
       _$ClientsChildAdditionalDataFromJson(json);

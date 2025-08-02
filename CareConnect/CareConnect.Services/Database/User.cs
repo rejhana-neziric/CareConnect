@@ -31,8 +31,6 @@ public partial class User
 
     public string? Address { get; set; }
 
-    public virtual ICollection<Appointment> Appointments { get; set; } = new List<Appointment>();
-
     public virtual Client? Client { get; set; }
 
     public virtual Employee? Employee { get; set; }

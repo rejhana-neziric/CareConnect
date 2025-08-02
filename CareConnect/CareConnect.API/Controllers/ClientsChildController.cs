@@ -22,5 +22,12 @@ namespace CareConnect.API.Controllers
         {
             return (_service as ClientsChildService).GetStatistics();
         }
+
+        [HttpGet("{clientId}/{childId}")]
+        [PermissionAuthorize("GetClientAndChildByIds")]
+        public Models.Responses.ClientsChild GetById(int clientId, int childId)
+        {
+            return (_service as ClientsChildService).GetClientAndChildByIds(clientId, childId);
+        }
     }
 }

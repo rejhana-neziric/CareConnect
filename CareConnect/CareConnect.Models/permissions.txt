@@ -1,7 +1,7 @@
 ﻿Appointment: Get, GetById, Insert, Update, Delete, Cancel, Confirm, Start, Complete, Reschedule, AllowedActions
 Child: Get, GetById, Insert, Update, Delete
 ChildrenDiagnosis: Get, GetById, Insert, Update, Delete
-ClientsChild: Get, GetById, Insert, Update, Delete, GetStatistics
+ClientsChild: Get, GetById, Insert, Update, Delete, GetStatistics, GetClientAndChildByIds
 Client: Get, GetById, Insert, Update, Delete, GetChildren, AddChildren
 EmployeeAvailability: Get, GetById, Insert, Update, Delete
 Employee: Get, GetById, Insert, Update, Delete, GetStatistics

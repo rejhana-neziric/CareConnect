@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:careconnect_admin/models/responses/child.dart';
 import 'package:careconnect_admin/models/responses/clients_child.dart';
 import 'package:careconnect_admin/models/responses/clients_child_statistics.dart';
 import 'package:careconnect_admin/providers/base_provider.dart';
@@ -14,7 +15,7 @@ class ClientsChildProvider extends BaseProvider<ClientsChild> {
   }
 
   Future<ClientsChildStatistics> getStatistics() async {
-    var url = "${baseUrl}$endpoint/statistics";
+    var url = "$baseUrl$endpoint/statistics";
     var uri = Uri.parse(url);
     var headers = createHeaders();
 
@@ -72,5 +73,100 @@ class ClientsChildProvider extends BaseProvider<ClientsChild> {
 
   int? getChildId(ClientsChild item) {
     return item.child.childId;
+  }
+
+  Future<ClientsChild> addChildToClient(int id, [dynamic request]) async {
+    var endpoint = "Client";
+
+    var url = "$baseUrl$endpoint/$id/children";
+    var uri = Uri.parse(url);
+    var headers = createHeaders();
+
+    var jsonRequest = jsonEncode(request);
+    var response = await http.post(uri, headers: headers, body: jsonRequest);
+
+    if (isValidResponse(response)) {
+      var data = jsonDecode(response.body);
+      var inserted = fromJson(data);
+      item.result.add(inserted);
+      notifyListeners();
+      return inserted;
+    } else {
+      throw new Exception("Unknown error");
+    }
+  }
+
+  Future<List<Child>> getChildren(int id) async {
+    var endpoint = "Client";
+
+    var url = "$baseUrl$endpoint/$id/children";
+
+    // var queryString = getQueryString(id);
+    // url = "$url?$queryString";
+
+    var uri = Uri.parse(url);
+    var headers = createHeaders();
+
+    var response = await http.get(uri, headers: headers);
+
+    if (isValidResponse(response)) {
+      var data = jsonDecode(response.body);
+
+      print('Decoded data: $data');
+
+      List<Child> result = (data as List)
+          .map((item) => Child.fromJson(item))
+          .toList();
+
+      // result.totalCount = data['totalCount'];
+
+      // _items = SearchResult<T>();
+
+      // for (var item in data['resultList']) {
+      //   result.result.add(fromJson(item));
+      //   _items = result;
+      // }
+
+      notifyListeners();
+
+      return result;
+    } else {
+      throw new Exception("Unknown error");
+    }
+  }
+
+  Future<ClientsChild?> getClientAndChildById({
+    int? clientId,
+    int? childId,
+  }) async {
+    if (clientId == null || childId == null) return null;
+
+    var url = "$baseUrl$endpoint/$clientId/$childId";
+
+    // var queryString = getQueryString(id);
+    // url = "$url?$queryString";
+
+    var uri = Uri.parse(url);
+    var headers = createHeaders();
+
+    var response = await http.get(uri, headers: headers);
+
+    if (isValidResponse(response)) {
+      var data = jsonDecode(response.body);
+
+      print('Decoded data: $data');
+
+      // List<Child> result = (data as List)
+      //     .map((item) => Child.fromJson(item))
+      //     .toList();
+
+      ClientsChild result = ClientsChild.fromJson(data);
+
+      notifyListeners();
+
+      return result;
+    } else {
+      throw new Exception("Unknown error");
+    }
   }
 }

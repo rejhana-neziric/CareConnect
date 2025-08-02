@@ -9,6 +9,7 @@ import 'package:careconnect_admin/models/search_objects/clients_child_additional
 import 'package:careconnect_admin/models/search_objects/clients_child_search_object.dart';
 import 'package:careconnect_admin/providers/client_provider.dart';
 import 'package:careconnect_admin/providers/clients_child_provider.dart';
+import 'package:careconnect_admin/screens/child_details_screen.dart';
 import 'package:careconnect_admin/screens/client_details_screen.dart';
 import 'package:careconnect_admin/theme/app_colors.dart';
 import 'package:careconnect_admin/widgets/custom_dropdown_fliter.dart';
@@ -112,6 +113,9 @@ class _ClientListScreenState extends State<ClientListScreen> {
   int maleCount = 0;
   int femaleCount = 0;
 
+  bool isHoveredParent = false;
+  bool isHoveredChild = false;
+
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
@@ -178,9 +182,9 @@ class _ClientListScreenState extends State<ClientListScreen> {
 
     final filter = filterObject.toJson();
 
-    final newReult = await clientsChildProvider.get(filter: filter);
+    final newResult = await clientsChildProvider.get(filter: filter);
 
-    result = newReult;
+    result = newResult;
 
     final stats = await clientsChildProvider.getStatistics();
 
@@ -332,7 +336,7 @@ class _ClientListScreenState extends State<ClientListScreen> {
     return Card(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       elevation: 1.5,
-      color: AppColors.lightGray,
+      color: AppColors.white,
       child: ConstrainedBox(
         constraints: BoxConstraints(maxWidth: 400),
         child: Container(
@@ -429,7 +433,7 @@ class _ClientListScreenState extends State<ClientListScreen> {
 
   Widget _buildChartCard({required String title, required Widget chart}) {
     return Card(
-      color: AppColors.lightGray,
+      color: AppColors.white,
       child: Padding(
         padding: const EdgeInsets.all(8.0),
         child: Column(
@@ -593,6 +597,7 @@ class _ClientListScreenState extends State<ClientListScreen> {
         decoration: BoxDecoration(
           border: Border.all(color: Colors.grey),
           borderRadius: BorderRadius.circular(8),
+          color: AppColors.white,
         ),
         child: Row(
           children: [
@@ -759,6 +764,9 @@ class _ClientsChildTableState extends State<ClientsChildTable> {
   bool _isLoading = false;
   ClientsChildDataSource? _dataSource;
 
+  bool isHoveredParent = false;
+  bool isHoveredChild = false;
+
   @override
   void initState() {
     super.initState();
@@ -893,6 +901,8 @@ class ClientsChildDataSource extends DataTableSource {
     this.currentPage = 0,
   });
 
+  final ValueNotifier<int?> hoveredRowNotifier = ValueNotifier(null);
+
   @override
   DataRow? getRow(int index) {
     final requestedPage = index ~/ pageSize;
@@ -908,13 +918,121 @@ class ClientsChildDataSource extends DataTableSource {
     return DataRow.byIndex(
       index: index,
       cells: [
+        // DataCell(
+        //   GestureDetector(
+        //     onTap: () {
+        //       // Otvori ekran roditelja
+        //       Navigator.push(
+        //         context,
+        //         MaterialPageRoute(
+        //           builder: (context) =>
+        //               ClientDetailsScreen(clientsChild: clientChild),
+        //         ),
+        //       );
+        //     },
+        //     child: Text(
+        //       "${clientChild.client.user?.firstName ?? " "} ${clientChild.client.user?.lastName ?? ""}",
+        //       style: TextStyle(
+        //         color: Colors.blue,
+        //         decoration: TextDecoration.underline,
+        //       ),
+        //     ),
+        //   ),
+        // ),
         DataCell(
-          Text(
-            "${clientChild.client.user?.firstName ?? " "} ${clientChild.client.user?.lastName ?? ""}",
+          MouseRegion(
+            onEnter: (_) => hoveredRowNotifier.value = index,
+            onExit: (_) => hoveredRowNotifier.value = null,
+            cursor: SystemMouseCursors.click,
+            child: GestureDetector(
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) =>
+                        ClientDetailsScreen(clientsChild: clientChild),
+                  ),
+                );
+              },
+              child: ValueListenableBuilder(
+                valueListenable: hoveredRowNotifier,
+                builder: (context, hoveredIndex, _) {
+                  final isHovered = hoveredIndex == index;
+                  return Text(
+                    "${clientChild.client.user?.firstName ?? ""} ${clientChild.client.user?.lastName ?? ""}",
+                    style: TextStyle(
+                      decoration: isHovered
+                          ? TextDecoration.underline
+                          : TextDecoration.none,
+                      color: isHovered ? Colors.blue : Colors.black,
+                      shadows: isHovered
+                          ? [
+                              Shadow(
+                                color: Colors.blueAccent.withOpacity(0.4),
+                                offset: Offset(0, 1.5),
+                                blurRadius: 4,
+                              ),
+                            ]
+                          : [],
+                    ),
+                  );
+                },
+              ),
+            ),
           ),
         ),
+
+        // DataCell(
+        //   Text(
+        //     "${clientChild.client.user?.firstName ?? " "} ${clientChild.client.user?.lastName ?? ""}",
+        //   ),
+        // ),
+        // DataCell(
+        //   Text("${clientChild.child.firstName} ${clientChild.child.lastName}"),
+        // ),
         DataCell(
-          Text("${clientChild.child.firstName} ${clientChild.child.lastName}"),
+          MouseRegion(
+            onEnter: (_) => hoveredRowNotifier.value = index,
+            onExit: (_) => hoveredRowNotifier.value = null,
+            cursor: SystemMouseCursors.click,
+            child: GestureDetector(
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => ChildDetailsScreen(
+                      client: clientChild.client,
+                      child: clientChild.child,
+                    ),
+                  ),
+                );
+              },
+              child: ValueListenableBuilder(
+                valueListenable: hoveredRowNotifier,
+                builder: (context, hoveredIndex, _) {
+                  final isHovered = hoveredIndex == index;
+                  return Text(
+                    "${clientChild.child.firstName} ${clientChild.child.lastName}",
+                    style: TextStyle(
+                      decoration: isHovered
+                          ? TextDecoration.underline
+                          : TextDecoration.none,
+                      color: isHovered ? Colors.blue : Colors.black,
+                      shadows: isHovered
+                          ? [
+                              Shadow(
+                                color: Colors.blueAccent.withOpacity(0.4),
+                                offset: Offset(0, 1.5),
+                                blurRadius: 4,
+                              ),
+                            ]
+                          : [],
+                    ),
+                  );
+                },
+              ),
+            ),
+          ),
         ),
         DataCell(Text(clientChild.child.gender == "M" ? "Male" : "Female")),
         DataCell(

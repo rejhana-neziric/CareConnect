@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace CareConnect.Models.Responses
 {
@@ -10,5 +11,8 @@ namespace CareConnect.Models.Responses
         public virtual Client Client { get; set; } = null!;
 
         //public DateTime? LastAppointment { get; set; }
+
+        public virtual ICollection<Appointment> Appointments { get; set; } = new List<Appointment>();
+
     }
 }

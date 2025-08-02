@@ -18,7 +18,7 @@ class EmployeeProvider extends BaseProvider<Employee> {
   }
 
   Future<dynamic> getStatistics() async {
-    var url = "${baseUrl}$endpoint/statistics";
+    var url = "$baseUrl$endpoint/statistics";
     var uri = Uri.parse(url);
     var headers = createHeaders();
 

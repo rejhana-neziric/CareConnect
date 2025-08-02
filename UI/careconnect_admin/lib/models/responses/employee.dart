@@ -24,11 +24,8 @@ class Employee {
     this.qualification,
   });
 
-  /// Connect the generated [_$EmployeeFromJson] function to the `fromJson`
-  /// factory.
   factory Employee.fromJson(Map<String, dynamic> json) =>
       _$EmployeeFromJson(json);
 
-  /// Connect the generated [_$EmployeeToJson] function to the `toJson` method.
   Map<String, dynamic> toJson() => _$EmployeeToJson(this);
 }
