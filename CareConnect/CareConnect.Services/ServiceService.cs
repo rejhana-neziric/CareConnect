@@ -1,4 +1,5 @@
 using CareConnect.Models.Requests;
+using CareConnect.Models.Responses;
 using CareConnect.Models.SearchObjects;
 using CareConnect.Services.Database;
 using MapsterMapper;
@@ -6,11 +7,11 @@ using Microsoft.EntityFrameworkCore;
 
 namespace CareConnect.Services
 {
-    public class ServiceService : BaseCRUDService<Models.Responses.Service, ServiceSearchObject, ServiceAdditionalData, Service, ServiceInsertRequest, ServiceUpdateRequest>, IServiceService
+    public class ServiceService : BaseCRUDService<Models.Responses.Service, ServiceSearchObject, ServiceAdditionalData, Database.Service, ServiceInsertRequest, ServiceUpdateRequest>, IServiceService
     {
         public ServiceService(CareConnectContext context, IMapper mapper) : base(context, mapper) { }
 
-        public override IQueryable<Service> AddFilter(ServiceSearchObject search, IQueryable<Service> query)
+        public override IQueryable<Database.Service> AddFilter(ServiceSearchObject search, IQueryable<Database.Service> query)
         {
             query = base.AddFilter(search, query);
 
@@ -29,10 +30,21 @@ namespace CareConnect.Services
                 query = query.Where(x => x.MemberPrice == search.MemberPrice);
             }
 
+            if (!string.IsNullOrWhiteSpace(search?.SortBy))
+            {
+                query = search?.SortBy switch
+                {
+                    "name" => search.SortAscending ? query.OrderBy(x => x.Name) : query.OrderByDescending(x => x.Name),
+                    "price" => search.SortAscending ? query.OrderBy(x => x.Price) : query.OrderByDescending(x => x.Price),
+                    "memberPrice" => search.SortAscending ? query.OrderBy(x => x.MemberPrice) : query.OrderByDescending(x => x.MemberPrice),
+                    _ => query
+                };
+            }
+
             return query;
         }
 
-        protected override void AddInclude(ServiceAdditionalData additionalData, ref IQueryable<Service> query)
+        protected override void AddInclude(ServiceAdditionalData additionalData, ref IQueryable<Database.Service> query)
         {
             /*
             if (additionalData != null)
@@ -58,23 +70,23 @@ namespace CareConnect.Services
             base.AddInclude(additionalData, ref query);
         }
 
-        public override void BeforeInsert(ServiceInsertRequest request, Service entity)
+        public override void BeforeInsert(ServiceInsertRequest request, Database.Service entity)
         {
             base.BeforeInsert(request, entity);
         }
 
-        public override void BeforeUpdate(ServiceUpdateRequest request, ref Service entity)
+        public override void BeforeUpdate(ServiceUpdateRequest request, ref Database.Service entity)
         {
             base.BeforeUpdate(request, ref entity);
         }
 
-        public override Service GetByIdWithIncludes(int id)
+        public override Database.Service GetByIdWithIncludes(int id)
         {
             return Context.Services
                 .First(s => s.ServiceId == id);
         }
 
-        public override void BeforeDelete(Service entity)
+        public override void BeforeDelete(Database.Service entity)
         {
             //foreach (var child in entity.ClientsChildren)
             //    Context.Remove(child);
@@ -96,6 +108,21 @@ namespace CareConnect.Services
             //}
 
             base.AfterDelete(id);
+        }
+
+        public ServiceStatistics GetStatistics()
+        {
+            var now = DateTime.Now;
+            var startOfMonth = new DateTime(now.Year, now.Month, 1);
+            var startOfNextMonth = startOfMonth.AddMonths(1);
+
+            return new ServiceStatistics
+            {
+                TotalServices = Context.Services.Count(),
+                AveragePrice = Context.Services.Average(x => x.Price),
+                AverageMemberPrice = Context.Services.Average(x => x.MemberPrice),
+
+            };
         }
     }
 }

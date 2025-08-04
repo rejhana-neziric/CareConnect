@@ -141,6 +141,7 @@ public static class Permissions
         public const string Insert = "Permissions.Service.Insert";
         public const string Update = "Permissions.Service.Update";
         public const string Delete = "Permissions.Service.Delete";
+        public const string GetStatistics = "Permissions.Service.GetStatistics";
     }
     public static class Session
     {

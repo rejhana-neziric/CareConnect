@@ -13,7 +13,7 @@ Payment: Get, GetById, Insert, Update, Delete
 Review: Get, GetById, Insert, Update, Delete
 Role: Get, GetById, Insert, Update, Delete, AssignPermission
 UsersRole: Get, GetById, Insert, Update, Delete
-Service: Get, GetById, Insert, Update, Delete
+Service: Get, GetById, Insert, Update, Delete, GetStatistics
 Session: Get, GetById, Insert, Update, Delete
 User: Login, GetPermission
 Workshop: Get, GetById, Insert, Update, Delete

@@ -8,8 +8,15 @@ class Service {
   final String? description;
   final double? price;
   final double? memberPrice;
+  final DateTime modifiedDate;
 
-  Service({required this.name, this.description, this.price, this.memberPrice});
+  Service({
+    required this.name,
+    this.description,
+    this.price,
+    this.memberPrice,
+    required this.modifiedDate,
+  });
 
   factory Service.fromJson(Map<String, dynamic> json) =>
       _$ServiceFromJson(json);

@@ -1,5 +1,6 @@
 import 'package:careconnect_admin/screens/client_list_screen.dart';
 import 'package:careconnect_admin/screens/employee_list_screen.dart';
+import 'package:careconnect_admin/screens/services_list_screen.dart';
 import 'package:careconnect_admin/theme/app_colors.dart';
 import 'package:flutter/material.dart';
 
@@ -72,7 +73,7 @@ class _MasterScreenState extends State<MasterScreen> {
                         title: Text("Services"),
                         onTap: () => Navigator.of(context).push(
                           MaterialPageRoute(
-                            builder: (context) => ClientListScreen(),
+                            builder: (context) => ServicesListScreen(),
                           ),
                         ),
                       ),

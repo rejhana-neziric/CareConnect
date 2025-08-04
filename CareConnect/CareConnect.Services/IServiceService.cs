@@ -6,5 +6,7 @@ namespace CareConnect.Services
 {
     public interface IServiceService : ICRUDService<Service, ServiceSearchObject, ServiceAdditionalData, ServiceInsertRequest, ServiceUpdateRequest>
     {
+        public ServiceStatistics GetStatistics();
+
     }
 }
