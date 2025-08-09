@@ -15,6 +15,8 @@ public partial class Service
 
     public decimal? MemberPrice { get; set; }
 
+    public bool IsActive { get; set; } = true;
+
     public DateTime ModifiedDate { get; set; }
 
     public virtual ICollection<EmployeeAvailability> EmployeeAvailabilities { get; set; } = new List<EmployeeAvailability>();

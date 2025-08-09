@@ -2,17 +2,17 @@ import 'package:careconnect_admin/theme/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 
-// final theme = Theme.of(context);
-// final colorScheme = theme.colorScheme;
-
-class CustomTextField extends StatelessWidget {
+class CustomTextField extends StatefulWidget {
   final double width;
   final String name;
   final String label;
   final String? hintText;
   final String? prefixText;
+  final int? maxLength;
+  final int maxLines;
   final String? Function(String?)? validator;
   final bool enabled;
+  final bool required;
 
   const CustomTextField({
     super.key,
@@ -21,28 +21,52 @@ class CustomTextField extends StatelessWidget {
     required this.label,
     this.hintText,
     this.prefixText,
+    this.maxLength,
+    this.maxLines = 1,
     this.validator,
     this.enabled = true,
+    this.required = false,
   });
 
   @override
-  Widget build(BuildContext context) {
-    // final theme = Theme.of(context);
-    // final colorScheme = theme.colorScheme;
+  State<CustomTextField> createState() => _CustomTextFieldState();
+}
 
+class _CustomTextFieldState extends State<CustomTextField> {
+  late final TextEditingController _controller;
+  bool _hasUserInteracted = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = TextEditingController();
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 16.0),
       child: SizedBox(
-        width: width,
+        width: widget.width,
         child: FormBuilderField<String>(
-          name: name,
-          validator: validator,
-          autovalidateMode: AutovalidateMode.onUserInteraction,
-          builder: (FormFieldState<String?> field) {
-            final controller = TextEditingController(text: field.value);
-            controller.selection = TextSelection.fromPosition(
-              TextPosition(offset: controller.text.length),
-            );
+          name: widget.name,
+          validator: widget.validator,
+          autovalidateMode: _hasUserInteracted
+              ? AutovalidateMode.always
+              : AutovalidateMode.disabled,
+          builder: (field) {
+            if (_controller.text != (field.value ?? '')) {
+              _controller.text = field.value ?? '';
+              _controller.selection = TextSelection.fromPosition(
+                TextPosition(offset: _controller.text.length),
+              );
+            }
             return Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -57,14 +81,40 @@ class CustomTextField extends StatelessWidget {
                     color: Colors.white,
                   ),
                   child: TextField(
-                    controller: controller,
-                    enabled: enabled,
-                    onChanged: field.didChange,
+                    controller: _controller,
+                    maxLength: widget.maxLength,
+                    maxLines: widget.maxLines,
+                    enabled: widget.enabled,
+                    onChanged: (val) {
+                      if (!_hasUserInteracted) {
+                        setState(() => _hasUserInteracted = true);
+                      }
+                      field.didChange(val);
+                    },
                     decoration: InputDecoration(
-                      labelText: label,
                       border: InputBorder.none,
-                      hintText: hintText,
-                      prefixText: prefixText,
+                      hintText: widget.hintText,
+                      prefixText: widget.prefixText,
+                      label: RichText(
+                        text: TextSpan(
+                          text: widget.label,
+                          style: const TextStyle(
+                            color: Colors.black,
+                            fontSize: 16,
+                          ),
+                          children: widget.required
+                              ? [
+                                  const TextSpan(
+                                    text: ' *',
+                                    style: TextStyle(
+                                      color: Colors.red,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ]
+                              : [],
+                        ),
+                      ),
                     ),
                   ),
                 ),

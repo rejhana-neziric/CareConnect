@@ -2,14 +2,15 @@ import 'package:careconnect_admin/layouts/master_screen.dart';
 import 'package:careconnect_admin/models/responses/search_result.dart';
 import 'package:careconnect_admin/models/responses/service.dart';
 import 'package:careconnect_admin/models/responses/service_statistics.dart';
-import 'package:careconnect_admin/models/search_objects/service_search_object.dart';
+import 'package:careconnect_admin/providers/service_form_provider.dart';
 import 'package:careconnect_admin/providers/service_provider.dart';
 import 'package:careconnect_admin/screens/service_details_screen.dart';
 import 'package:careconnect_admin/theme/app_colors.dart';
 import 'package:careconnect_admin/widgets/custom_dropdown_fliter.dart';
+import 'package:careconnect_admin/widgets/no_results.dart';
 import 'package:careconnect_admin/widgets/primary_button.dart';
+import 'package:careconnect_admin/widgets/stat_card.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
@@ -42,7 +43,22 @@ class _ServicesListScreenState extends State<ServicesListScreen> {
     'Member Price': 'memberPrice',
   };
 
+  String? selectedIsActiveOption;
+
+  final Map<String, String?> isActiveOptions = {
+    'All Status': null,
+    'Active': 'true',
+    'Inactive': 'false',
+  };
+
+  bool? isActive;
+
   ServiceStatistics? statistics;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+  }
 
   @override
   void initState() {
@@ -58,39 +74,40 @@ class _ServicesListScreenState extends State<ServicesListScreen> {
     }
   }
 
-  Future<SearchResult<Service>?> loadData({int page = 0}) async {
-    final filterObject = ServiceSearchObject(
-      nameGTE: _ftsController.text,
-      price: _priceController.text.isEmpty != true
-          ? double.parse(_priceController.text)
-          : null,
-      memberPrice: _memberPriceController.text.isEmpty != true
-          ? double.parse(_memberPriceController.text)
-          : null,
-      page: page,
-      sortBy: _sortBy,
-      sortAscending: _sortAscending,
-      includeTotalCount: true,
-      retrieveAll: true,
+  Future<SearchResult<Service>?> loadData() async {
+    final serviceProvider = Provider.of<ServiceProvider>(
+      context,
+      listen: false,
     );
 
-    final filter = filterObject.toJson();
-
-    final result = await serviceProvider.get(filter: filter);
+    final result = await serviceProvider.loadData(
+      fts: _ftsController.text,
+      price: _priceController.text.isNotEmpty
+          ? double.tryParse(_priceController.text)
+          : null,
+      memberPrice: _memberPriceController.text.isNotEmpty
+          ? double.tryParse(_memberPriceController.text)
+          : null,
+      isActive: isActive,
+      sortBy: _sortBy,
+      sortAscending: _sortAscending,
+    );
 
     services = result;
 
-    final stats = await serviceProvider.getStatistics();
-
-    statistics = stats;
-
-    print(services);
+    loadStats();
 
     if (mounted) {
       setState(() {});
     }
 
     return services;
+  }
+
+  Future<void> loadStats() async {
+    final stats = await serviceProvider.loadStats();
+
+    statistics = stats;
   }
 
   @override
@@ -100,20 +117,33 @@ class _ServicesListScreenState extends State<ServicesListScreen> {
       SingleChildScrollView(
         scrollDirection: Axis.vertical,
         child: Column(
-          children: [_buildOverview(), _buildSearch(), _buildResultView()],
+          children: [
+            _buildOverview(),
+            _buildSearch(),
+            Consumer<ServiceProvider>(
+              builder: (context, serviceProvider, child) {
+                return _buildResultView();
+              },
+            ),
+          ],
         ),
       ),
       button: SizedBox(
         child: Align(
           alignment: Alignment.topRight,
           child: PrimaryButton(
-            onPressed: () {
-              Navigator.push(
+            onPressed: () async {
+              final result = await Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => ServiceDetailsScreen(service: null),
+                  builder: (context) => ChangeNotifierProvider(
+                    create: (_) => ServiceFormProvider(),
+                    child: ServiceDetailsScreen(service: null),
+                  ),
                 ),
               );
+
+              if (result == true) loadData();
             },
             label: 'Add Service',
           ),
@@ -134,14 +164,14 @@ class _ServicesListScreenState extends State<ServicesListScreen> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          _buildStatCard(
+          statCard(
             'Total Services',
             statistics?.totalServices,
             Icons.groups,
             Colors.teal,
           ),
           SizedBox(width: 20),
-          _buildStatCard(
+          statCard(
             'Average Price',
             statistics?.averagePrice == null
                 ? 0
@@ -150,7 +180,7 @@ class _ServicesListScreenState extends State<ServicesListScreen> {
             Colors.green,
           ),
           SizedBox(width: 20),
-          _buildStatCard(
+          statCard(
             "Average Member Price",
             statistics?.averageMemberPrice == null
                 ? 0
@@ -159,55 +189,6 @@ class _ServicesListScreenState extends State<ServicesListScreen> {
             Colors.orange,
           ),
         ],
-      ),
-    );
-  }
-
-  Widget _buildStatCard(
-    String label,
-    dynamic value,
-    IconData icon,
-    Color iconColor,
-  ) {
-    return Card(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      elevation: 1.5,
-      color: AppColors.white,
-      child: ConstrainedBox(
-        constraints: BoxConstraints(maxWidth: 400),
-        child: Container(
-          height: 100,
-          padding: EdgeInsets.all(16),
-          child: Row(
-            children: [
-              Container(
-                padding: EdgeInsets.all(10),
-                decoration: BoxDecoration(
-                  color: iconColor.withAlpha((0.1 * 255).toInt()),
-                  shape: BoxShape.circle,
-                ),
-                child: Icon(icon, color: iconColor, size: 25),
-              ),
-              SizedBox(width: 16),
-              // Text info
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(
-                    '$value',
-                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                  ),
-                  SizedBox(height: 4),
-                  Text(
-                    label,
-                    style: TextStyle(fontSize: 14, color: Colors.grey[600]),
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ),
       ),
     );
   }
@@ -247,7 +228,7 @@ class _ServicesListScreenState extends State<ServicesListScreen> {
         ),
         SizedBox(width: 32),
         ConstrainedBox(
-          constraints: BoxConstraints(maxWidth: 200),
+          constraints: BoxConstraints(maxWidth: 150),
           child: Container(
             padding: EdgeInsets.symmetric(horizontal: 8, vertical: 2),
             decoration: BoxDecoration(
@@ -267,7 +248,7 @@ class _ServicesListScreenState extends State<ServicesListScreen> {
         ),
         SizedBox(width: 32),
         ConstrainedBox(
-          constraints: BoxConstraints(maxWidth: 200),
+          constraints: BoxConstraints(maxWidth: 150),
           child: Container(
             padding: EdgeInsets.symmetric(horizontal: 8, vertical: 2),
             decoration: BoxDecoration(
@@ -282,6 +263,33 @@ class _ServicesListScreenState extends State<ServicesListScreen> {
                 border: InputBorder.none,
               ),
               onChanged: (value) => loadData(),
+            ),
+          ),
+        ),
+        SizedBox(width: 32),
+
+        ConstrainedBox(
+          constraints: BoxConstraints(maxWidth: 250),
+          child: Container(
+            color: AppColors.white,
+            width: 250,
+            child: CustomDropdownFliter(
+              selectedValue: selectedIsActiveOption,
+              options: isActiveOptions,
+              name: "Available Status: ",
+              onChanged: (newStatus) {
+                setState(() {
+                  selectedIsActiveOption = newStatus;
+                  if (newStatus == 'true') {
+                    isActive = true;
+                  } else if (newStatus == 'false') {
+                    isActive = false;
+                  } else {
+                    isActive = null;
+                  }
+                });
+                loadData();
+              },
             ),
           ),
         ),
@@ -306,7 +314,6 @@ class _ServicesListScreenState extends State<ServicesListScreen> {
           ),
         ),
         SizedBox(width: 8),
-
         IconButton(
           icon: Icon(
             _sortAscending ? Icons.arrow_upward : Icons.arrow_downward,
@@ -320,9 +327,7 @@ class _ServicesListScreenState extends State<ServicesListScreen> {
             loadData();
           },
         ),
-
         SizedBox(width: 8),
-
         // Refresh
         TextButton.icon(
           onPressed: () async {
@@ -331,11 +336,14 @@ class _ServicesListScreenState extends State<ServicesListScreen> {
             _memberPriceController.clear();
             _sortBy = null;
             selectedSortingOption = null;
+            selectedIsActiveOption = null;
+            isActive = null;
             loadData();
           },
           label: Text("Refresh", style: TextStyle(color: Colors.black)),
           icon: Icon(Icons.refresh_outlined, color: Colors.black),
         ),
+        SizedBox(width: 32),
       ],
     );
   }
@@ -371,14 +379,15 @@ class _ServicesListScreenState extends State<ServicesListScreen> {
   }
 
   Widget _buildService(Service service) {
-    return ServiceCard(service: service);
+    return ServiceCard(service: service, loadData: loadData);
   }
 }
 
 class ServiceCard extends StatefulWidget {
   final Service service;
+  final Future<SearchResult<Service>?> Function() loadData;
 
-  const ServiceCard({super.key, required this.service});
+  const ServiceCard({super.key, required this.service, required this.loadData});
 
   @override
   State<ServiceCard> createState() => _ServiceCardState();
@@ -396,16 +405,22 @@ class _ServiceCardState extends State<ServiceCard> {
         onEnter: (_) => setState(() => isHovered = true),
         onExit: (_) => setState(() => isHovered = false),
         child: InkWell(
-          onTap: () {
-            Navigator.push(
+          onTap: () async {
+            final result = await Navigator.push(
               context,
               MaterialPageRoute(
-                builder: (context) =>
-                    ServiceDetailsScreen(service: widget.service),
+                builder: (context) => ChangeNotifierProvider(
+                  create: (_) => ServiceFormProvider(),
+                  child: ServiceDetailsScreen(service: widget.service),
+                ),
               ),
             );
+
+            if (result == true) {
+              widget.loadData();
+            }
           },
-          borderRadius: BorderRadius.circular(12), // optional
+          borderRadius: BorderRadius.circular(12),
           child: Container(
             width: screenWidth < 550 ? screenWidth * 0.95 : 500,
             height: 150,
@@ -415,7 +430,7 @@ class _ServiceCardState extends State<ServiceCard> {
                 borderRadius: BorderRadius.circular(12),
                 side: BorderSide(
                   color: isHovered ? AppColors.mauveGray : Colors.transparent,
-                  width: 2,
+                  width: 1,
                 ),
               ),
               child: Padding(
@@ -424,17 +439,47 @@ class _ServiceCardState extends State<ServiceCard> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        "${widget.service.name}",
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                          color: AppColors.mauveGray,
-                        ),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            "${widget.service.name}",
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                              color: AppColors.mauveGray,
+                            ),
+                          ),
+                          Container(
+                            padding: EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 6,
+                            ),
+                            decoration: BoxDecoration(
+                              color: widget.service.isActive == true
+                                  ? const Color.fromRGBO(204, 245, 215, 1)
+                                  : Colors.red.shade50,
+                              border: null,
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                            child: Text(
+                              widget.service.isActive == true
+                                  ? "Active"
+                                  : "Inactive",
+                              style: TextStyle(
+                                color: widget.service.isActive == true
+                                    ? Color.fromARGB(255, 80, 80, 80)
+                                    : Colors.red,
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
                       SizedBox(height: 20),
                       Text(
-                        "${widget.service.description}",
+                        widget.service.description == null
+                            ? "No description."
+                            : "${widget.service.description}",
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
                       ),
@@ -444,37 +489,39 @@ class _ServiceCardState extends State<ServiceCard> {
                         children: [
                           Row(
                             children: [
-                              Container(
-                                decoration: BoxDecoration(
-                                  color: AppColors.dustyRose,
-                                  borderRadius: BorderRadius.circular(4),
-                                ),
-                                child: Padding(
-                                  padding: const EdgeInsets.all(4.0),
-                                  child: Text(
-                                    "Price: ${widget.service.price}",
-                                    style: TextStyle(
-                                      fontWeight: FontWeight.w500,
+                              if (widget.service.price != null)
+                                Container(
+                                  decoration: BoxDecoration(
+                                    color: AppColors.dustyRose,
+                                    borderRadius: BorderRadius.circular(4),
+                                  ),
+                                  child: Padding(
+                                    padding: const EdgeInsets.all(4.0),
+                                    child: Text(
+                                      "Price: ${widget.service.price}",
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.w500,
+                                      ),
                                     ),
                                   ),
                                 ),
-                              ),
                               SizedBox(width: 15),
-                              Container(
-                                decoration: BoxDecoration(
-                                  color: AppColors.dustyRose,
-                                  borderRadius: BorderRadius.circular(4),
-                                ),
-                                child: Padding(
-                                  padding: const EdgeInsets.all(4.0),
-                                  child: Text(
-                                    "Member price: ${widget.service.memberPrice}",
-                                    style: TextStyle(
-                                      fontWeight: FontWeight.w500,
+                              if (widget.service.memberPrice != null)
+                                Container(
+                                  decoration: BoxDecoration(
+                                    color: AppColors.dustyRose,
+                                    borderRadius: BorderRadius.circular(4),
+                                  ),
+                                  child: Padding(
+                                    padding: const EdgeInsets.all(4.0),
+                                    child: Text(
+                                      "Member price: ${widget.service.memberPrice}",
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.w500,
+                                      ),
                                     ),
                                   ),
                                 ),
-                              ),
                             ],
                           ),
                           Text(
@@ -489,35 +536,6 @@ class _ServiceCardState extends State<ServiceCard> {
             ),
           ),
         ),
-      ),
-    );
-  }
-}
-
-class NoResultsWidget extends StatelessWidget {
-  final String message;
-  final IconData icon;
-
-  const NoResultsWidget({
-    Key? key,
-    this.message = 'No results found',
-    this.icon = Icons.search_off,
-  }) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, size: 80, color: Colors.grey[400]),
-          const SizedBox(height: 16),
-          Text(
-            message,
-            style: TextStyle(fontSize: 18, color: Colors.grey[600]),
-            textAlign: TextAlign.center,
-          ),
-        ],
       ),
     );
   }

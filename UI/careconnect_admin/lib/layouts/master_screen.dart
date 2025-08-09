@@ -5,11 +5,18 @@ import 'package:careconnect_admin/theme/app_colors.dart';
 import 'package:flutter/material.dart';
 
 class MasterScreen extends StatefulWidget {
-  const MasterScreen(this.title, this.child, {super.key, this.button});
+  const MasterScreen(
+    this.title,
+    this.child, {
+    super.key,
+    this.button,
+    this.onBackPressed,
+  });
 
   final String title;
   final Widget child;
   final Widget? button;
+  final Future<bool> Function()? onBackPressed;
 
   @override
   State<MasterScreen> createState() => _MasterScreenState();
@@ -48,7 +55,18 @@ class _MasterScreenState extends State<MasterScreen> {
                       ListTile(
                         leading: Icon(Icons.arrow_back),
                         title: Text("Back"),
-                        onTap: () => Navigator.pop(context),
+
+                        //onTap: () => Navigator.pop(context),
+                        onTap: () async {
+                          if (widget.onBackPressed != null) {
+                            final shouldPop = await widget.onBackPressed!();
+                            if (shouldPop) {
+                              Navigator.of(context).pop(true);
+                            }
+                          } else {
+                            Navigator.of(context).pop();
+                          }
+                        },
                       ),
                       ListTile(
                         leading: Icon(Icons.badge),

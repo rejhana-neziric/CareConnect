@@ -30,6 +30,11 @@ namespace CareConnect.Services
                 query = query.Where(x => x.MemberPrice == search.MemberPrice);
             }
 
+            if (search?.IsActive.HasValue == true)
+            {
+                query = query.Where(x => x.IsActive == search.IsActive);
+            }
+
             if (!string.IsNullOrWhiteSpace(search?.SortBy))
             {
                 query = search?.SortBy switch

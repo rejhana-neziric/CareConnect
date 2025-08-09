@@ -29,7 +29,7 @@ class CustomDropdownField<T> extends StatelessWidget {
         child: FormBuilderField<T>(
           name: name,
           validator: validator,
-          autovalidateMode: AutovalidateMode.onUserInteraction,
+          autovalidateMode: AutovalidateMode.disabled,
           builder: (FormFieldState<T?> field) {
             return Column(
               crossAxisAlignment: CrossAxisAlignment.start,

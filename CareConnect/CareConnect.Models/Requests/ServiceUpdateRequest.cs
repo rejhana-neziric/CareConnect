@@ -15,6 +15,8 @@ namespace CareConnect.Models.Requests
 
         public decimal? MemberPrice { get; set; }
 
+        public bool? IsActive { get; set; }
+
         [JsonIgnore]
         public DateTime ModifiedDate { get; set; } = DateTime.Now;
     }

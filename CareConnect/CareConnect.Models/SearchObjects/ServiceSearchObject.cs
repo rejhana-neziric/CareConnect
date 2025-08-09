@@ -12,5 +12,7 @@ namespace CareConnect.Models.SearchObjects
         public decimal? Price { get; set; }
 
         public decimal? MemberPrice { get; set; }
+
+        public bool? IsActive { get; set; }
     }
 }

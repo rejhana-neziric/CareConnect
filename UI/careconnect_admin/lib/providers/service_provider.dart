@@ -1,7 +1,8 @@
 import 'dart:convert';
-
+import 'package:careconnect_admin/models/responses/search_result.dart';
 import 'package:careconnect_admin/models/responses/service.dart';
 import 'package:careconnect_admin/models/responses/service_statistics.dart';
+import 'package:careconnect_admin/models/search_objects/service_search_object.dart';
 import 'package:careconnect_admin/providers/base_provider.dart';
 import 'package:http/http.dart' as http;
 
@@ -13,10 +14,10 @@ class ServiceProvider extends BaseProvider<Service> {
     return Service.fromJson(data);
   }
 
-  // @override
-  // int? getId(Service item) {
-  //   return item.id;
-  // }
+  @override
+  int? getId(Service item) {
+    return item.serviceId;
+  }
 
   Future<ServiceStatistics> getStatistics() async {
     var url = "$baseUrl$endpoint/statistics";
@@ -30,13 +31,46 @@ class ServiceProvider extends BaseProvider<Service> {
 
       notifyListeners();
 
-      print(data);
-
       final stats = ServiceStatistics.fromJson(data);
 
       return stats;
     } else {
-      throw new Exception("Unknown error");
+      throw Exception("Unknown error");
     }
+  }
+
+  Future<SearchResult<Service>?> loadData({
+    required String fts,
+    double? price,
+    double? memberPrice,
+    bool? isActive,
+    int page = 0,
+    String? sortBy,
+    bool sortAscending = true,
+  }) async {
+    final filterObject = ServiceSearchObject(
+      nameGTE: fts,
+      price: price,
+      memberPrice: memberPrice,
+      isActive: isActive,
+      page: page,
+      sortBy: sortBy,
+      sortAscending: sortAscending,
+      includeTotalCount: true,
+      retrieveAll: true,
+    );
+
+    final filter = filterObject.toJson();
+
+    final result = await get(filter: filter);
+
+    notifyListeners();
+    return result;
+  }
+
+  Future<ServiceStatistics> loadStats() async {
+    final statistics = await getStatistics();
+    notifyListeners();
+    return statistics;
   }
 }

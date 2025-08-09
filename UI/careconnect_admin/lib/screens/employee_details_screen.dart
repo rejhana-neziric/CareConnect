@@ -369,9 +369,6 @@ class _EmployeeDetailsScreenState extends State<EmployeeDetailsScreen> {
                   employeeFormProvider,
                   employeeProvider,
                   id,
-                  onSaved: () {
-                    loadData();
-                  },
                 );
 
                 ScaffoldMessenger.of(context).showSnackBar(
