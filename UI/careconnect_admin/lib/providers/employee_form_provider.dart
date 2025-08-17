@@ -50,6 +50,7 @@ class EmployeeFormProvider
       } else {
         final updateRequest = EmployeeUpdateRequest(
           jobTitle: formData['jobTitle'],
+          endDate: formData['endDate'],
           user: UserUpdateRequest(
             phoneNumber: formData['phoneNumber'],
             username: formData['username'],
@@ -68,6 +69,8 @@ class EmployeeFormProvider
 
         if (id != null) await entitiyProvider.update(id, updateRequest);
       }
+
+      notifyListeners();
 
       return true;
     } catch (e) {

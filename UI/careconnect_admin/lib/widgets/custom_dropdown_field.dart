@@ -1,4 +1,3 @@
-import 'package:careconnect_admin/theme/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 
@@ -9,6 +8,7 @@ class CustomDropdownField<T> extends StatelessWidget {
   final List<DropdownMenuItem<T>> items;
   final String? Function(T?)? validator;
   final bool enabled;
+  final bool required;
 
   const CustomDropdownField({
     super.key,
@@ -18,39 +18,83 @@ class CustomDropdownField<T> extends StatelessWidget {
     required this.items,
     this.validator,
     this.enabled = true,
+    this.required = false,
   });
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return Padding(
       padding: const EdgeInsets.only(bottom: 16.0),
       child: SizedBox(
         width: width,
         child: FormBuilderField<T>(
           name: name,
-          validator: validator,
-          autovalidateMode: AutovalidateMode.disabled,
+          autovalidateMode: AutovalidateMode.onUserInteraction,
+          validator:
+              validator ??
+              (required
+                  ? (value) {
+                      if (value == null) {
+                        return '$label is required';
+                      }
+                      return null;
+                    }
+                  : null),
           builder: (FormFieldState<T?> field) {
             return Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 4,
+                InputDecorator(
+                  decoration: InputDecoration(
+                    label: RichText(
+                      text: TextSpan(
+                        text: label,
+                        style: TextStyle(
+                          color: colorScheme.onSurface,
+                          fontSize: 16,
+                        ),
+                        children: required
+                            ? [
+                                TextSpan(
+                                  text: ' *',
+                                  style: TextStyle(
+                                    color: colorScheme.error,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ]
+                            : [],
+                      ),
+                    ),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8),
+                      borderSide: BorderSide(
+                        color: colorScheme.primaryContainer,
+                        width: 2,
+                      ),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8),
+                      borderSide: BorderSide(
+                        color: colorScheme.primaryContainer,
+                        width: 2,
+                      ),
+                    ),
+                    filled: true,
+                    fillColor: colorScheme.surfaceContainerLowest,
                   ),
-                  decoration: BoxDecoration(
-                    border: Border.all(color: AppColors.dustyRose, width: 2),
-                    borderRadius: BorderRadius.circular(8),
-                    color: Colors.white,
-                  ),
-                  child: DropdownButton<T>(
-                    isExpanded: true,
-                    value: field.value,
-                    onChanged: enabled ? field.didChange : null,
-                    hint: Text(label),
-                    underline: const SizedBox(),
-                    items: items,
+                  isEmpty: field.value == null,
+                  child: DropdownButtonHideUnderline(
+                    child: DropdownButton<T>(
+                      isExpanded: true,
+                      isDense: true,
+                      value: field.value,
+                      onChanged: enabled ? field.didChange : null,
+                      items: items,
+                    ),
                   ),
                 ),
                 if (field.hasError)

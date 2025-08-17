@@ -7,10 +7,16 @@ part 'employee_update_request.g.dart'; // Don't open or edit this
 @JsonSerializable()
 class EmployeeUpdateRequest {
   final String? jobTitle;
+  final DateTime? endDate;
   final UserUpdateRequest? user;
   final QualificationUpdateRequest? qualification;
 
-  EmployeeUpdateRequest({this.jobTitle, this.user, this.qualification});
+  EmployeeUpdateRequest({
+    this.jobTitle,
+    this.endDate,
+    this.user,
+    this.qualification,
+  });
 
   /// Connect the generated [_$UserInsertRequestFromJson] function to the `fromJson`
   /// factory.

@@ -63,15 +63,8 @@ class _ServicesListScreenState extends State<ServicesListScreen> {
   @override
   void initState() {
     super.initState();
-
     serviceProvider = context.read<ServiceProvider>();
-
     loadData();
-
-    if (serviceProvider.shouldRefresh) {
-      loadData();
-      serviceProvider.markRefreshed();
-    }
   }
 
   Future<SearchResult<Service>?> loadData() async {
@@ -165,6 +158,7 @@ class _ServicesListScreenState extends State<ServicesListScreen> {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           statCard(
+            context,
             'Total Services',
             statistics?.totalServices,
             Icons.groups,
@@ -172,6 +166,8 @@ class _ServicesListScreenState extends State<ServicesListScreen> {
           ),
           SizedBox(width: 20),
           statCard(
+            context,
+
             'Average Price',
             statistics?.averagePrice == null
                 ? 0
@@ -181,6 +177,7 @@ class _ServicesListScreenState extends State<ServicesListScreen> {
           ),
           SizedBox(width: 20),
           statCard(
+            context,
             "Average Member Price",
             statistics?.averageMemberPrice == null
                 ? 0
@@ -367,7 +364,7 @@ class _ServicesListScreenState extends State<ServicesListScreen> {
               children: [
                 NoResultsWidget(
                   message: 'No results found. Please try again.',
-                  icon: Icons.search_off,
+                  icon: Icons.sentiment_dissatisfied,
                 ),
               ],
             ),
@@ -398,6 +395,9 @@ class _ServiceCardState extends State<ServiceCard> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     double screenWidth = MediaQuery.of(context).size.width;
     return Tooltip(
       message: "Click to view service details.",
@@ -421,10 +421,11 @@ class _ServiceCardState extends State<ServiceCard> {
             }
           },
           borderRadius: BorderRadius.circular(12),
-          child: Container(
+          child: SizedBox(
             width: screenWidth < 550 ? screenWidth * 0.95 : 500,
             height: 150,
             child: Card(
+              color: colorScheme.surfaceContainerLowest,
               margin: EdgeInsets.all(16),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12),
@@ -443,7 +444,7 @@ class _ServiceCardState extends State<ServiceCard> {
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Text(
-                            "${widget.service.name}",
+                            widget.service.name,
                             style: TextStyle(
                               fontSize: 18,
                               fontWeight: FontWeight.bold,
@@ -492,7 +493,7 @@ class _ServiceCardState extends State<ServiceCard> {
                               if (widget.service.price != null)
                                 Container(
                                   decoration: BoxDecoration(
-                                    color: AppColors.dustyRose,
+                                    color: colorScheme.primaryContainer,
                                     borderRadius: BorderRadius.circular(4),
                                   ),
                                   child: Padding(
@@ -509,7 +510,8 @@ class _ServiceCardState extends State<ServiceCard> {
                               if (widget.service.memberPrice != null)
                                 Container(
                                   decoration: BoxDecoration(
-                                    color: AppColors.dustyRose,
+                                    color: colorScheme.primaryContainer,
+
                                     borderRadius: BorderRadius.circular(4),
                                   ),
                                   child: Padding(

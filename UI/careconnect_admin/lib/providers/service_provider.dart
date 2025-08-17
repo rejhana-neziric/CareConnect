@@ -40,7 +40,7 @@ class ServiceProvider extends BaseProvider<Service> {
   }
 
   Future<SearchResult<Service>?> loadData({
-    required String fts,
+    String? fts,
     double? price,
     double? memberPrice,
     bool? isActive,

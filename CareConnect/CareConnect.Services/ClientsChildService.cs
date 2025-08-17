@@ -201,7 +201,29 @@ namespace CareConnect.Services
         // to think about 
         public bool RemoveChildFromClient(int clientId, int childId)
         {
-            return true;
+            using var transaction = Context.Database.BeginTransaction();
+
+            try
+            {
+                var clientsChild = Context.ClientsChildren.FirstOrDefault(x => x.ClientId == clientId && x.ChildId == childId);
+
+                if (clientsChild == null) return false; 
+
+                Context.ClientsChildren.Remove(clientsChild);   
+                var child = _childService.Delete(childId);  
+
+                Context.SaveChanges();
+
+                transaction.Commit();
+
+                return true;
+
+            }
+            catch (Exception ex)
+            {
+                transaction.Rollback();
+                throw;
+            }
         }
 
 

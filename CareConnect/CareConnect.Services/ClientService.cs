@@ -120,8 +120,14 @@ namespace CareConnect.Services
 
         public override void BeforeDelete(Client entity)
         {
-            foreach (var child in entity.ClientsChildren)
-                Context.Remove(child);
+            var client = Context.Clients.Where(x => x.User.UserId == entity.User.UserId).Include(x => x.ClientsChildren).ThenInclude(x => x.Child).FirstOrDefault();    
+
+            foreach (var clientsChild in client.ClientsChildren)
+            {
+                
+                Context.Remove(clientsChild);
+                Context.Remove(clientsChild.Child); 
+            }
 
             //foreach (var review in entity)
             //    Context.Remove(review);

@@ -1,5 +1,7 @@
+import 'package:careconnect_admin/theme/theme_notifier.dart';
 import 'package:careconnect_admin/widgets/primary_button.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 class CustomConfirmDialog extends StatelessWidget {
   final IconData icon;
@@ -52,6 +54,10 @@ class CustomConfirmDialog extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final themeNotifier = Provider.of<ThemeNotifier>(context);
+
     return Dialog(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       elevation: 4,

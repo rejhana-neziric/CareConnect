@@ -69,9 +69,6 @@ class _ChildDetailsScreenState extends State<ChildDetailsScreen> {
 
   void initForm() {
     setState(() {
-      // _initialValue = Map<String, dynamic>.from(
-      //   clientsChildFormProvider.initialData,
-      // );
       isLoading = false;
     });
   }
@@ -94,8 +91,6 @@ class _ChildDetailsScreenState extends State<ChildDetailsScreen> {
     if (mounted) {
       setState(() {});
     }
-
-    print(childrenDiagnosis);
 
     return result;
   }
@@ -122,27 +117,36 @@ class _ChildDetailsScreenState extends State<ChildDetailsScreen> {
       SingleChildScrollView(
         padding: const EdgeInsets.all(64),
         scrollDirection: Axis.vertical,
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Column(
-              children: [
-                basicInfoCard(),
-                SizedBox(width: 16),
-                buildDiganosis(),
-              ],
-            ),
-            SizedBox(height: 24),
-            appointmentSchedule(),
-          ],
+        child: SizedBox(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.start,
+
+                children: [
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      basicInfoCard(),
+                      SizedBox(height: 16),
+                      buildDiganosis(),
+                    ],
+                  ),
+                  SizedBox(width: 16),
+                  Expanded(child: appointmentSchedule()),
+                ],
+              ),
+            ],
+          ),
         ),
       ),
     );
   }
 
   Widget basicInfoCard() {
-    return Container(
+    return SizedBox(
       width: 800,
       height: 200,
       child: Card(
@@ -205,7 +209,7 @@ class _ChildDetailsScreenState extends State<ChildDetailsScreen> {
   Widget appointmentSchedule() {
     final appointments = clientsChild?.appointments;
 
-    return Container(
+    return SizedBox(
       width: 400,
       height: 500,
       child: Card(
@@ -277,7 +281,7 @@ class _ChildDetailsScreenState extends State<ChildDetailsScreen> {
   }
 
   Widget buildDiganosis() {
-    return Container(
+    return SizedBox(
       width: 800,
       height: 300,
       child: Card(

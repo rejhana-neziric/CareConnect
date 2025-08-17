@@ -1,13 +1,15 @@
 import 'package:careconnect_admin/layouts/master_screen.dart';
 import 'package:careconnect_admin/models/responses/employee.dart';
-import 'package:careconnect_admin/models/search_objects/employee_additional_data.dart';
-import 'package:careconnect_admin/models/search_objects/employee_search_object.dart';
 import 'package:careconnect_admin/models/responses/search_result.dart';
+import 'package:careconnect_admin/providers/employee_form_provider.dart';
 import 'package:careconnect_admin/providers/employee_provider.dart';
 import 'package:careconnect_admin/screens/employee_details_screen.dart';
-import 'package:careconnect_admin/theme/app_colors.dart';
+import 'package:careconnect_admin/widgets/confirm_dialog.dart';
 import 'package:careconnect_admin/widgets/custom_dropdown_fliter.dart';
+import 'package:careconnect_admin/widgets/no_results.dart';
 import 'package:careconnect_admin/widgets/primary_button.dart';
+import 'package:careconnect_admin/widgets/snackbar.dart';
+import 'package:careconnect_admin/widgets/stat_card.dart';
 
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
@@ -23,10 +25,12 @@ class EmployeeListScreen extends StatefulWidget {
 }
 
 class _EmployeeListScreenState extends State<EmployeeListScreen> {
-  late EmployeeProvider provider;
+  late EmployeeProvider employeeProvider;
 
-  SearchResult<Employee>? result;
+  SearchResult<Employee>? employees;
   int currentPage = 0;
+
+  bool isLoading = false;
 
   final TextEditingController _ftsController = TextEditingController();
   final TextEditingController _firstNameController = TextEditingController();
@@ -65,202 +69,137 @@ class _EmployeeListScreenState extends State<EmployeeListScreen> {
     'Not Employed': 'false',
   };
 
+  final GlobalKey<_EmployeeTableState> tableKey = GlobalKey();
+
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-
-    provider = context.read<EmployeeProvider>();
   }
 
   @override
   void initState() {
     super.initState();
-    provider = context.read<EmployeeProvider>();
+    employeeProvider = context.read<EmployeeProvider>();
     loadData();
-
-    if (provider.shouldRefresh) {
-      loadData();
-      provider.markRefreshed();
-    }
   }
 
-  Future<SearchResult<Employee>?> loadData({int page = 0}) async {
-    final filterObject = EmployeeSearchObject(
-      fts: _ftsController.text,
-      firstNameGTE: _firstNameController.text,
-      lastNameGTE: _lastNameController.text,
-      email: _emailController.text,
-      jobTitle: _jobTitleController.text,
-      hireDateGTE: _from,
-      hireDateLTE: _to,
-      employed: employed,
-      page: page,
-      sortBy: _sortBy,
-      sortAscending: _sortAscending,
-      additionalData: EmployeeAdditionalData(
-        isUserIncluded: true,
-        isQualificationIncluded: true,
-      ),
-      includeTotalCount: true,
-    );
+  Future<void> loadData({int page = 0}) async {
+    setState(() {
+      isLoading = true;
+    });
 
-    final filter = filterObject.toJson();
+    try {
+      tableKey.currentState?.currentPage = 0;
 
-    final newResult = await provider.get(filter: filter);
+      final employeeProvider = Provider.of<EmployeeProvider>(
+        context,
+        listen: false,
+      );
 
-    result = newResult;
+      final result = await employeeProvider.loadData(
+        fts: _ftsController.text,
+        firstNameGTE: _firstNameController.text,
+        lastNameGTE: _lastNameController.text,
+        email: _emailController.text,
+        jobTitle: _jobTitleController.text,
+        hireDateGTE: _from,
+        hireDateLTE: _to,
+        employed: employed,
+        page: page,
+        sortBy: _sortBy,
+        sortAscending: _sortAscending,
+      );
 
-    final statistics = await provider.getStatistics();
+      employees = result;
 
-    totalEmployees = statistics['totalEmployees'];
-    currentlyEmployeed = statistics['currentlyEmployed'];
-    newThisMonth = statistics['employedThisMonth'];
+      final statistics = await employeeProvider.getStatistics();
 
-    if (mounted) {
-      setState(() {});
+      totalEmployees = statistics['totalEmployees'];
+      currentlyEmployeed = statistics['currentlyEmployed'];
+      newThisMonth = statistics['employedThisMonth'];
+
+      if (mounted) {
+        setState(() {});
+      }
+    } finally {
+      setState(() {
+        isLoading = false;
+      });
     }
-
-    return result;
   }
 
   @override
   Widget build(BuildContext context) {
     return MasterScreen(
       "Employees",
-      // SingleChildScrollView(
-      //   padding: const EdgeInsets.all(16), // optional for spacing
-      //   child:
+
       Column(
         children: [
           _buildOverview(),
           _buildSearch(),
           Consumer<EmployeeProvider>(
-            builder: (context, provider, child) {
-              if (provider.shouldRefresh) {
-                loadData();
-                provider.markRefreshed();
-              }
-              return _buildResultView(result, loadData);
+            builder: (context, employeeProvider, child) {
+              return _buildResultView();
             },
           ),
         ],
       ),
-
       button: SizedBox(
         child: Align(
           alignment: Alignment.topRight,
           child: PrimaryButton(
-            onPressed: () {
-              Navigator.push(
+            onPressed: () async {
+              final result = await Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => EmployeeDetailsScreen(employee: null),
+                  builder: (context) => ChangeNotifierProvider(
+                    create: (_) => EmployeeFormProvider(),
+                    child: EmployeeDetailsScreen(employee: null),
+                  ),
                 ),
               );
+
+              if (result == true) loadData();
             },
             label: 'Add Employee',
             icon: Icons.person_add_alt_1,
           ),
         ),
       ),
-      // ),
     );
   }
 
   Widget _buildOverview() {
-    return Column(
-      children: [
-        // SizedBox(
-        //   child: Align(
-        //     alignment: Alignment.topRight,
-        //     child: PrimaryButton(
-        //       onPressed: () {
-        //         Navigator.push(
-        //           context,
-        //           MaterialPageRoute(
-        //             builder: (context) => EmployeeDetailsScreen(employee: null),
-        //           ),
-        //         );
-        //       },
-        //       label: 'Add Employee',
-        //       icon: Icons.person_add_alt_1,
-        //     ),
-        //   ),
-        // ),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 32.0),
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        child: Row(
           children: [
-            _buildStatCard(
+            statCard(
+              context,
               'Total Employees',
               totalEmployees,
               Icons.groups,
               Colors.teal,
             ),
-            _buildStatCard(
+            const SizedBox(width: 8),
+            statCard(
+              context,
               'Currently Employed',
               currentlyEmployeed,
               Icons.verified_user,
-
               Colors.orange,
             ),
-            _buildStatCard(
+            const SizedBox(width: 8),
+            statCard(
+              context,
               'New This Month',
               newThisMonth,
               Icons.person_add,
-
               Colors.red,
             ),
           ],
-        ),
-      ],
-    );
-  }
-
-  Widget _buildStatCard(
-    String label,
-    dynamic value,
-    IconData icon,
-    Color iconColor,
-  ) {
-    return Card(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      elevation: 1.5,
-      color: AppColors.lightGray,
-      child: ConstrainedBox(
-        constraints: BoxConstraints(maxWidth: 400),
-        child: Container(
-          height: 100,
-          padding: EdgeInsets.all(16),
-          child: Row(
-            children: [
-              // Circle background for the icon
-              Container(
-                padding: EdgeInsets.all(10),
-                decoration: BoxDecoration(
-                  color: iconColor.withAlpha((0.1 * 255).toInt()),
-                  shape: BoxShape.circle,
-                ),
-                child: Icon(icon, color: iconColor, size: 25),
-              ),
-              SizedBox(width: 16),
-              // Text info
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(
-                    '$value',
-                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                  ),
-                  SizedBox(height: 4),
-                  Text(
-                    label,
-                    style: TextStyle(fontSize: 14, color: Colors.grey[600]),
-                  ),
-                ],
-              ),
-            ],
-          ),
         ),
       ),
     );
@@ -278,137 +217,174 @@ class _EmployeeListScreenState extends State<EmployeeListScreen> {
     return Padding(
       padding: const EdgeInsets.all(8.0),
       child: Container(
-        padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
         decoration: BoxDecoration(
-          border: Border.all(color: Colors.grey),
+          color: Colors.white,
+          border: Border.all(color: Colors.grey.shade300),
           borderRadius: BorderRadius.circular(8),
         ),
-        child: Row(
-          children: [
-            // Search
-            Expanded(
-              child: TextField(
-                controller: _ftsController,
-                decoration: InputDecoration(
-                  labelText:
-                      "Search First Name, Last Name, Email and Job Title",
-                  border: InputBorder.none,
-                  icon: Icon(Icons.search),
+        child: SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              // Search field
+              SizedBox(
+                width: 500,
+                child: TextField(
+                  controller: _ftsController,
+                  decoration: const InputDecoration(
+                    labelText:
+                        "Search First Name, Last Name, Email and Job Title",
+                    border: OutlineInputBorder(),
+                    prefixIcon: Icon(Icons.search),
+                  ),
+                  onChanged: (value) => loadData(),
                 ),
-                onChanged: (value) => loadData(),
               ),
-            ),
-            SizedBox(width: 8),
-            // Hire Date Range
-            HireDateRangePicker(
-              key: _pickerKey,
-              onRangeChanged: _applyHireDateFilter,
-            ),
-            if (_from != null || _to != null)
-              TextButton(
+              const SizedBox(width: 8),
+
+              // Hire Date Range Picker
+              HireDateRangePicker(
+                key: _pickerKey,
+                onRangeChanged: _applyHireDateFilter,
+              ),
+
+              if (_from != null || _to != null)
+                TextButton(
+                  onPressed: () {
+                    _pickerKey.currentState?.clear();
+                    _applyHireDateFilter(null, null);
+                  },
+                  child: const Text('Clear'),
+                ),
+
+              const SizedBox(width: 8),
+
+              // Employment Status Dropdown
+              SizedBox(
+                width: 280,
+                child: CustomDropdownFliter(
+                  selectedValue: selectedEmploymentStatusOption,
+                  options: employmentStatusOptions,
+                  name: "Employment Status: ",
+                  onChanged: (newStatus) {
+                    setState(() {
+                      selectedEmploymentStatusOption = newStatus;
+                      employed = newStatus == 'true'
+                          ? true
+                          : newStatus == 'false'
+                          ? false
+                          : null;
+                    });
+                    loadData();
+                  },
+                ),
+              ),
+
+              const SizedBox(width: 8),
+
+              // Sort By Dropdown
+              SizedBox(
+                width: 180,
+                child: CustomDropdownFliter(
+                  selectedValue: selectedSortingOption,
+                  options: sortingOptions,
+                  name: "Sort by: ",
+                  onChanged: (newStatus) {
+                    setState(() {
+                      selectedSortingOption = newStatus;
+                      _sortBy = newStatus;
+                    });
+                    loadData();
+                  },
+                ),
+              ),
+
+              const SizedBox(width: 8),
+
+              // Asc/Desc Toggle
+              IconButton(
+                icon: Icon(
+                  _sortAscending ? Icons.arrow_upward : Icons.arrow_downward,
+                  color: Colors.black,
+                ),
+                tooltip: _sortAscending ? 'Ascending' : 'Descending',
                 onPressed: () {
+                  setState(() => _sortAscending = !_sortAscending);
+                  loadData();
+                },
+              ),
+
+              const SizedBox(width: 8),
+
+              // Refresh Button
+              TextButton.icon(
+                onPressed: () {
+                  print(_pickerKey.currentState);
+
+                  // if (_ftsController.text.isEmpty == false ||
+                  //     _sortBy != null ||
+                  //     selectedSortingOption != null ||
+                  //     selectedEmploymentStatusOption != null ||
+                  //     employed != null ||
+                  //     //_pickerKey.currentState != null ||
+                  //     _from != null ||
+                  //     _to != null) {
+                  _ftsController.clear();
+                  _sortBy = null;
+                  selectedSortingOption = null;
+                  selectedEmploymentStatusOption = null;
+                  employed = null;
                   _pickerKey.currentState?.clear();
                   _applyHireDateFilter(null, null);
-                }, // clear
-                child: const Text('Clear'),
-              ),
-            SizedBox(width: 8),
-            // Employment Status
-            Container(
-              width: 270,
-              child: CustomDropdownFliter(
-                selectedValue: selectedEmploymentStatusOption,
-                options: employmentStatusOptions,
-                name: "Employment Status: ",
-                onChanged: (newStatus) {
-                  setState(() {
-                    selectedEmploymentStatusOption = newStatus;
-                    if (newStatus == 'true') {
-                      employed = true;
-                    } else if (newStatus == 'false') {
-                      employed = false;
-                    } else {
-                      employed = null;
-                    }
-                  });
-                  loadData();
+                  //loadData(page: 0);
+                  //   _reloadTable();
+                  // } else {
+                  //   loadData(page: 0);
+                  //   _reloadCurrentPageTable();
+                  // }
                 },
+                label: const Text(
+                  "Refresh",
+                  style: TextStyle(color: Colors.black),
+                ),
+                icon: const Icon(Icons.refresh_outlined, color: Colors.black),
               ),
-            ),
-            SizedBox(width: 8),
-            // Sort by
-            Container(
-              width: 200,
-              child: CustomDropdownFliter(
-                selectedValue: selectedSortingOption,
-                options: sortingOptions,
-                name: "Sort by: ",
-                onChanged: (newStatus) {
-                  setState(() {
-                    selectedSortingOption = newStatus;
-                    _sortBy = newStatus;
-                  });
-                  loadData();
-                },
-              ),
-            ),
-            SizedBox(width: 8),
-            // Asc/Desc toggle
-            IconButton(
-              icon: Icon(
-                _sortAscending ? Icons.arrow_upward : Icons.arrow_downward,
-                color: Colors.black,
-              ),
-              tooltip: _sortAscending ? 'Ascending' : 'Descending',
-              onPressed: () {
-                setState(() {
-                  _sortAscending = !_sortAscending;
-                });
-                loadData();
-              },
-            ),
-            SizedBox(width: 8),
-            // Refresh
-            TextButton.icon(
-              onPressed: () async {
-                _ftsController.clear();
-                _sortBy = null;
-                selectedSortingOption = null;
-                selectedEmploymentStatusOption = null;
-                employed = null;
-                _pickerKey.currentState?.clear();
-                _applyHireDateFilter(null, null);
-                loadData();
-              },
-              label: Text("Refresh", style: TextStyle(color: Colors.black)),
-              icon: Icon(Icons.refresh_outlined, color: Colors.black),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
   }
 
-  Widget _buildResultView(
-    SearchResult<Employee>? result,
-    Future<SearchResult<Employee>?> Function({int page}) loadData,
-  ) {
-    if (result != null) {
-      return Expanded(
-        child: EmployeeTable(result: result, onPageChanged: loadData),
-      );
-    } else {
-      return const Padding(
-        padding: EdgeInsets.all(16),
-        child: Text('No data available.'),
-      );
-    }
+  Widget _buildResultView() {
+    return (employees != null && employees?.result.isEmpty == false)
+        ? Expanded(
+            child: EmployeeTable(
+              key: tableKey,
+              result: employees,
+              onPageChanged: loadData,
+            ),
+          )
+        : Padding(
+            padding: const EdgeInsets.all(128.0),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                NoResultsWidget(
+                  message: 'No results found. Please try again.',
+                  icon: Icons.sentiment_dissatisfied,
+                ),
+              ],
+            ),
+          );
   }
 }
 
 class EmployeeTable extends StatefulWidget {
   final SearchResult<Employee>? result;
-  final Future<SearchResult<Employee>?> Function({int page}) onPageChanged;
+  final Future<void> Function({int page}) onPageChanged;
 
   const EmployeeTable({super.key, this.result, required this.onPageChanged});
 
@@ -418,14 +394,16 @@ class EmployeeTable extends StatefulWidget {
 
 class _EmployeeTableState extends State<EmployeeTable> {
   final int _pageSize = 10;
-  int _currentPage = 0;
-  bool _isLoading = false;
+  int currentPage = 0;
+  bool isLoading = false;
   EmployeeDataSource? _dataSource;
+  late EmployeeProvider employeeProvider;
 
   @override
   void initState() {
     super.initState();
     _updateDataSource();
+    employeeProvider = context.read<EmployeeProvider>();
   }
 
   @override
@@ -444,19 +422,26 @@ class _EmployeeTableState extends State<EmployeeTable> {
     _dataSource = EmployeeDataSource(
       employees,
       context,
+      delete,
       totalCount,
       onPageChanged: _fetchPage,
       pageSize: _pageSize,
-      currentPage: _currentPage,
+      currentPage: currentPage,
     );
   }
 
-  Future<void> _fetchPage(int page) async {
-    if (_isLoading || page == _currentPage) return;
+  void refreshCurrentPage() {
+    _fetchPage(currentPage);
+  }
 
+  void reloadTable() {
+    _fetchPage(0);
+  }
+
+  Future<void> _fetchPage(int page) async {
     setState(() {
-      _isLoading = true;
-      _currentPage = page;
+      isLoading = true;
+      currentPage = page;
     });
 
     try {
@@ -464,14 +449,16 @@ class _EmployeeTableState extends State<EmployeeTable> {
 
       if (mounted) {
         setState(() {
-          _isLoading = false;
+          currentPage = page;
+          _updateDataSource();
+          isLoading = false;
         });
       }
     } catch (e) {
       if (mounted) {
         setState(() {
-          _isLoading = false;
-          _currentPage = _currentPage > 0 ? _currentPage - 1 : 0;
+          isLoading = false;
+          currentPage = currentPage > 0 ? currentPage - 1 : 0;
         });
       }
 
@@ -481,12 +468,42 @@ class _EmployeeTableState extends State<EmployeeTable> {
     }
   }
 
+  void delete(Employee employee) async {
+    final id = employee.user?.userId;
+
+    final shouldProceed = await CustomConfirmDialog.show(
+      context,
+      icon: Icons.info,
+
+      title: 'Delete Employee',
+      content: 'Are you sure you want to delete this employee?',
+      confirmText: 'Delete',
+      cancelText: 'Cancel',
+    );
+
+    if (shouldProceed != true) return;
+
+    final success = await employeeProvider.delete(id!);
+
+    CustomSnackbar.show(
+      context,
+      message: success
+          ? 'Employee successfully deleted.'
+          : 'Something went wrong. Please try again.',
+      type: success ? SnackbarType.success : SnackbarType.error,
+    );
+
+    if (success) {
+      _fetchPage(currentPage);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final employees = widget.result?.result ?? [];
     //final totalCount = widget.result?.totalCount ?? 0;
 
-    if (_isLoading && employees.isEmpty) {
+    if (isLoading && employees.isEmpty) {
       return const Center(child: CircularProgressIndicator());
     }
 
@@ -497,8 +514,8 @@ class _EmployeeTableState extends State<EmployeeTable> {
     return Stack(
       children: [
         PaginatedDataTable2(
-          key: ValueKey('${widget.result?.result.hashCode}_$_currentPage'),
-
+          key: ValueKey('${widget.result?.result.hashCode}_$currentPage'),
+          wrapInCard: false,
           columns: const [
             DataColumn2(label: Text('Employee Name')),
             DataColumn2(label: Text('Job Title')),
@@ -519,18 +536,19 @@ class _EmployeeTableState extends State<EmployeeTable> {
           rowsPerPage: _pageSize,
           onPageChanged: (start) {
             final newPage = start ~/ _pageSize;
-            if (newPage != _currentPage && !_isLoading) {
+            if (newPage != currentPage && !isLoading) {
               _fetchPage(newPage);
             }
           },
-          initialFirstRowIndex: _currentPage * _pageSize,
+          initialFirstRowIndex: currentPage * _pageSize,
           columnSpacing: 15,
-          horizontalMargin: 12,
+          horizontalMargin: 14,
           minWidth: 600,
           showCheckboxColumn: false,
           availableRowsPerPage: const [10],
+          renderEmptyRowsInTheEnd: false,
         ),
-        if (_isLoading)
+        if (isLoading)
           Positioned.fill(
             child: Container(
               color: Colors.white.withAlpha((0.7 * 255).toInt()),
@@ -547,12 +565,14 @@ class EmployeeDataSource extends DataTableSource {
   final BuildContext context;
   final int? count;
   final Future<void> Function(int page)? onPageChanged;
+  final void Function(Employee employee) delete;
   final int pageSize;
   final int currentPage;
 
   EmployeeDataSource(
     this.employees,
     this.context,
+    this.delete,
     this.count, {
     this.onPageChanged,
     this.pageSize = 10,
@@ -587,9 +607,7 @@ class EmployeeDataSource extends DataTableSource {
               color: employee.endDate == null
                   ? const Color.fromRGBO(204, 245, 215, 1)
                   : Colors.red.shade50,
-              border: null, //Border.all(
-              //color: employee.endDate == null ? Colors.black : Colors.red,
-              //),
+              border: null,
               borderRadius: BorderRadius.circular(20),
             ),
             child: Text(
@@ -598,8 +616,6 @@ class EmployeeDataSource extends DataTableSource {
                 color: employee.endDate == null
                     ? Color.fromARGB(255, 80, 80, 80)
                     : Colors.red,
-
-                ///fontWeight: FontWeight.bold,
               ),
             ),
           ),
@@ -610,14 +626,20 @@ class EmployeeDataSource extends DataTableSource {
               IconButton(
                 icon: const Icon(Icons.edit_outlined, color: Colors.grey),
                 tooltip: 'Edit',
-                onPressed: () {
-                  Navigator.push(
+                onPressed: () async {
+                  final result = await Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) =>
-                          EmployeeDetailsScreen(employee: employee),
+                      builder: (context) => ChangeNotifierProvider(
+                        create: (_) => EmployeeFormProvider(),
+                        child: EmployeeDetailsScreen(employee: employee),
+                      ),
                     ),
                   );
+
+                  if (result == true && onPageChanged != null) {
+                    onPageChanged!(currentPage);
+                  }
                 },
               ),
               IconButton(
@@ -626,8 +648,8 @@ class EmployeeDataSource extends DataTableSource {
                   color: Colors.grey,
                 ),
                 tooltip: 'Delete',
-                onPressed: () {
-                  // Handle delete
+                onPressed: () async {
+                  delete(employee);
                 },
               ),
             ],

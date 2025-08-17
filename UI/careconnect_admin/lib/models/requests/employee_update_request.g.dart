@@ -10,6 +10,9 @@ EmployeeUpdateRequest _$EmployeeUpdateRequestFromJson(
   Map<String, dynamic> json,
 ) => EmployeeUpdateRequest(
   jobTitle: json['jobTitle'] as String?,
+  endDate: json['endDate'] == null
+      ? null
+      : DateTime.parse(json['endDate'] as String),
   user: json['user'] == null
       ? null
       : UserUpdateRequest.fromJson(json['user'] as Map<String, dynamic>),
@@ -24,6 +27,7 @@ Map<String, dynamic> _$EmployeeUpdateRequestToJson(
   EmployeeUpdateRequest instance,
 ) => <String, dynamic>{
   'jobTitle': instance.jobTitle,
+  'endDate': instance.endDate?.toIso8601String(),
   'user': instance.user,
   'qualification': instance.qualification,
 };

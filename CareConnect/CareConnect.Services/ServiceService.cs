@@ -93,8 +93,8 @@ namespace CareConnect.Services
 
         public override void BeforeDelete(Database.Service entity)
         {
-            //foreach (var child in entity.ClientsChildren)
-            //    Context.Remove(child);
+            foreach (var service in entity.EmployeeAvailabilities)
+                Context.Remove(service);
 
             //foreach (var review in entity)
             //    Context.Remove(review);

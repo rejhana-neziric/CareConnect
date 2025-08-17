@@ -10,6 +10,8 @@ namespace CareConnect.Models.Requests
     {
         public string? JobTitle { get; set; } = null!;
 
+        public DateTime? EndDate { get; set; }
+
         [JsonIgnore]
         public DateTime? ModifiedDate { get; set; } = DateTime.Now;
 

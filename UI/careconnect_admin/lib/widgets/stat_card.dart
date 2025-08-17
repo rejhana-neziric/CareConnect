@@ -1,11 +1,19 @@
-import 'package:careconnect_admin/theme/app_colors.dart';
 import 'package:flutter/material.dart';
 
-Widget statCard(String label, dynamic value, IconData icon, Color iconColor) {
+Widget statCard(
+  BuildContext context,
+  String label,
+  dynamic value,
+  IconData icon,
+  Color iconColor,
+) {
+  final theme = Theme.of(context);
+  final colorScheme = theme.colorScheme;
+
   return Card(
     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
     elevation: 1.5,
-    color: AppColors.white,
+    color: colorScheme.surfaceContainerLowest,
     child: ConstrainedBox(
       constraints: BoxConstraints(maxWidth: 400),
       child: Container(

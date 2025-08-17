@@ -1,4 +1,3 @@
-import 'package:careconnect_admin/theme/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 
@@ -50,6 +49,9 @@ class _CustomTextFieldState extends State<CustomTextField> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return Padding(
       padding: const EdgeInsets.only(bottom: 16.0),
       child: SizedBox(
@@ -76,9 +78,12 @@ class _CustomTextFieldState extends State<CustomTextField> {
                     vertical: 4,
                   ),
                   decoration: BoxDecoration(
-                    border: Border.all(color: AppColors.dustyRose, width: 2),
+                    border: Border.all(
+                      color: colorScheme.primaryContainer,
+                      width: 2,
+                    ),
                     borderRadius: BorderRadius.circular(8),
-                    color: Colors.white,
+                    color: colorScheme.surfaceContainerLowest,
                   ),
                   child: TextField(
                     controller: _controller,
@@ -98,8 +103,8 @@ class _CustomTextFieldState extends State<CustomTextField> {
                       label: RichText(
                         text: TextSpan(
                           text: widget.label,
-                          style: const TextStyle(
-                            color: Colors.black,
+                          style: TextStyle(
+                            color: colorScheme.onSurface,
                             fontSize: 16,
                           ),
                           children: widget.required
@@ -115,6 +120,8 @@ class _CustomTextFieldState extends State<CustomTextField> {
                               : [],
                         ),
                       ),
+                      filled: true,
+                      fillColor: colorScheme.surfaceContainerLowest,
                     ),
                   ),
                 ),

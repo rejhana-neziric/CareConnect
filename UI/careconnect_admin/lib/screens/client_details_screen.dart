@@ -2,21 +2,19 @@ import 'package:careconnect_admin/layouts/master_screen.dart';
 import 'package:careconnect_admin/models/responses/child.dart';
 import 'package:careconnect_admin/models/responses/clients_child.dart';
 import 'package:careconnect_admin/models/responses/search_result.dart';
-import 'package:careconnect_admin/models/search_objects/child_search_object.dart';
-import 'package:careconnect_admin/models/search_objects/client_additional_data.dart';
-import 'package:careconnect_admin/models/search_objects/client_search_object.dart';
-import 'package:careconnect_admin/models/search_objects/clients_child_additional_data.dart';
-import 'package:careconnect_admin/models/search_objects/clients_child_search_object.dart';
+import 'package:careconnect_admin/providers/client_provider.dart';
 import 'package:careconnect_admin/providers/clients_child_form_provider.dart';
 import 'package:careconnect_admin/providers/clients_child_provider.dart';
 import 'package:careconnect_admin/screens/add_child_for_client_screen.dart';
 import 'package:careconnect_admin/screens/child_details_screen.dart';
 import 'package:careconnect_admin/theme/app_colors.dart';
 import 'package:careconnect_admin/utils.dart';
+import 'package:careconnect_admin/widgets/confirm_dialog.dart';
 import 'package:careconnect_admin/widgets/custom_date_field.dart';
 import 'package:careconnect_admin/widgets/custom_dropdown_field.dart';
 import 'package:careconnect_admin/widgets/custom_text_field.dart';
 import 'package:careconnect_admin/widgets/primary_button.dart';
+import 'package:careconnect_admin/widgets/snackbar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:provider/provider.dart';
@@ -36,6 +34,7 @@ class _ClientDetailsScreenState extends State<ClientDetailsScreen> {
   List<Child>? otherChildren;
   late ClientsChildProvider clientsChildProvider;
   late ClientsChildFormProvider clientsChildFormProvider;
+  late ClientProvider clientProvider;
   bool isLoading = true;
 
   @override
@@ -49,45 +48,11 @@ class _ClientDetailsScreenState extends State<ClientDetailsScreen> {
 
     clientsChildProvider = context.read<ClientsChildProvider>();
     clientsChildFormProvider = context.read<ClientsChildFormProvider>();
+    clientProvider = context.read<ClientProvider>();
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       initForm();
     });
-  }
-
-  // optimize
-  Future<SearchResult<ClientsChild>?> loadData({int page = 0}) async {
-    SearchResult<ClientsChild>? result;
-
-    final clientFilterObject = ClientSearchObject(
-      additionalData: ClientAdditionalData(isUserIncluded: true),
-      includeTotalCount: true,
-    );
-
-    final childFilterObject = ChildSearchObject(includeTotalCount: true);
-
-    final filterObject = ClientsChildSearchObject(
-      clientSearchObject: clientFilterObject,
-      childSearchObject: childFilterObject,
-      includeTotalCount: true,
-      page: page,
-      additionalData: ClientsChildAdditionalData(
-        isChildIncluded: true,
-        isClientIncluded: true,
-      ),
-    );
-
-    final filter = filterObject.toJson();
-
-    final newResult = await clientsChildProvider.get(filter: filter);
-
-    result = newResult;
-
-    if (mounted) {
-      setState(() {});
-    }
-
-    return result;
   }
 
   Future<void> initForm() async {
@@ -105,20 +70,24 @@ class _ClientDetailsScreenState extends State<ClientDetailsScreen> {
         "gender": widget.clientsChild?.client.user?.gender,
         "address": widget.clientsChild?.client.user?.address,
         "employmentStatus": widget.clientsChild?.client.employmentStatus,
-        "childFirstName": widget.clientsChild?.child.firstName,
-        "childLastName": widget.clientsChild?.child.lastName,
-        "childBirthDate": widget.clientsChild?.child.birthDate,
-        "childGender": widget.clientsChild?.child.gender,
+        // "childFirstName": widget.clientsChild?.child.firstName,
+        // "childLastName": widget.clientsChild?.child.lastName,
+        // "childBirthDate": widget.clientsChild?.child.birthDate,
+        // "childGender": widget.clientsChild?.child.gender,
+        "childFirstName": null,
+        "childLastName": null,
+        "childBirthDate": null,
+        "childGender": null,
       });
     }
 
-    dynamic children;
+    // dynamic children;
 
-    if (widget.clientsChild?.client.user != null) {
-      children = await clientsChildProvider.getChildren(
-        widget.clientsChild!.client.user!.userId,
-      );
-    }
+    // if (widget.clientsChild?.client.user != null) {
+    //   children = await clientsChildProvider.getChildren(
+    //     widget.clientsChild!.client.user!.userId,
+    //   );
+    // }
 
     setState(() {
       _initialValue = Map<String, dynamic>.from(
@@ -126,7 +95,8 @@ class _ClientDetailsScreenState extends State<ClientDetailsScreen> {
       );
       isLoading = false;
 
-      otherChildren = children;
+      getChildren();
+      // otherChildren = children;
     });
 
     WidgetsBinding.instance.addPostFrameCallback((_) async {
@@ -138,6 +108,20 @@ class _ClientDetailsScreenState extends State<ClientDetailsScreen> {
     });
 
     setState(() {});
+  }
+
+  dynamic getChildren() async {
+    dynamic children;
+
+    if (widget.clientsChild?.client.user != null) {
+      children = await clientsChildProvider.getChildren(
+        widget.clientsChild!.client.user!.userId,
+      );
+    }
+
+    setState(() {
+      otherChildren = children;
+    });
   }
 
   @override
@@ -152,7 +136,12 @@ class _ClientDetailsScreenState extends State<ClientDetailsScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                if (!isLoading) _buildForm(),
+                if (!isLoading)
+                  Consumer<ClientsChildProvider>(
+                    builder: (context, clientsChildProvider, child) {
+                      return _buildForm();
+                    },
+                  ),
                 const SizedBox(height: 20),
                 _saveRow(),
               ],
@@ -160,6 +149,7 @@ class _ClientDetailsScreenState extends State<ClientDetailsScreen> {
           ),
         ),
       ),
+      onBackPressed: () => clientsChildFormProvider.handleBackPressed(context),
     );
   }
 
@@ -167,6 +157,9 @@ class _ClientDetailsScreenState extends State<ClientDetailsScreen> {
     final clientsChildFormProvider = Provider.of<ClientsChildFormProvider>(
       context,
     );
+
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
 
     return FormBuilder(
       key: clientsChildFormProvider.formKey,
@@ -210,6 +203,7 @@ class _ClientDetailsScreenState extends State<ClientDetailsScreen> {
                             width: 400,
                             name: 'firstName',
                             label: 'First Name',
+                            required: true,
                             validator: clientsChildFormProvider.validateName,
                             enabled: !clientsChildFormProvider.isUpdate,
                           ),
@@ -235,6 +229,7 @@ class _ClientDetailsScreenState extends State<ClientDetailsScreen> {
                             width: 400,
                             name: 'username',
                             label: 'Username',
+                            required: true,
                             validator:
                                 clientsChildFormProvider.validateUsername,
                           ),
@@ -248,6 +243,7 @@ class _ClientDetailsScreenState extends State<ClientDetailsScreen> {
                             width: 400,
                             name: 'lastName',
                             label: 'Last Name',
+                            required: true,
                             validator: clientsChildFormProvider.validateName,
                             enabled: !clientsChildFormProvider.isUpdate,
                           ),
@@ -255,6 +251,7 @@ class _ClientDetailsScreenState extends State<ClientDetailsScreen> {
                             width: 400,
                             name: 'gender',
                             label: 'Gender',
+                            required: true,
                             items: [
                               DropdownMenuItem(value: 'M', child: Text('Male')),
                               DropdownMenuItem(
@@ -279,6 +276,9 @@ class _ClientDetailsScreenState extends State<ClientDetailsScreen> {
                             width: 400,
                             name: 'password',
                             label: 'Password',
+                            required: clientsChildFormProvider.isUpdate == true
+                                ? false
+                                : true,
                             validator: (value) => clientsChildFormProvider
                                 .validatePassword(value),
                           ),
@@ -286,6 +286,9 @@ class _ClientDetailsScreenState extends State<ClientDetailsScreen> {
                             width: 400,
                             name: 'confirmationPassword',
                             label: 'Confirmation Password',
+                            required: clientsChildFormProvider.isUpdate == true
+                                ? false
+                                : true,
                             validator: (value) {
                               final password = clientsChildFormProvider
                                   .formKey
@@ -335,6 +338,7 @@ class _ClientDetailsScreenState extends State<ClientDetailsScreen> {
                             width: 400,
                             name: 'employmentStatus',
                             label: 'Employment Status',
+                            required: true,
                             items: [
                               DropdownMenuItem(
                                 value: true,
@@ -359,11 +363,11 @@ class _ClientDetailsScreenState extends State<ClientDetailsScreen> {
 
                       children: [
                         PrimaryButton(
-                          onPressed: () {
-                            Navigator.push(
+                          onPressed: () async {
+                            final result = await Navigator.push(
                               context,
                               MaterialPageRoute(
-                                builder: (_) => ChangeNotifierProvider(
+                                builder: (context) => ChangeNotifierProvider(
                                   create: (_) =>
                                       ClientsChildFormProvider()
                                         ..setForInsert(),
@@ -373,6 +377,8 @@ class _ClientDetailsScreenState extends State<ClientDetailsScreen> {
                                 ),
                               ),
                             );
+
+                            if (result == true) getChildren();
                           },
                           label: 'Add Child',
                           icon: Icons.person_add_alt_1,
@@ -419,6 +425,7 @@ class _ClientDetailsScreenState extends State<ClientDetailsScreen> {
                               width: 400,
                               name: 'childFirstName',
                               label: 'First Name',
+                              required: true,
                               validator: clientsChildFormProvider.validateName,
                               enabled: !clientsChildFormProvider.isUpdate,
                             ),
@@ -426,6 +433,7 @@ class _ClientDetailsScreenState extends State<ClientDetailsScreen> {
                               width: 400,
                               name: 'childBirthDate',
                               label: 'Birth Date',
+                              required: true,
                               validator: clientsChildFormProvider.validateDate,
                               enabled: !clientsChildFormProvider.isUpdate,
                             ),
@@ -439,6 +447,7 @@ class _ClientDetailsScreenState extends State<ClientDetailsScreen> {
                               width: 400,
                               name: 'childLastName',
                               label: 'Last Name',
+                              required: true,
                               validator: clientsChildFormProvider.validateName,
                               enabled: !clientsChildFormProvider.isUpdate,
                             ),
@@ -446,6 +455,7 @@ class _ClientDetailsScreenState extends State<ClientDetailsScreen> {
                               width: 400,
                               name: 'childGender',
                               label: 'Gender',
+                              required: true,
                               items: [
                                 DropdownMenuItem(
                                   value: 'M',
@@ -472,7 +482,7 @@ class _ClientDetailsScreenState extends State<ClientDetailsScreen> {
           if (clientsChildFormProvider.isUpdate)
             ExpansionTile(
               title: Container(
-                color: AppColors.mauveGray,
+                color: colorScheme.secondary,
                 child: Padding(
                   padding: const EdgeInsets.all(8.0),
                   child: Text(
@@ -497,7 +507,7 @@ class _ClientDetailsScreenState extends State<ClientDetailsScreen> {
                     (child) => Material(
                       color: Colors.transparent,
                       child: Tooltip(
-                        message: "Click to view child details.",
+                        message: "View child details.",
                         child: ListTile(
                           title: Text("${child.firstName} ${child.lastName}"),
                           subtitle: Text(
@@ -519,7 +529,123 @@ class _ClientDetailsScreenState extends State<ClientDetailsScreen> {
                               ),
                             );
                           },
-                          hoverColor: AppColors.softLavender,
+                          trailing: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              IconButton(
+                                icon: Icon(
+                                  Icons.visibility,
+                                  color: Colors.blue,
+                                ),
+                                tooltip: "View details",
+                                onPressed: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (_) => ChangeNotifierProvider(
+                                        create: (_) =>
+                                            ClientsChildFormProvider()
+                                              ..setForInsert(),
+                                        child: ChildDetailsScreen(
+                                          client: widget.clientsChild!.client,
+                                          child: child,
+                                        ),
+                                      ),
+                                    ),
+                                  );
+                                },
+                              ),
+                              IconButton(
+                                icon: Icon(Icons.delete, color: Colors.red),
+                                tooltip: "Delete child",
+                                onPressed: () async {
+                                  // Confirm delete
+                                  final clientId =
+                                      widget.clientsChild?.client.user?.userId;
+                                  final childId = child.childId;
+
+                                  if (clientId == null) {
+                                    return;
+                                  }
+
+                                  if (otherChildren?.length != 1) {
+                                    final shouldProceed =
+                                        await CustomConfirmDialog.show(
+                                          context,
+                                          icon: Icons.info,
+
+                                          title: 'Delete Child',
+                                          content:
+                                              'Are you sure you want to delete this child?',
+                                          confirmText: 'Delete',
+                                          cancelText: 'Cancel',
+                                        );
+
+                                    if (shouldProceed != true) return;
+
+                                    final success = await clientsChildProvider
+                                        .removeChildFromClient(
+                                          clientId,
+                                          childId,
+                                        );
+
+                                    if (!mounted) return;
+
+                                    CustomSnackbar.show(
+                                      context,
+                                      message: success
+                                          ? 'Child successfully deleted.'
+                                          : 'Something went wrong. Please try again.',
+                                      type: success
+                                          ? SnackbarType.success
+                                          : SnackbarType.error,
+                                    );
+
+                                    if (success) {
+                                      setState(() {
+                                        getChildren();
+                                      });
+                                    }
+                                  } else {
+                                    final shouldProceed =
+                                        await CustomConfirmDialog.show(
+                                          context,
+                                          icon: Icons.info,
+
+                                          title: 'Delete Child',
+                                          content:
+                                              'Are you sure you want to delete this child? Deleting this child will also delete information about parent!',
+                                          confirmText: 'Delete',
+                                          cancelText: 'Cancel',
+                                        );
+
+                                    if (shouldProceed != true) return;
+
+                                    final success = await clientProvider.delete(
+                                      clientId,
+                                    );
+
+                                    if (!mounted) return;
+
+                                    CustomSnackbar.show(
+                                      context,
+                                      message: success
+                                          ? 'Client and child successfully deleted.'
+                                          : 'Something went wrong. Please try again.',
+                                      type: success
+                                          ? SnackbarType.success
+                                          : SnackbarType.error,
+                                    );
+
+                                    if (success) {
+                                      Navigator.of(context).pop(success);
+                                    }
+                                  }
+                                },
+                              ),
+                            ],
+                          ),
+                          hoverColor: colorScheme.surfaceContainerLowest,
                         ),
                       ),
                     ),
@@ -553,71 +679,53 @@ class _ClientDetailsScreenState extends State<ClientDetailsScreen> {
                 return;
               }
 
-              if (formState.saveAndValidate()) {
-                final clientId = widget.clientsChild?.client.user?.userId;
-                final childId = widget.clientsChild?.child.childId;
+              final clientId = widget.clientsChild?.client.user?.userId;
+              final childId = widget.clientsChild?.child.childId;
 
-                final isInsert = widget.clientsChild == null;
+              final isInsert = widget.clientsChild == null;
 
-                final shouldProceed = await showDialog<bool>(
-                  context: context,
-                  builder: (context) => AlertDialog(
-                    title: Text(
-                      isInsert ? 'Add New Client and Child' : 'Save Changes',
-                    ),
-                    content: Text(
-                      isInsert
-                          ? 'Are you sure you want to add a new client and child?'
-                          : 'Are you sure you want to save the changes?',
-                    ),
-                    actions: [
-                      TextButton(
-                        onPressed: () => Navigator.of(context).pop(false),
-                        child: Text('Cancel'),
-                      ),
-                      TextButton(
-                        onPressed: () => Navigator.of(context).pop(true),
-                        child: Text('Confirm'),
-                      ),
-                    ],
-                  ),
-                );
+              final shouldProceed = await CustomConfirmDialog.show(
+                context,
+                icon: Icons.info,
+                iconBackgroundColor: AppColors.mauveGray,
+                title: isInsert ? 'Add New Client and Child' : 'Save Changes',
+                content: isInsert
+                    ? 'Are you sure you want to add a new client and child?'
+                    : 'Are you sure you want to save the changes?',
+                confirmText: 'Continue',
+                cancelText: 'Cancel',
+              );
 
-                if (shouldProceed != true) return;
+              if (shouldProceed != true) return;
 
-                final success = await clientsChildFormProvider.saveOrUpdate(
-                  clientsChildFormProvider,
-                  clientsChildProvider,
-                  clientId,
-                  childId,
-                  onSaved: () {
-                    loadData();
-                  },
-                );
+              final success = await clientsChildFormProvider.saveOrUpdateCustom(
+                clientsChildFormProvider,
+                clientsChildProvider,
+                clientId,
+                childId,
+              );
 
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text(
-                      success
-                          ? (clientsChildFormProvider.isUpdate
-                                ? 'Client and child updated.'
-                                : 'Client and child added.')
-                          : 'Error.',
-                    ),
-                    backgroundColor: success ? Colors.green : Colors.red,
-                  ),
-                );
+              if (!mounted) return;
 
-                if (success && !clientsChildFormProvider.isUpdate) {
-                  setState(() {});
+              CustomSnackbar.show(
+                context,
+                message: success
+                    ? (clientsChildFormProvider.isUpdate
+                          ? 'Client and child updated.'
+                          : 'Client and child added.')
+                    : 'Something went wrong. Please try again.',
+                type: success ? SnackbarType.success : SnackbarType.error,
+              );
 
-                  clientsChildFormProvider.resetForm();
-                }
+              if (success && !clientsChildFormProvider.isUpdate) {
+                setState(() {});
+                clientsChildFormProvider.resetForm();
+              }
 
-                Provider.of<ClientsChildProvider>(
-                  context,
-                  listen: false,
-                ).markShouldRefresh();
+              clientsChildFormProvider.success = success;
+
+              if (success) {
+                clientsChildFormProvider.saveInitialValue();
               }
             },
             label: 'Save',

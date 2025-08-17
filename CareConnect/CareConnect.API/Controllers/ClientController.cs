@@ -37,6 +37,15 @@ namespace CareConnect.API.Controllers
             var clientsChild = _clientsChildService.AddChildToClient(id, childInsertRequest); 
 
             return clientsChild; 
-        }   
+        }
+
+        [HttpDelete("{clientId}/{childId}")]
+        [PermissionAuthorize("RemoveChildren")]
+        public bool RemoveChildFromClient(int clientId, int childId)
+        {
+            var response = _clientsChildService.RemoveChildFromClient(clientId, childId);
+
+            return response;
+        }
     }
 }

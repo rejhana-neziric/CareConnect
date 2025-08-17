@@ -56,7 +56,8 @@ abstract class BaseFormProvider<TFormProvider, TEntityProvider>
   bool get hasUnsavedChanges {
     formKey.currentState?.save();
     final current = removeNulls(formKey.currentState?.value ?? {});
-    return !const DeepCollectionEquality().equals(current, initialData);
+    final normalizedInitial = removeNulls(initialData);
+    return !const DeepCollectionEquality().equals(current, normalizedInitial);
   }
 
   Future<bool> handleBackPressed(BuildContext context) async {

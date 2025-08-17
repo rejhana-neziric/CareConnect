@@ -149,7 +149,31 @@ abstract class BaseProvider<T> with ChangeNotifier {
     throw Exception("Method not implemented");
   }
 
-  // todo: delete
+  Future<bool> delete(int id) async {
+    var url = "$_baseUrl$_endpoint/$id";
+    var uri = Uri.parse(url);
+    var headers = createHeaders();
+
+    var response = await http.delete(uri, headers: headers);
+
+    if (isValidResponse(response)) {
+      final data = jsonDecode(response.body);
+      // final success = fromJson(data);
+      final success = data;
+
+      if (success == true) {
+        final index = _items.result.indexWhere((e) => getId(e) == id);
+        if (index != -1) {
+          _items.result.removeAt(index);
+          notifyListeners();
+        }
+      }
+
+      return success == true;
+    } else {
+      throw new Exception("Unknown error");
+    }
+  }
 
   bool isValidResponse(Response response) {
     if (response.statusCode < 299) {

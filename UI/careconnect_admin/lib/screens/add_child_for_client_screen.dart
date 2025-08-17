@@ -6,10 +6,12 @@ import 'package:careconnect_admin/providers/clients_child_form_provider.dart';
 import 'package:careconnect_admin/providers/clients_child_provider.dart';
 import 'package:careconnect_admin/theme/app_colors.dart';
 import 'package:careconnect_admin/utils.dart';
+import 'package:careconnect_admin/widgets/confirm_dialog.dart';
 import 'package:careconnect_admin/widgets/custom_date_field.dart';
 import 'package:careconnect_admin/widgets/custom_dropdown_field.dart';
 import 'package:careconnect_admin/widgets/custom_text_field.dart';
 import 'package:careconnect_admin/widgets/primary_button.dart';
+import 'package:careconnect_admin/widgets/snackbar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:provider/provider.dart';
@@ -77,6 +79,7 @@ class _AddChildForClientScreenState extends State<AddChildForClientScreen> {
           ),
         ),
       ),
+      onBackPressed: () => clientsChildFormProvider.handleBackPressed(context),
     );
   }
 
@@ -196,65 +199,50 @@ class _AddChildForClientScreenState extends State<AddChildForClientScreen> {
                 return;
               }
 
-              if (formState.saveAndValidate()) {
-                final clientId = widget.client.user?.userId;
+              final clientId = widget.client.user?.userId;
 
-                final shouldProceed = await showDialog<bool>(
-                  context: context,
-                  builder: (context) => AlertDialog(
-                    title: Text('Add New Child to Client'),
-                    content: Text(
-                      'Are you sure you want to add a new child for client?',
-                    ),
-                    actions: [
-                      TextButton(
-                        onPressed: () => Navigator.of(context).pop(false),
-                        child: Text('Cancel'),
-                      ),
-                      TextButton(
-                        onPressed: () => Navigator.of(context).pop(true),
-                        child: Text('Confirm'),
-                      ),
-                    ],
-                  ),
-                );
+              final shouldProceed = await CustomConfirmDialog.show(
+                context,
+                icon: Icons.info,
+                iconBackgroundColor: AppColors.mauveGray,
+                title: 'Add New Child to Client',
+                content: 'Are you sure you want to add a new child for client?',
+                confirmText: 'Confirm',
+                cancelText: 'Cancel',
+              );
 
-                if (shouldProceed != true) return;
+              if (shouldProceed != true) return;
 
-                final success = await clientsChildFormProvider.addChild(
-                  clientsChildFormProvider,
-                  clientsChildProvider,
-                  clientId,
-                  onSaved: () {
-                    //loadData();
+              final success = await clientsChildFormProvider.addChild(
+                clientsChildFormProvider,
+                clientsChildProvider,
+                clientId,
+                onSaved: () {
+                  // clientsChildFormProvider.resetForm();
+                },
+              );
 
-                    clientsChildFormProvider.resetForm();
-                  },
-                );
+              if (!mounted) return;
 
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text(
-                      success
-                          ? (clientsChildFormProvider.isUpdate
-                                ? 'Client and child updated.'
-                                : 'Client and child added.')
-                          : 'Error.',
-                    ),
-                    backgroundColor: success ? Colors.green : Colors.red,
-                  ),
-                );
+              CustomSnackbar.show(
+                context,
+                message: success
+                    ? (clientsChildFormProvider.isUpdate
+                          ? 'Client and child updated.'
+                          : 'Client and child added.')
+                    : 'Something went wrong. Please try again.',
+                type: success ? SnackbarType.success : SnackbarType.error,
+              );
 
-                if (success && !clientsChildFormProvider.isUpdate) {
-                  setState(() {});
+              if (success && !clientsChildFormProvider.isUpdate) {
+                setState(() {});
+                clientsChildFormProvider.resetForm();
+              }
 
-                  clientsChildFormProvider.resetForm();
-                }
+              clientsChildFormProvider.success = success;
 
-                Provider.of<ClientsChildProvider>(
-                  context,
-                  listen: false,
-                ).markShouldRefresh();
+              if (success) {
+                clientsChildFormProvider.saveInitialValue();
               }
             },
             label: 'Save',

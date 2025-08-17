@@ -2,7 +2,7 @@
 Child: Get, GetById, Insert, Update, Delete
 ChildrenDiagnosis: Get, GetById, Insert, Update, Delete
 ClientsChild: Get, GetById, Insert, Update, Delete, GetStatistics, GetClientAndChildByIds
-Client: Get, GetById, Insert, Update, Delete, GetChildren, AddChildren
+Client: Get, GetById, Insert, Update, Delete, GetChildren, AddChildren, RemoveChildren
 EmployeeAvailability: Get, GetById, Insert, Update, Delete
 Employee: Get, GetById, Insert, Update, Delete, GetStatistics
 EmployeePayHistory: Get, GetById, Insert, Update, Delete

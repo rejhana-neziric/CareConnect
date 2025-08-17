@@ -1,15 +1,16 @@
 import 'package:careconnect_admin/layouts/master_screen.dart';
 import 'package:careconnect_admin/models/responses/employee.dart';
-import 'package:careconnect_admin/models/search_objects/employee_additional_data.dart';
-import 'package:careconnect_admin/models/search_objects/employee_search_object.dart';
 import 'package:careconnect_admin/models/responses/search_result.dart';
 import 'package:careconnect_admin/providers/employee_form_provider.dart';
 import 'package:careconnect_admin/providers/employee_provider.dart';
+import 'package:careconnect_admin/theme/app_colors.dart';
 import 'package:careconnect_admin/utils.dart';
+import 'package:careconnect_admin/widgets/confirm_dialog.dart';
 import 'package:careconnect_admin/widgets/custom_date_field.dart';
 import 'package:careconnect_admin/widgets/custom_dropdown_field.dart';
 import 'package:careconnect_admin/widgets/custom_text_field.dart';
 import 'package:careconnect_admin/widgets/primary_button.dart';
+import 'package:careconnect_admin/widgets/snackbar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:provider/provider.dart';
@@ -47,31 +48,6 @@ class _EmployeeDetailsScreenState extends State<EmployeeDetailsScreen> {
     });
   }
 
-  // optimize
-  Future<SearchResult<Employee>?> loadData({int page = 0}) async {
-    SearchResult<Employee>? result;
-
-    final filterObject = EmployeeSearchObject(
-      additionalData: EmployeeAdditionalData(
-        isUserIncluded: true,
-        isQualificationIncluded: true,
-      ),
-      includeTotalCount: true,
-    );
-
-    final filter = filterObject.toJson();
-
-    final newResult = await employeeProvider.get(filter: filter);
-
-    result = newResult;
-
-    if (mounted) {
-      setState(() {});
-    }
-
-    return result;
-  }
-
   Future<void> initForm() async {
     if (widget.employee == null) {
       employeeFormProvider.setForInsert();
@@ -85,6 +61,7 @@ class _EmployeeDetailsScreenState extends State<EmployeeDetailsScreen> {
         "phoneNumber": widget.employee?.user?.phoneNumber,
         "address": widget.employee?.user?.address,
         "hireDate": widget.employee?.hireDate,
+        "endDate": widget.employee?.endDate,
         "jobTitle": widget.employee?.jobTitle,
         "qualificationName": widget.employee?.qualification?.name,
         "qualificationInstituteName":
@@ -126,12 +103,13 @@ class _EmployeeDetailsScreenState extends State<EmployeeDetailsScreen> {
               children: [
                 if (!isLoading) _buildForm(),
                 const SizedBox(height: 20),
-                _saveRow(),
+                _actionButtons(),
               ],
             ),
           ),
         ),
       ),
+      onBackPressed: () => employeeFormProvider.handleBackPressed(context),
     );
   }
 
@@ -160,6 +138,7 @@ class _EmployeeDetailsScreenState extends State<EmployeeDetailsScreen> {
                     width: 400,
                     name: 'firstName',
                     label: 'First Name',
+                    required: true,
                     validator: employeeFormProvider.validateName,
                     enabled: !employeeFormProvider.isUpdate,
                   ),
@@ -185,6 +164,7 @@ class _EmployeeDetailsScreenState extends State<EmployeeDetailsScreen> {
                     width: 400,
                     name: 'username',
                     label: 'Username',
+                    required: true,
                     validator: employeeFormProvider.validateUsername,
                   ),
                 ],
@@ -197,6 +177,7 @@ class _EmployeeDetailsScreenState extends State<EmployeeDetailsScreen> {
                     width: 400,
                     name: 'lastName',
                     label: 'Last Name',
+                    required: true,
                     validator: employeeFormProvider.validateName,
                     enabled: !employeeFormProvider.isUpdate,
                   ),
@@ -204,6 +185,7 @@ class _EmployeeDetailsScreenState extends State<EmployeeDetailsScreen> {
                     width: 400,
                     name: 'gender',
                     label: 'Gender',
+                    required: true,
                     items: [
                       DropdownMenuItem(value: 'M', child: Text('Male')),
                       DropdownMenuItem(value: 'F', child: Text('Female')),
@@ -223,6 +205,9 @@ class _EmployeeDetailsScreenState extends State<EmployeeDetailsScreen> {
                     width: 400,
                     name: 'password',
                     label: 'Password',
+                    required: employeeFormProvider.isUpdate == true
+                        ? false
+                        : true,
                     validator: (value) =>
                         employeeFormProvider.validatePassword(value),
                   ),
@@ -230,6 +215,9 @@ class _EmployeeDetailsScreenState extends State<EmployeeDetailsScreen> {
                     width: 400,
                     name: 'confirmationPassword',
                     label: 'Confirmation Password',
+                    required: employeeFormProvider.isUpdate == true
+                        ? false
+                        : true,
                     validator: (value) {
                       final password = employeeFormProvider
                           .formKey
@@ -271,14 +259,21 @@ class _EmployeeDetailsScreenState extends State<EmployeeDetailsScreen> {
                     width: 400,
                     name: 'jobTitle',
                     label: 'Job Title',
+                    required: true,
                     validator: employeeFormProvider.validateNonEmpty,
                   ),
                   CustomDateField(
                     width: 400,
                     name: 'hireDate',
                     label: 'Hire Date',
+                    required: true,
                     validator: employeeFormProvider.validateDate,
                     enabled: !employeeFormProvider.isUpdate,
+                  ),
+                  CustomDateField(
+                    width: 400,
+                    name: 'endDate',
+                    label: 'End Date',
                   ),
                 ],
               ),
@@ -291,18 +286,21 @@ class _EmployeeDetailsScreenState extends State<EmployeeDetailsScreen> {
                     width: 400,
                     name: 'qualificationName',
                     label: 'Qualification Name',
+                    required: true,
                     validator: employeeFormProvider.validateNonEmpty,
                   ),
                   CustomTextField(
                     width: 400,
                     name: 'qualificationInstituteName',
                     label: 'Qualification Institute Name',
+                    required: true,
                     validator: employeeFormProvider.validateNonEmpty,
                   ),
                   CustomDateField(
                     width: 400,
                     name: 'qualificationProcurementYear',
                     label: 'Qualification Procurement Year',
+                    required: true,
                     validator: employeeFormProvider.validateDate,
                   ),
                 ],
@@ -314,92 +312,129 @@ class _EmployeeDetailsScreenState extends State<EmployeeDetailsScreen> {
     );
   }
 
-  Widget _saveRow() {
-    return Padding(
-      padding: const EdgeInsets.all(8.0),
+  Widget _actionButtons() {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    return SizedBox(
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.end,
         children: [
-          PrimaryButton(
-            onPressed: () async {
-              Navigator.pop(context);
-            },
-            label: 'Cancel',
-          ),
-          SizedBox(width: 10),
-          PrimaryButton(
-            onPressed: () async {
-              final formState = employeeFormProvider.formKey.currentState;
+          if (widget.employee != null)
+            PrimaryButton(
+              onPressed: () async {
+                delete();
+              },
+              label: 'Delete',
+              backgroundColor: colorScheme.error,
+            ),
 
-              if (formState == null || !formState.saveAndValidate()) {
-                debugPrint('Form is not valid or state is null');
-                return;
-              }
-
-              if (formState.saveAndValidate()) {
-                final id = widget.employee?.user?.userId;
-
-                final isInsert = widget.employee == null;
-
-                final shouldProceed = await showDialog<bool>(
-                  context: context,
-                  builder: (context) => AlertDialog(
-                    title: Text(isInsert ? 'Add New Employee' : 'Save Changes'),
-                    content: Text(
-                      isInsert
-                          ? 'Are you sure you want to add a new employee?'
-                          : 'Are you sure you want to save the changes?',
-                    ),
-                    actions: [
-                      TextButton(
-                        onPressed: () => Navigator.of(context).pop(false),
-                        child: Text('Cancel'),
-                      ),
-                      TextButton(
-                        onPressed: () => Navigator.of(context).pop(true),
-                        child: Text('Confirm'),
-                      ),
-                    ],
-                  ),
-                );
-
-                if (shouldProceed != true) return;
-
-                final success = await employeeFormProvider.saveOrUpdate(
-                  employeeFormProvider,
-                  employeeProvider,
-                  id,
-                );
-
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text(
-                      success
-                          ? (employeeFormProvider.isUpdate
-                                ? 'Employee updated.'
-                                : 'Employee added.')
-                          : 'Error.',
-                    ),
-                    backgroundColor: success ? Colors.green : Colors.red,
-                  ),
-                );
-
-                if (success && !employeeFormProvider.isUpdate) {
-                  setState(() {});
-
-                  employeeFormProvider.resetForm();
-                }
-
-                Provider.of<EmployeeProvider>(
-                  context,
-                  listen: false,
-                ).markShouldRefresh();
-              }
-            },
-            label: 'Save',
+          Spacer(),
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              PrimaryButton(
+                onPressed: () async {
+                  Navigator.pop(context);
+                },
+                label: 'Cancel',
+              ),
+              SizedBox(width: 10),
+              PrimaryButton(
+                onPressed: () async {
+                  save();
+                },
+                label: 'Save',
+              ),
+            ],
           ),
         ],
       ),
     );
+  }
+
+  void delete() async {
+    final id = widget.employee?.user?.userId;
+
+    final shouldProceed = await CustomConfirmDialog.show(
+      context,
+      icon: Icons.info,
+
+      title: 'Delete Employee',
+      content: 'Are you sure you want to delete this employee?',
+      confirmText: 'Delete',
+      cancelText: 'Cancel',
+    );
+
+    if (shouldProceed != true) return;
+
+    final success = await employeeProvider.delete(id!);
+
+    if (!mounted) return;
+
+    CustomSnackbar.show(
+      context,
+      message: success
+          ? 'Employee successfully deleted.'
+          : 'Something went wrong. Please try again.',
+      type: success ? SnackbarType.success : SnackbarType.error,
+    );
+
+    if (success) {
+      Navigator.of(context).pop(success);
+    }
+  }
+
+  void save() async {
+    final formState = employeeFormProvider.formKey.currentState;
+
+    if (formState == null || !formState.saveAndValidate()) {
+      debugPrint('Form is not valid or state is null');
+      return;
+    }
+
+    final id = widget.employee?.user?.userId;
+    final isInsert = widget.employee == null;
+
+    final shouldProceed = await CustomConfirmDialog.show(
+      context,
+      icon: Icons.info,
+      iconBackgroundColor: AppColors.mauveGray,
+      title: isInsert ? 'Add New Employee' : 'Save Changes',
+      content: isInsert
+          ? 'Are you sure you want to add a new employee?'
+          : 'Are you sure you want to save the changes?',
+      confirmText: 'Continue',
+      cancelText: 'Cancel',
+    );
+
+    if (shouldProceed != true) return;
+
+    final success = await employeeFormProvider.saveOrUpdate(
+      employeeFormProvider,
+      employeeProvider,
+      id,
+    );
+
+    if (!mounted) return;
+
+    CustomSnackbar.show(
+      context,
+      message: success
+          ? (employeeFormProvider.isUpdate
+                ? 'Employee updated.'
+                : 'Employee added.')
+          : 'Something went wrong. Please try again.',
+      type: success ? SnackbarType.success : SnackbarType.error,
+    );
+
+    if (success && !employeeFormProvider.isUpdate) {
+      setState(() {});
+      employeeFormProvider.resetForm();
+    }
+
+    if (success) {
+      employeeFormProvider.saveInitialValue();
+    }
+
+    employeeFormProvider.success = success;
   }
 }

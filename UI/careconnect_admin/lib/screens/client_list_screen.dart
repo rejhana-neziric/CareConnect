@@ -1,22 +1,19 @@
 import 'package:careconnect_admin/layouts/master_screen.dart';
 import 'package:careconnect_admin/models/responses/clients_child.dart';
 import 'package:careconnect_admin/models/responses/clients_child_statistics.dart';
-import 'package:careconnect_admin/models/search_objects/child_search_object.dart';
-import 'package:careconnect_admin/models/search_objects/client_additional_data.dart';
-import 'package:careconnect_admin/models/search_objects/client_search_object.dart';
 import 'package:careconnect_admin/models/responses/search_result.dart';
-import 'package:careconnect_admin/models/search_objects/clients_child_additional_data.dart';
-import 'package:careconnect_admin/models/search_objects/clients_child_search_object.dart';
 import 'package:careconnect_admin/providers/client_provider.dart';
+import 'package:careconnect_admin/providers/clients_child_form_provider.dart';
 import 'package:careconnect_admin/providers/clients_child_provider.dart';
 import 'package:careconnect_admin/screens/child_details_screen.dart';
 import 'package:careconnect_admin/screens/client_details_screen.dart';
 import 'package:careconnect_admin/theme/app_colors.dart';
 import 'package:careconnect_admin/widgets/custom_dropdown_fliter.dart';
+import 'package:careconnect_admin/widgets/no_results.dart';
 import 'package:careconnect_admin/widgets/primary_button.dart';
+import 'package:careconnect_admin/widgets/stat_card.dart';
 import 'package:data_table_2/data_table_2.dart';
 import 'package:fl_chart/fl_chart.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
@@ -35,6 +32,8 @@ class _ClientListScreenState extends State<ClientListScreen> {
 
   SearchResult<ClientsChild>? result;
   int currentPage = 0;
+
+  bool isLoading = false;
 
   final TextEditingController _ftsController = TextEditingController();
   final TextEditingController _firstNameController = TextEditingController();
@@ -116,77 +115,72 @@ class _ClientListScreenState extends State<ClientListScreen> {
   bool isHoveredParent = false;
   bool isHoveredChild = false;
 
+  final GlobalKey<_ClientsChildTableState> tableKey = GlobalKey();
+
+  void _reloadTable() {
+    tableKey.currentState?.reloadTable();
+  }
+
+  void _reloadCurrentPageTable() {
+    tableKey.currentState?.refreshCurrentPage();
+  }
+
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-
-    clientProvider = context.read<ClientProvider>();
-    clientsChildProvider = context.read<ClientsChildProvider>();
   }
 
   @override
   void initState() {
     super.initState();
-
     clientProvider = context.read<ClientProvider>();
     clientsChildProvider = context.read<ClientsChildProvider>();
-
     loadData();
+  }
 
-    if (clientsChildProvider.shouldRefresh) {
-      loadData();
-      clientsChildProvider.markRefreshed();
+  Future<void> loadData({int page = 0}) async {
+    setState(() {
+      isLoading = true;
+    });
+
+    try {
+      tableKey.currentState?.currentPage = 0;
+
+      final clientsChildProvider = Provider.of<ClientsChildProvider>(
+        context,
+        listen: false,
+      );
+
+      final finalResult = await clientsChildProvider.loadData(
+        fts: _ftsController.text,
+        firstNameGTE: _firstNameController.text,
+        lastNameGTE: _lastNameController.text,
+        email: _emailController.text,
+        employmentStatus: employed,
+        birthDateGTE: birthDateGTE,
+        birthDateLTE: birthDateLTE,
+        gender: gender,
+        page: page,
+        sortBy: _sortBy,
+        sortAscending: _sortAscending,
+      );
+
+      result = finalResult;
+
+      loadStats();
+
+      if (mounted) {
+        setState(() {});
+      }
+    } finally {
+      setState(() {
+        isLoading = false;
+      });
     }
   }
 
-  Future<SearchResult<ClientsChild>?> loadData({int page = 0}) async {
-    final clientFilterObject = ClientSearchObject(
-      fts: _ftsController.text,
-      firstNameGTE: _firstNameController.text,
-      lastNameGTE: _lastNameController.text,
-      email: _emailController.text,
-      employmentStatus: employed,
-      page: page,
-      sortBy: _sortBy,
-      sortAscending: _sortAscending,
-      additionalData: ClientAdditionalData(isUserIncluded: true),
-      includeTotalCount: true,
-    );
-
-    final childFilterObject = ChildSearchObject(
-      fts: _ftsController.text,
-      firstNameGTE: _firstNameController.text,
-      lastNameGTE: _lastNameController.text,
-      birthDateGTE: birthDateGTE,
-      birthDateLTE: birthDateLTE,
-      gender: gender,
-      page: page,
-      sortBy: _sortBy,
-      sortAscending: _sortAscending,
-      includeTotalCount: true,
-    );
-
-    final filterObject = ClientsChildSearchObject(
-      clientSearchObject: clientFilterObject,
-      childSearchObject: childFilterObject,
-      fts: _ftsController.text,
-      includeTotalCount: true,
-      page: page,
-      sortAscending: _sortAscending,
-      sortBy: _sortBy,
-      additionalData: ClientsChildAdditionalData(
-        isChildIncluded: true,
-        isClientIncluded: true,
-      ),
-    );
-
-    final filter = filterObject.toJson();
-
-    final newResult = await clientsChildProvider.get(filter: filter);
-
-    result = newResult;
-
-    final stats = await clientsChildProvider.getStatistics();
+  Future<void> loadStats() async {
+    final stats = await clientsChildProvider.loadStats();
 
     statistics = stats;
 
@@ -203,12 +197,13 @@ class _ClientListScreenState extends State<ClientListScreen> {
     if (mounted) {
       setState(() {});
     }
-
-    return result;
   }
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return MasterScreen(
       "Clients",
       // SingleChildScrollView(
@@ -217,14 +212,10 @@ class _ClientListScreenState extends State<ClientListScreen> {
       Column(
         children: [
           _buildOverview(),
-          _buildSearch(),
+          _buildSearch(colorScheme),
           Consumer<ClientsChildProvider>(
-            builder: (context, provider, child) {
-              if (clientsChildProvider.shouldRefresh) {
-                loadData();
-                clientsChildProvider.markRefreshed();
-              }
-              return _buildResultView(result, loadData);
+            builder: (context, clientsChildProvider, child) {
+              return _buildResultView();
             },
           ),
         ],
@@ -233,13 +224,18 @@ class _ClientListScreenState extends State<ClientListScreen> {
         child: Align(
           alignment: Alignment.topRight,
           child: PrimaryButton(
-            onPressed: () {
-              Navigator.push(
+            onPressed: () async {
+              final result = await Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => ClientDetailsScreen(clientsChild: null),
+                  builder: (context) => ChangeNotifierProvider(
+                    create: (_) => ClientsChildFormProvider(),
+                    child: ClientDetailsScreen(clientsChild: null),
+                  ),
                 ),
               );
+
+              if (result == true) loadData();
             },
             label: 'Add Client',
             icon: Icons.person_add_alt_1,
@@ -251,126 +247,90 @@ class _ClientListScreenState extends State<ClientListScreen> {
   }
 
   Widget _buildOverview() {
-    return Row(
-      children: [
-        Column(
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 32.0),
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        child: Row(
           children: [
-            Row(
+            Column(
               children: [
-                _buildStatCard(
-                  'Total Parents',
-                  statistics?.totalParents,
-                  Icons.groups,
-                  Colors.teal,
+                Row(
+                  children: [
+                    statCard(
+                      context,
+                      'Total Parents',
+                      statistics?.totalParents,
+                      Icons.groups,
+                      Colors.teal,
+                    ),
+                    SizedBox(width: 20),
+                    statCard(
+                      context,
+                      'Total Children',
+                      statistics?.totalChildren,
+                      Icons.groups,
+                      Colors.teal,
+                    ),
+                  ],
                 ),
-                SizedBox(width: 20),
-                _buildStatCard(
-                  'Total Children',
-                  statistics?.totalChildren,
-                  Icons.groups,
-                  Colors.teal,
+                Row(
+                  children: [
+                    statCard(
+                      context,
+                      "Employed Parents",
+                      statistics?.employedParents,
+                      Icons.work,
+                      Colors.orange,
+                    ),
+                    SizedBox(width: 20),
+                    statCard(
+                      context,
+                      "New Clients (${DateFormat.MMMM().format(DateTime.now())} ${DateTime.now().year})",
+                      statistics?.newClientsThisMonth,
+                      Icons.trending_up,
+                      Colors.green,
+                    ),
+                  ],
                 ),
               ],
             ),
-            Row(
-              children: [
-                _buildStatCard(
-                  "Employed Parents",
-                  statistics?.employedParents,
-                  Icons.work,
-                  Colors.orange,
-                ),
-                SizedBox(width: 20),
-                _buildStatCard(
-                  "New Clients (${DateFormat.MMMM().format(DateTime.now())} ${DateTime.now().year})",
-                  statistics?.newClientsThisMonth,
-                  Icons.trending_up,
-                  Colors.green,
-                ),
-              ],
-            ),
-          ],
-        ),
-        SizedBox(width: 20),
-        SizedBox(
-          height: 220,
-          width: 280,
-          child: Row(
-            children: [
-              Expanded(
-                child: _buildChartCard(
-                  title: 'Children per Age Groups',
-                  chart:
-                      statistics != null &&
-                          statistics!.childrenPerAgeGroup.isNotEmpty
-                      ? _buildChildrenPerAgeGroupBarChart()
-                      : buildShimmerBarChartPlaceholder(),
-                ),
-              ),
-            ],
-          ),
-        ),
-
-        SizedBox(width: 20),
-        SizedBox(
-          height: 220,
-          width: 280,
-          child: _buildChartCard(
-            title: 'Children Per Gender',
-            chart:
-                statistics != null && statistics!.childrenPerGender.isNotEmpty
-                ? _buildChildrenPerGenderPieChart(maleCount, femaleCount)
-                : buildShimmerBarChartPlaceholder(),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildStatCard(
-    String label,
-    dynamic value,
-    IconData icon,
-    Color iconColor,
-  ) {
-    return Card(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      elevation: 1.5,
-      color: AppColors.white,
-      child: ConstrainedBox(
-        constraints: BoxConstraints(maxWidth: 400),
-        child: Container(
-          height: 100,
-          padding: EdgeInsets.all(16),
-          child: Row(
-            children: [
-              Container(
-                padding: EdgeInsets.all(10),
-                decoration: BoxDecoration(
-                  color: iconColor.withAlpha((0.1 * 255).toInt()),
-                  shape: BoxShape.circle,
-                ),
-                child: Icon(icon, color: iconColor, size: 25),
-              ),
-              SizedBox(width: 16),
-              // Text info
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisAlignment: MainAxisAlignment.center,
+            SizedBox(width: 20),
+            SizedBox(
+              height: 220,
+              width: 280,
+              child: Row(
                 children: [
-                  Text(
-                    '$value',
-                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                  ),
-                  SizedBox(height: 4),
-                  Text(
-                    label,
-                    style: TextStyle(fontSize: 14, color: Colors.grey[600]),
+                  Expanded(
+                    child: _buildChartCard(
+                      context: context,
+                      title: 'Children per Age Groups',
+                      chart:
+                          statistics != null &&
+                              statistics!.childrenPerAgeGroup.isNotEmpty
+                          ? _buildChildrenPerAgeGroupBarChart()
+                          : buildShimmerBarChartPlaceholder(),
+                    ),
                   ),
                 ],
               ),
-            ],
-          ),
+            ),
+
+            SizedBox(width: 20),
+            SizedBox(
+              height: 220,
+              width: 280,
+              child: _buildChartCard(
+                context: context,
+                title: 'Children Per Gender',
+                chart:
+                    statistics != null &&
+                        statistics!.childrenPerGender.isNotEmpty
+                    ? _buildChildrenPerGenderPieChart(maleCount, femaleCount)
+                    : buildShimmerBarChartPlaceholder(),
+              ),
+            ),
+          ],
         ),
       ),
     );
@@ -420,9 +380,9 @@ class _ClientListScreenState extends State<ClientListScreen> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
-                _buildShimmerBar(height: 60),
-                _buildShimmerBar(height: 40),
-                _buildShimmerBar(height: 100),
+                // _buildShimmerBar(height: 60),
+                // _buildShimmerBar(height: 40),
+                // _buildShimmerBar(height: 100),
               ],
             ),
           ],
@@ -431,15 +391,19 @@ class _ClientListScreenState extends State<ClientListScreen> {
     );
   }
 
-  Widget _buildChartCard({required String title, required Widget chart}) {
+  Widget _buildChartCard({
+    required BuildContext context,
+    required String title,
+    required Widget chart,
+  }) {
     return Card(
-      color: AppColors.white,
+      color: Theme.of(context).colorScheme.surfaceContainerLowest,
       child: Padding(
         padding: const EdgeInsets.all(8.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Container(
+            SizedBox(
               width: double.infinity,
               child: Text(
                 title,
@@ -589,7 +553,7 @@ class _ClientListScreenState extends State<ClientListScreen> {
     );
   }
 
-  Widget _buildSearch() {
+  Widget _buildSearch(ColorScheme colorScheme) {
     return Padding(
       padding: const EdgeInsets.all(8.0),
       child: Container(
@@ -597,156 +561,182 @@ class _ClientListScreenState extends State<ClientListScreen> {
         decoration: BoxDecoration(
           border: Border.all(color: Colors.grey),
           borderRadius: BorderRadius.circular(8),
-          color: AppColors.white,
+          color: colorScheme.surfaceContainerLowest,
         ),
-        child: Row(
-          children: [
-            // Search
-            Expanded(
-              child: TextField(
-                controller: _ftsController,
-                decoration: InputDecoration(
-                  labelText: "Search First Name, Last Name and Email",
-                  border: InputBorder.none,
-                  icon: Icon(Icons.search),
+        child: SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              SizedBox(
+                width: 500,
+                child: TextField(
+                  controller: _ftsController,
+                  decoration: const InputDecoration(
+                    labelText: "Search First Name, Last Name and Email",
+                    border: OutlineInputBorder(),
+                    prefixIcon: Icon(Icons.search),
+                  ),
+                  onChanged: (value) => loadData(),
                 ),
-                onChanged: (value) => loadData(),
               ),
-            ),
-            SizedBox(width: 8),
-            // Employment Status
-            Container(
-              width: 270,
-              child: CustomDropdownFliter(
-                selectedValue: selectedEmploymentStatusOption,
-                options: employmentStatusOptions,
-                name: "Employment Status: ",
-                onChanged: (newStatus) {
-                  setState(() {
-                    selectedEmploymentStatusOption = newStatus;
-                    if (newStatus == 'true') {
-                      employed = true;
-                    } else if (newStatus == 'false') {
-                      employed = false;
-                    } else {
-                      employed = null;
-                    }
-                  });
-                  loadData();
-                },
-              ),
-            ),
-            SizedBox(width: 8),
-            // Employment Status
-            Container(
-              width: 200,
-              child: CustomDropdownFliter(
-                selectedValue: selectedGenderOption,
-                options: genderOptions,
-                name: "Child Gender: ",
-                onChanged: (newGender) {
-                  setState(() {
-                    selectedGenderOption = newGender;
-                    gender = newGender;
-                  });
-                  loadData();
-                },
-              ),
-            ),
-            SizedBox(width: 8),
-            // Employment Status
-            Container(
-              width: 150,
-              child: CustomDropdownFliter(
-                selectedValue: selectedAgeGroupOption,
-                options: ageGroupOptions,
-                name: "Child Age: ",
-                onChanged: (value) {
-                  setState(() {
-                    selectedAgeGroupOption = value;
-                    _setBirthDateRangeFromAgeGroup(value);
+              SizedBox(width: 8),
+              // Employment Status
+              Container(
+                width: 270,
+                child: CustomDropdownFliter(
+                  selectedValue: selectedEmploymentStatusOption,
+                  options: employmentStatusOptions,
+                  name: "Employment Status: ",
+                  onChanged: (newStatus) {
+                    setState(() {
+                      selectedEmploymentStatusOption = newStatus;
+                      if (newStatus == 'true') {
+                        employed = true;
+                      } else if (newStatus == 'false') {
+                        employed = false;
+                      } else {
+                        employed = null;
+                      }
+                    });
                     loadData();
-                  });
-                },
+                  },
+                ),
               ),
-            ),
-            SizedBox(width: 8),
-            // Sort by
-            Container(
-              width: 200,
-              child: CustomDropdownFliter(
-                selectedValue: selectedSortingOption,
-                options: sortingOptions,
-                name: "Sort by: ",
-                onChanged: (newStatus) {
+              SizedBox(width: 8),
+              // Employment Status
+              SizedBox(
+                width: 200,
+                child: CustomDropdownFliter(
+                  selectedValue: selectedGenderOption,
+                  options: genderOptions,
+                  name: "Child Gender: ",
+                  onChanged: (newGender) {
+                    setState(() {
+                      selectedGenderOption = newGender;
+                      gender = newGender;
+                    });
+                    loadData();
+                  },
+                ),
+              ),
+              SizedBox(width: 8),
+              // Employment Status
+              SizedBox(
+                width: 150,
+                child: CustomDropdownFliter(
+                  selectedValue: selectedAgeGroupOption,
+                  options: ageGroupOptions,
+                  name: "Child Age: ",
+                  onChanged: (value) {
+                    setState(() {
+                      selectedAgeGroupOption = value;
+                      _setBirthDateRangeFromAgeGroup(value);
+                      loadData();
+                    });
+                  },
+                ),
+              ),
+              SizedBox(width: 8),
+              // Sort by
+              SizedBox(
+                width: 200,
+                child: CustomDropdownFliter(
+                  selectedValue: selectedSortingOption,
+                  options: sortingOptions,
+                  name: "Sort by: ",
+                  onChanged: (newStatus) {
+                    setState(() {
+                      selectedSortingOption = newStatus;
+                      _sortBy = newStatus;
+                    });
+                    loadData();
+                  },
+                ),
+              ),
+              SizedBox(width: 8),
+              // Asc/Desc toggle
+              IconButton(
+                icon: Icon(
+                  _sortAscending ? Icons.arrow_upward : Icons.arrow_downward,
+                  color: Colors.black,
+                ),
+                tooltip: _sortAscending ? 'Ascending' : 'Descending',
+                onPressed: () {
                   setState(() {
-                    selectedSortingOption = newStatus;
-                    _sortBy = newStatus;
+                    _sortAscending = !_sortAscending;
                   });
                   loadData();
                 },
               ),
-            ),
-            SizedBox(width: 8),
-            // Asc/Desc toggle
-            IconButton(
-              icon: Icon(
-                _sortAscending ? Icons.arrow_upward : Icons.arrow_downward,
-                color: Colors.black,
+              SizedBox(width: 8),
+              // Refresh
+              TextButton.icon(
+                onPressed: () async {
+                  if (_ftsController.text.isEmpty == false ||
+                      _sortBy != null ||
+                      employed != null ||
+                      selectedAgeGroupOption != null ||
+                      selectedEmploymentStatusOption != null ||
+                      selectedGenderOption != null ||
+                      selectedSortingOption != null ||
+                      gender != null ||
+                      birthDateGTE != null ||
+                      birthDateLTE != null) {
+                    _ftsController.clear();
+                    _sortBy = null;
+                    employed = null;
+                    selectedAgeGroupOption = null;
+                    selectedEmploymentStatusOption = null;
+                    selectedGenderOption = null;
+                    selectedSortingOption = null;
+                    gender = null;
+                    birthDateGTE = null;
+                    birthDateLTE = null;
+                    loadData(page: 0);
+                    _reloadTable();
+                  } else {
+                    loadData(page: 0);
+                    _reloadCurrentPageTable();
+                  }
+                },
+                label: Text("Refresh", style: TextStyle(color: Colors.black)),
+                icon: Icon(Icons.refresh_outlined, color: Colors.black),
               ),
-              tooltip: _sortAscending ? 'Ascending' : 'Descending',
-              onPressed: () {
-                setState(() {
-                  _sortAscending = !_sortAscending;
-                });
-                loadData();
-              },
-            ),
-            SizedBox(width: 8),
-            // Refresh
-            TextButton.icon(
-              onPressed: () async {
-                _ftsController.clear();
-                _sortBy = null;
-                employed = null;
-                selectedAgeGroupOption = null;
-                selectedEmploymentStatusOption = null;
-                selectedGenderOption = null;
-                selectedSortingOption = null;
-                gender = null;
-                birthDateGTE = null;
-                birthDateLTE = null;
-                loadData();
-              },
-              label: Text("Refresh", style: TextStyle(color: Colors.black)),
-              icon: Icon(Icons.refresh_outlined, color: Colors.black),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
   }
 
-  Widget _buildResultView(
-    SearchResult<ClientsChild>? result,
-    Future<SearchResult<ClientsChild>?> Function({int page}) loadData,
-  ) {
-    if (result != null) {
-      return Expanded(
-        child: ClientsChildTable(result: result, onPageChanged: loadData),
-      );
-    } else {
-      return const Padding(
-        padding: EdgeInsets.all(16),
-        child: Text('No data available.'),
-      );
-    }
+  Widget _buildResultView() {
+    return (result != null && result?.result.isEmpty == false)
+        ? Expanded(
+            child: ClientsChildTable(
+              key: tableKey,
+              result: result,
+              onPageChanged: loadData,
+            ),
+          )
+        : Padding(
+            padding: const EdgeInsets.all(128.0),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                NoResultsWidget(
+                  message: 'No results found. Please try again.',
+                  icon: Icons.sentiment_dissatisfied,
+                ),
+              ],
+            ),
+          );
   }
 }
 
 class ClientsChildTable extends StatefulWidget {
   final SearchResult<ClientsChild>? result;
-  final Future<SearchResult<ClientsChild>?> Function({int page}) onPageChanged;
+  final Future<void> Function({int page}) onPageChanged;
 
   const ClientsChildTable({
     super.key,
@@ -760,8 +750,8 @@ class ClientsChildTable extends StatefulWidget {
 
 class _ClientsChildTableState extends State<ClientsChildTable> {
   final int _pageSize = 10;
-  int _currentPage = 0;
-  bool _isLoading = false;
+  int currentPage = 0;
+  bool isLoading = false;
   ClientsChildDataSource? _dataSource;
 
   bool isHoveredParent = false;
@@ -792,16 +782,22 @@ class _ClientsChildTableState extends State<ClientsChildTable> {
       totalCount,
       onPageChanged: _fetchPage,
       pageSize: _pageSize,
-      currentPage: _currentPage,
+      currentPage: currentPage,
     );
   }
 
-  Future<void> _fetchPage(int page) async {
-    if (_isLoading || page == _currentPage) return;
+  void refreshCurrentPage() {
+    _fetchPage(currentPage);
+  }
 
+  void reloadTable() {
+    _fetchPage(0);
+  }
+
+  Future<void> _fetchPage(int page) async {
     setState(() {
-      _isLoading = true;
-      _currentPage = page;
+      isLoading = true;
+      currentPage = page;
     });
 
     try {
@@ -809,14 +805,16 @@ class _ClientsChildTableState extends State<ClientsChildTable> {
 
       if (mounted) {
         setState(() {
-          _isLoading = false;
+          currentPage = page;
+          _updateDataSource();
+          isLoading = false;
         });
       }
     } catch (e) {
       if (mounted) {
         setState(() {
-          _isLoading = false;
-          _currentPage = _currentPage > 0 ? _currentPage - 1 : 0;
+          isLoading = false;
+          currentPage = currentPage > 0 ? currentPage - 1 : 0;
         });
       }
 
@@ -831,7 +829,7 @@ class _ClientsChildTableState extends State<ClientsChildTable> {
     final clientsChild = widget.result?.result ?? [];
     //final totalCount = widget.result?.totalCount ?? 0;
 
-    if (_isLoading && clientsChild.isEmpty) {
+    if (isLoading && clientsChild.isEmpty) {
       return const Center(child: CircularProgressIndicator());
     }
 
@@ -842,37 +840,32 @@ class _ClientsChildTableState extends State<ClientsChildTable> {
     return Stack(
       children: [
         PaginatedDataTable2(
-          key: ValueKey('${widget.result?.result.hashCode}_$_currentPage'),
-
+          key: ValueKey('${widget.result?.result.hashCode}_$currentPage'),
+          wrapInCard: false,
           columns: const [
-            DataColumn2(label: Text('Employee Name')),
+            DataColumn2(label: Text('Parent Name')),
             DataColumn2(label: Text('Child Name')),
             DataColumn2(label: Text('Child Gender')),
             DataColumn2(label: Text('Child Age')),
             DataColumn2(label: Text('Phone Number')),
             DataColumn2(label: Text('Email')),
-            DataColumn2(
-              label: Center(child: Text('Actions')),
-              size: ColumnSize.S,
-              fixedWidth: 120,
-            ),
           ],
           source: _dataSource!,
           rowsPerPage: _pageSize,
           onPageChanged: (start) {
             final newPage = start ~/ _pageSize;
-            if (newPage != _currentPage && !_isLoading) {
+            if (newPage != currentPage && !isLoading) {
               _fetchPage(newPage);
             }
           },
-          initialFirstRowIndex: _currentPage * _pageSize,
+          initialFirstRowIndex: currentPage * _pageSize,
           columnSpacing: 15,
           horizontalMargin: 12,
           minWidth: 600,
           showCheckboxColumn: false,
           availableRowsPerPage: const [10],
         ),
-        if (_isLoading)
+        if (isLoading)
           Positioned.fill(
             child: Container(
               color: Colors.white.withAlpha((0.7 * 255).toInt()),
@@ -918,41 +911,26 @@ class ClientsChildDataSource extends DataTableSource {
     return DataRow.byIndex(
       index: index,
       cells: [
-        // DataCell(
-        //   GestureDetector(
-        //     onTap: () {
-        //       // Otvori ekran roditelja
-        //       Navigator.push(
-        //         context,
-        //         MaterialPageRoute(
-        //           builder: (context) =>
-        //               ClientDetailsScreen(clientsChild: clientChild),
-        //         ),
-        //       );
-        //     },
-        //     child: Text(
-        //       "${clientChild.client.user?.firstName ?? " "} ${clientChild.client.user?.lastName ?? ""}",
-        //       style: TextStyle(
-        //         color: Colors.blue,
-        //         decoration: TextDecoration.underline,
-        //       ),
-        //     ),
-        //   ),
-        // ),
         DataCell(
           MouseRegion(
             onEnter: (_) => hoveredRowNotifier.value = index,
             onExit: (_) => hoveredRowNotifier.value = null,
             cursor: SystemMouseCursors.click,
             child: GestureDetector(
-              onTap: () {
-                Navigator.push(
+              onTap: () async {
+                final result = await Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) =>
-                        ClientDetailsScreen(clientsChild: clientChild),
+                    builder: (context) => ChangeNotifierProvider(
+                      create: (_) => ClientsChildFormProvider(),
+                      child: ClientDetailsScreen(clientsChild: clientChild),
+                    ),
                   ),
                 );
+
+                if (result == true && onPageChanged != null) {
+                  onPageChanged!(currentPage);
+                }
               },
               child: ValueListenableBuilder(
                 valueListenable: hoveredRowNotifier,
@@ -981,31 +959,29 @@ class ClientsChildDataSource extends DataTableSource {
             ),
           ),
         ),
-
-        // DataCell(
-        //   Text(
-        //     "${clientChild.client.user?.firstName ?? " "} ${clientChild.client.user?.lastName ?? ""}",
-        //   ),
-        // ),
-        // DataCell(
-        //   Text("${clientChild.child.firstName} ${clientChild.child.lastName}"),
-        // ),
         DataCell(
           MouseRegion(
             onEnter: (_) => hoveredRowNotifier.value = index,
             onExit: (_) => hoveredRowNotifier.value = null,
             cursor: SystemMouseCursors.click,
             child: GestureDetector(
-              onTap: () {
-                Navigator.push(
+              onTap: () async {
+                final result = await Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => ChildDetailsScreen(
-                      client: clientChild.client,
-                      child: clientChild.child,
+                    builder: (context) => ChangeNotifierProvider(
+                      create: (_) => ClientsChildFormProvider(),
+                      child: ChildDetailsScreen(
+                        client: clientChild.client,
+                        child: clientChild.child,
+                      ),
                     ),
                   ),
                 );
+
+                if (result == true && onPageChanged != null) {
+                  onPageChanged!(currentPage);
+                }
               },
               child: ValueListenableBuilder(
                 valueListenable: hoveredRowNotifier,
@@ -1042,35 +1018,6 @@ class ClientsChildDataSource extends DataTableSource {
         ),
         DataCell(Text(clientChild.client.user?.phoneNumber ?? "")),
         DataCell(Text(clientChild.client.user?.email ?? "")),
-        DataCell(
-          Row(
-            children: [
-              IconButton(
-                icon: const Icon(Icons.edit_outlined, color: Colors.grey),
-                tooltip: 'Edit',
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) =>
-                          ClientDetailsScreen(clientsChild: clientChild),
-                    ),
-                  );
-                },
-              ),
-              IconButton(
-                icon: const Icon(
-                  Icons.delete_outline_outlined,
-                  color: Colors.grey,
-                ),
-                tooltip: 'Delete',
-                onPressed: () {
-                  // Handle delete
-                },
-              ),
-            ],
-          ),
-        ),
       ],
     );
   }

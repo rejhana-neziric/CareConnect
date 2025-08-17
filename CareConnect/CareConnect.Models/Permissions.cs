@@ -51,6 +51,7 @@ public static class Permissions
         public const string Delete = "Permissions.Client.Delete";
         public const string GetChildren = "Permissions.Client.GetChildren";
         public const string AddChildren = "Permissions.Client.AddChildren";
+        public const string RemoveChildren = "Permissions.Client.RemoveChildren";
     }
     public static class EmployeeAvailability
     {

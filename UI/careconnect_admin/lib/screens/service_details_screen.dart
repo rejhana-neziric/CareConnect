@@ -10,6 +10,7 @@ import 'package:careconnect_admin/widgets/custom_date_field.dart';
 import 'package:careconnect_admin/widgets/custom_dropdown_field.dart';
 import 'package:careconnect_admin/widgets/custom_text_field.dart';
 import 'package:careconnect_admin/widgets/primary_button.dart';
+import 'package:careconnect_admin/widgets/snackbar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:provider/provider.dart';
@@ -28,7 +29,7 @@ class _ServiceDetailsScreenState extends State<ServiceDetailsScreen> {
   SearchResult<Service>? result;
   late ServiceProvider serviceProvider;
   late ServiceFormProvider serviceFormProvider;
-  bool isLoading = false;
+  bool isLoading = true;
 
   @override
   void didChangeDependencies() {
@@ -98,7 +99,7 @@ class _ServiceDetailsScreenState extends State<ServiceDetailsScreen> {
                   children: [
                     if (!isLoading) _buildForm(),
                     const SizedBox(height: 20),
-                    _saveRow(),
+                    _actionButtons(),
                   ],
                 ),
               ],
@@ -131,60 +132,63 @@ class _ServiceDetailsScreenState extends State<ServiceDetailsScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [buildSectionTitle("Add new service")],
             ),
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  CustomTextField(
-                    width: 600,
-                    name: 'name',
-                    label: 'Service Name',
-                    validator: (value) =>
-                        serviceFormProvider.validateServiceName(value),
-                    required: true,
-                  ),
-                  CustomTextField(
-                    width: 600,
-                    name: 'description',
-                    label: 'Description',
-                    maxLines: 5,
-                    hintText: 'Write a short and clear description...',
-                    validator: serviceFormProvider.validateDescription,
-                  ),
-                  CustomTextField(
-                    width: 600,
-                    name: 'price',
-                    label: 'Price',
-                    validator: serviceFormProvider.validatePrice,
-                  ),
-                  CustomTextField(
-                    width: 600,
-                    name: 'memberPrice',
-                    label: 'Member Price',
-                    validator: serviceFormProvider.validatePrice,
-                  ),
-                  CustomDropdownField<bool>(
-                    width: 600,
-                    name: 'isActive',
-                    label: 'Availability',
-                    items: [
-                      DropdownMenuItem(value: true, child: Text('Active')),
-                      DropdownMenuItem(value: false, child: Text('Inactive')),
-                    ],
-                    validator: serviceFormProvider.validateNonEmptyBool,
-                  ),
-                  if (serviceFormProvider.isUpdate)
-                    CustomDateField(
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    CustomTextField(
                       width: 600,
-                      name: 'modifiedDate',
-                      label: 'Last Edited',
-                      enabled: false,
+                      name: 'name',
+                      label: 'Service Name',
+                      validator: (value) =>
+                          serviceFormProvider.validateServiceName(value),
+                      required: true,
                     ),
-                ],
-              ),
-            ],
+                    CustomTextField(
+                      width: 600,
+                      name: 'description',
+                      label: 'Description',
+                      maxLines: 5,
+                      hintText: 'Write a short and clear description...',
+                      validator: serviceFormProvider.validateDescription,
+                    ),
+                    CustomTextField(
+                      width: 600,
+                      name: 'price',
+                      label: 'Price',
+                      validator: serviceFormProvider.validatePrice,
+                    ),
+                    CustomTextField(
+                      width: 600,
+                      name: 'memberPrice',
+                      label: 'Member Price',
+                      validator: serviceFormProvider.validatePrice,
+                    ),
+                    CustomDropdownField<bool>(
+                      width: 600,
+                      name: 'isActive',
+                      label: 'Availability',
+                      items: [
+                        DropdownMenuItem(value: true, child: Text('Active')),
+                        DropdownMenuItem(value: false, child: Text('Inactive')),
+                      ],
+                      validator: serviceFormProvider.validateNonEmptyBool,
+                    ),
+                    if (serviceFormProvider.isUpdate)
+                      CustomDateField(
+                        width: 600,
+                        name: 'modifiedDate',
+                        label: 'Last Edited',
+                        enabled: false,
+                      ),
+                  ],
+                ),
+              ],
+            ),
           ),
           const SizedBox(width: 40, height: 80),
         ],
@@ -192,79 +196,130 @@ class _ServiceDetailsScreenState extends State<ServiceDetailsScreen> {
     );
   }
 
-  Widget _saveRow() {
-    return Padding(
-      padding: const EdgeInsets.all(8.0),
+  Widget _actionButtons() {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
+    return SizedBox(
+      width: 600,
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.end,
         children: [
-          PrimaryButton(
-            onPressed: () async {
-              Navigator.pop(context);
-            },
-            label: 'Cancel',
-          ),
-          SizedBox(width: 10),
-          PrimaryButton(
-            onPressed: () async {
-              final formState = serviceFormProvider.formKey.currentState;
+          if (widget.service != null)
+            PrimaryButton(
+              onPressed: () async {
+                delete();
+              },
+              label: 'Delete',
+              backgroundColor: colorScheme.error,
+            ),
 
-              if (formState == null || !formState.saveAndValidate()) {
-                debugPrint('Form is not valid or state is null');
-                return;
-              }
-
-              final id = widget.service?.serviceId;
-              final isInsert = widget.service == null;
-
-              final shouldProceed = await CustomConfirmDialog.show(
-                context,
-                icon: Icons.info,
-                iconBackgroundColor: AppColors.mauveGray,
-                title: isInsert ? 'Add New Service' : 'Save Changes',
-                content: isInsert
-                    ? 'Are you sure you want to add a new service?'
-                    : 'Are you sure you want to save the service?',
-                confirmText: 'Continue',
-                cancelText: 'Cancel',
-              );
-
-              if (shouldProceed != true) return;
-
-              final success = await serviceFormProvider.saveOrUpdate(
-                serviceFormProvider,
-                serviceProvider,
-                id,
-              );
-
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text(
-                    success
-                        ? (serviceFormProvider.isUpdate
-                              ? 'Service updated.'
-                              : 'Service added.')
-                        : 'Error.',
-                  ),
-                  backgroundColor: success ? Colors.green : Colors.red,
-                ),
-              );
-
-              if (success && !serviceFormProvider.isUpdate) {
-                setState(() {});
-                serviceFormProvider.resetForm();
-              }
-
-              serviceFormProvider.success = success;
-
-              if (success) {
-                serviceFormProvider.saveInitialValue();
-              }
-            },
-            label: 'Save',
+          Spacer(),
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              PrimaryButton(
+                onPressed: () async {
+                  Navigator.pop(context);
+                },
+                label: 'Cancel',
+              ),
+              SizedBox(width: 10),
+              PrimaryButton(
+                onPressed: () async {
+                  save();
+                },
+                label: 'Save',
+              ),
+            ],
           ),
         ],
       ),
     );
+  }
+
+  void delete() async {
+    final id = widget.service?.serviceId;
+
+    final shouldProceed = await CustomConfirmDialog.show(
+      context,
+      icon: Icons.info,
+
+      title: 'Delete Service',
+      content: 'Are you sure you want to delete this service?',
+      confirmText: 'Delete',
+      cancelText: 'Cancel',
+    );
+
+    if (shouldProceed != true) return;
+
+    final success = await serviceProvider.delete(id!);
+
+    if (!mounted) return;
+
+    CustomSnackbar.show(
+      context,
+      message: success
+          ? 'Service successfully deleted.'
+          : 'Something went wrong. Please try again.',
+      type: success ? SnackbarType.success : SnackbarType.error,
+    );
+
+    if (success) {
+      Navigator.of(context).pop();
+    }
+  }
+
+  void save() async {
+    final formState = serviceFormProvider.formKey.currentState;
+
+    if (formState == null || !formState.saveAndValidate()) {
+      debugPrint('Form is not valid or state is null');
+      return;
+    }
+
+    final id = widget.service?.serviceId;
+    final isInsert = widget.service == null;
+
+    final shouldProceed = await CustomConfirmDialog.show(
+      context,
+      icon: Icons.info,
+      iconBackgroundColor: AppColors.mauveGray,
+      title: isInsert ? 'Add New Service' : 'Save Changes',
+      content: isInsert
+          ? 'Are you sure you want to add a new service?'
+          : 'Are you sure you want to save the service?',
+      confirmText: 'Continue',
+      cancelText: 'Cancel',
+    );
+
+    if (shouldProceed != true) return;
+
+    final success = await serviceFormProvider.saveOrUpdate(
+      serviceFormProvider,
+      serviceProvider,
+      id,
+    );
+
+    if (!mounted) return;
+
+    CustomSnackbar.show(
+      context,
+      message: success
+          ? (serviceFormProvider.isUpdate
+                ? 'Service updated.'
+                : 'Service added.')
+          : 'Something went wrong. Please try again.',
+      type: success ? SnackbarType.success : SnackbarType.error,
+    );
+
+    if (success && !serviceFormProvider.isUpdate) {
+      setState(() {});
+      serviceFormProvider.resetForm();
+    }
+
+    if (success) {
+      serviceFormProvider.saveInitialValue();
+    }
+    serviceFormProvider.success = success;
   }
 }
