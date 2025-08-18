@@ -13,5 +13,10 @@ namespace CareConnect.Services.AppointmentStateMachine
         public CanceledAppointmentState(CareConnectContext context, IMapper mapper, IServiceProvider serviceProvider) : base(context, mapper, serviceProvider)
         {
         }
+
+        public override List<string> AllowedActions(Appointment entity)
+        {
+            return new List<string>() { };
+        }
     }
 }

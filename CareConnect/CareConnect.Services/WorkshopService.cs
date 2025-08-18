@@ -11,14 +11,27 @@ using System.Security.Cryptography;
 using Mapster;
 using CareConnect.Services.Helpers;
 using CareConnect.Models.SearchObjects;
+using CareConnect.Services.AppointmentStateMachine;
+using CareConnect.Services.WorkshopStateMachine;
+using Microsoft.Extensions.Logging;
+using CareConnect.Models.Responses;
 
 namespace CareConnect.Services
 {
-    public class WorkshopService : BaseCRUDService<Models.Responses.Workshop, WorkshopSearchObject, WorkshopAdditionalData, Workshop, WorkshopInsertRequest, WorkshopUpdateRequest>, IWorkshopService
+    public class WorkshopService : BaseCRUDService<Models.Responses.Workshop, WorkshopSearchObject, WorkshopAdditionalData, Database.Workshop, WorkshopInsertRequest, WorkshopUpdateRequest>, IWorkshopService
     {
-        public WorkshopService(CareConnectContext context, IMapper mapper) : base(context, mapper) { }
+        public BaseWorkshopState BaseWorkshopState { get; set; }
 
-        public override IQueryable<Workshop> AddFilter(WorkshopSearchObject search, IQueryable<Workshop> query)
+        ILogger<WorkshopService> _logger;
+
+
+        public WorkshopService(CareConnectContext context, IMapper mapper, BaseWorkshopState baseWorkshopState, ILogger<WorkshopService> logger) : base(context, mapper) 
+        {
+            BaseWorkshopState = baseWorkshopState;
+            _logger = logger;
+        }
+
+        public override IQueryable<Database.Workshop> AddFilter(WorkshopSearchObject search, IQueryable<Database.Workshop> query)
         {
             query = base.AddFilter(search, query);
 
@@ -73,10 +86,29 @@ namespace CareConnect.Services
                 query = query.Where(x => x.Participants == search.Participants);
             }
 
+            if (!string.IsNullOrWhiteSpace(search?.WorkshopType))
+            {
+                query = query.Where(x => x.WorkshopType.Name == search.WorkshopType);
+            }
+
+            if (!string.IsNullOrWhiteSpace(search?.SortBy))
+            {
+                query = search?.SortBy switch
+                {
+                    "name" => search.SortAscending ? query.OrderBy(x => x.Name) : query.OrderByDescending(x => x.Name),
+                    "price" => search.SortAscending ? query.OrderBy(x => x.Price) : query.OrderByDescending(x => x.Price),
+                    "memberPrice" => search.SortAscending ? query.OrderBy(x => x.MemberPrice) : query.OrderByDescending(x => x.MemberPrice),
+                    "startDate" => search.SortAscending ? query.OrderBy(x => x.StartDate) : query.OrderByDescending(x => x.StartDate),
+                    "maxParticipants" => search.SortAscending ? query.OrderBy(x => x.MaxParticipants) : query.OrderByDescending(x => x.MaxParticipants),
+                    "participants" => search.SortAscending ? query.OrderBy(x => x.Participants) : query.OrderByDescending(x => x.Participants),
+                    _ => query
+                };
+            }
+
             return query;
         }
 
-        protected override void AddInclude(WorkshopAdditionalData additionalData, ref IQueryable<Workshop> query)
+        protected override void AddInclude(WorkshopAdditionalData additionalData, ref IQueryable<Database.Workshop> query)
         {
             if (additionalData != null)
             {
@@ -89,24 +121,24 @@ namespace CareConnect.Services
             base.AddInclude(additionalData, ref query);
         }
 
-        public override void BeforeInsert(WorkshopInsertRequest request, Workshop entity)
-        {
+        public override void BeforeInsert(WorkshopInsertRequest request, Database.Workshop entity)
+        {   
             base.BeforeInsert(request, entity);
         }
 
-        public override void BeforeUpdate(WorkshopUpdateRequest request, ref Workshop entity)
+        public override void BeforeUpdate(WorkshopUpdateRequest request, ref Database.Workshop entity)
         {
             base.BeforeUpdate(request, ref entity);
         }
 
-        public override Workshop GetByIdWithIncludes(int id)
+        public override Database.Workshop GetByIdWithIncludes(int id)
         {
             return Context.Workshops
                 .Include(w => w.WorkshopType)
                 .First(w => w.WorkshopId == id);
         }
 
-        public override void BeforeDelete(Workshop entity)
+        public override void BeforeDelete(Database.Workshop entity)
         {
             foreach (var session in entity.Sessions)
                 Context.Remove(session);
@@ -128,6 +160,77 @@ namespace CareConnect.Services
             //}
 
             base.AfterDelete(id);
+        }
+
+        public Models.Responses.Workshop Insert(WorkshopInsertRequest request)
+        {
+            var state = BaseWorkshopState.CreateWorkshopState("Initial");
+            return state.Insert(request);
+        }
+
+        public override Models.Responses.Workshop Update(int id, WorkshopUpdateRequest request)
+        {
+            var entity = GetById(id);
+            var state = BaseWorkshopState.CreateWorkshopState(entity.Status);
+            return state.Update(id, request);
+
+        }
+
+        public Models.Responses.Workshop Cancel(int id)
+        {
+            var entity = GetById(id);
+            var state = BaseWorkshopState.CreateWorkshopState(entity.Status);
+            return state.Cancel(id);
+        }
+
+        public Models.Responses.Workshop Close(int id)
+        {
+            var entity = GetById(id);
+            var state = BaseWorkshopState.CreateWorkshopState(entity.Status);
+            return state.Close(id);
+        }
+
+        public Models.Responses.Workshop Publish(int id)
+        {
+            var entity = GetById(id);
+
+            var state = BaseWorkshopState.CreateWorkshopState(entity.Status);
+            return state.Publish(id);
+        }
+
+        public List<string> AllowedActions(int id)
+        {
+            _logger.LogInformation($"Allowed action called for: {id}.");
+
+            if (id <= 0)
+            {
+                var state = BaseWorkshopState.CreateWorkshopState("Initial");
+                return state.AllowedActions(null);
+            }
+
+            else
+            {
+                var entity = Context.Workshops.Find(id);
+                var state = BaseWorkshopState.CreateWorkshopState(entity.Status);
+                return state.AllowedActions(entity);
+            }
+        }
+
+
+        public WorkshopStatistics GetStatistics()
+        {
+            var now = DateTime.Now;
+            var startOfMonth = new DateTime(now.Year, now.Month, 1);
+            var startOfNextMonth = startOfMonth.AddMonths(1);
+
+            return new WorkshopStatistics
+            {
+                TotalWorkshops = Context.Workshops.Count(),
+                Upcoming = Context.Workshops.Where(x => x.Status == "Published").Count(),
+                AverageParticipants = (int)Context.Workshops.Average(x => x.Participants),
+                AverageRating = (int)Context.Workshops.SelectMany(x => x.Reviews).Average(y => y.Stars)
+
+        };
         }
     }
 }

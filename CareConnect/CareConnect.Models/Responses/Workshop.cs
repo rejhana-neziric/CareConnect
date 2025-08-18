@@ -6,6 +6,8 @@ namespace CareConnect.Models.Responses
 {
     public class Workshop
     {
+        public int WorkshopId { get; set; }
+
         public string Name { get; set; } = null!;
 
         public string Description { get; set; } = null!;

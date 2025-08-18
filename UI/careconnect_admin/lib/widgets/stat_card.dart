@@ -5,8 +5,9 @@ Widget statCard(
   String label,
   dynamic value,
   IconData icon,
-  Color iconColor,
-) {
+  Color iconColor, {
+  double width = 400,
+}) {
   final theme = Theme.of(context);
   final colorScheme = theme.colorScheme;
 
@@ -15,7 +16,7 @@ Widget statCard(
     elevation: 1.5,
     color: colorScheme.surfaceContainerLowest,
     child: ConstrainedBox(
-      constraints: BoxConstraints(maxWidth: 400),
+      constraints: BoxConstraints(maxWidth: width),
       child: Container(
         height: 100,
         padding: EdgeInsets.all(16),

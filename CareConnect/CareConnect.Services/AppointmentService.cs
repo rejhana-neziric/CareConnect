@@ -104,7 +104,7 @@ namespace CareConnect.Services
 
         public override Models.Responses.Appointment Insert(AppointmentInsertRequest request)
         {
-            var state = BaseAppointmentState.GetProductState("Initial");
+            var state = BaseAppointmentState.CreateAppointmentState("Initial");
             return state.Insert(request); 
         }
 
@@ -121,7 +121,7 @@ namespace CareConnect.Services
         {
             var entity = GetById(id);
 
-            var state = BaseAppointmentState.GetProductState(entity.StateMachine);
+            var state = BaseAppointmentState.CreateAppointmentState(entity.StateMachine);
             return state.Cancel(id);
         }
 
@@ -129,7 +129,7 @@ namespace CareConnect.Services
         {
             var entity = GetById(id);
 
-            var state = BaseAppointmentState.GetProductState(entity.StateMachine);
+            var state = BaseAppointmentState.CreateAppointmentState(entity.StateMachine);
             return state.Confirm(id);
         }
 
@@ -137,7 +137,7 @@ namespace CareConnect.Services
         {
             var entity = GetById(id);
 
-            var state = BaseAppointmentState.GetProductState(entity.StateMachine);
+            var state = BaseAppointmentState.CreateAppointmentState(entity.StateMachine);
             return state.Start(id);
         }
 
@@ -145,7 +145,7 @@ namespace CareConnect.Services
         {
             var entity = GetById(id);
 
-            var state = BaseAppointmentState.GetProductState(entity.StateMachine);
+            var state = BaseAppointmentState.CreateAppointmentState(entity.StateMachine);
             return state.Complete(id);
         }
 
@@ -153,7 +153,7 @@ namespace CareConnect.Services
         {
             var entity = GetById(id);
 
-            var state = BaseAppointmentState.GetProductState(entity.StateMachine);
+            var state = BaseAppointmentState.CreateAppointmentState(entity.StateMachine);
             return state.Reschedule(id, request);
         }
 
@@ -163,14 +163,14 @@ namespace CareConnect.Services
 
             if(id <= 0)
             {
-                var state = BaseAppointmentState.GetProductState("Initial");
+                var state = BaseAppointmentState.CreateAppointmentState("Initial");
                 return state.AllowedActions(null);
             }
 
             else
             {
                 var entity = Context.Appointments.Find(id); 
-                var state = BaseAppointmentState.GetProductState(entity.StateMachine);
+                var state = BaseAppointmentState.CreateAppointmentState(entity.StateMachine);
                 return state.AllowedActions(entity);
             }
         }

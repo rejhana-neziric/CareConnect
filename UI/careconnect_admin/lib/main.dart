@@ -7,6 +7,8 @@ import 'package:careconnect_admin/providers/employee_form_provider.dart';
 import 'package:careconnect_admin/providers/employee_provider.dart';
 import 'package:careconnect_admin/providers/service_form_provider.dart';
 import 'package:careconnect_admin/providers/service_provider.dart';
+import 'package:careconnect_admin/providers/workshop_form_provider.dart';
+import 'package:careconnect_admin/providers/workshop_provider.dart';
 import 'package:careconnect_admin/screens/login_screen.dart';
 import 'package:careconnect_admin/theme/app_colors.dart';
 import 'package:careconnect_admin/theme/theme_notifier.dart';
@@ -37,6 +39,11 @@ void main() {
         ),
         ChangeNotifierProvider(create: (_) => ServiceFormProvider()),
         ChangeNotifierProvider(create: (_) => ThemeNotifier()),
+
+        ChangeNotifierProvider<WorkshopProvider>(
+          create: (_) => WorkshopProvider(),
+        ),
+        ChangeNotifierProvider(create: (_) => WorkshopFormProvider()),
       ],
       child: const MyApp(),
     ),

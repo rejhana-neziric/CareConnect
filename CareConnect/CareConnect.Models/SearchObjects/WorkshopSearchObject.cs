@@ -26,5 +26,7 @@ namespace CareConnect.Models.SearchObjects
         public int? MaxParticipants { get; set; }
 
         public int? Participants { get; set; }
+
+        public string? WorkshopType { get; set; }
     }
 }

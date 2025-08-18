@@ -164,5 +164,10 @@ public static class Permissions
         public const string Insert = "Permissions.Workshop.Insert";
         public const string Update = "Permissions.Workshop.Update";
         public const string Delete = "Permissions.Workshop.Delete";
+        public const string Publish = "Permissions.Workshop.Publish";
+        public const string Cancel = "Permissions.Workshop.Cancel";
+        public const string Close = "Permissions.Workshop.Close";
+        public const string AllowedActions = "Permissions.Workshop.AllowedActions";
+        public const string GetStatistics = "Permissions.Workshop.GetStatistics";
     }
 }

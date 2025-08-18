@@ -56,7 +56,7 @@ namespace CareConnect.Services.AppointmentStateMachine
             throw new UserException("Method not allowed.");
         }
 
-        public BaseAppointmentState GetProductState(string stateName)
+        public BaseAppointmentState CreateAppointmentState(string stateName)
         {
             switch(stateName) 
             {

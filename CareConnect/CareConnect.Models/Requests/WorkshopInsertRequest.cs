@@ -11,8 +11,6 @@ namespace CareConnect.Models.Requests
 
         public int WorkshopTypeId { get; set; }
 
-        public string Status { get; set; } = null!;
-
         public DateTime StartDate { get; set; }
 
         public DateTime? EndDate { get; set; }

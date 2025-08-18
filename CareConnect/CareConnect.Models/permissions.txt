@@ -16,4 +16,4 @@ UsersRole: Get, GetById, Insert, Update, Delete
 Service: Get, GetById, Insert, Update, Delete, GetStatistics
 Session: Get, GetById, Insert, Update, Delete
 User: Login, GetPermission
-Workshop: Get, GetById, Insert, Update, Delete
+Workshop: Get, GetById, Insert, Update, Delete, Publish, Cancel, Close, AllowedActions, GetStatistics

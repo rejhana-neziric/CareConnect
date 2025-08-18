@@ -6,6 +6,7 @@ using CareConnect.Models.Responses;
 using CareConnect.Services;
 using CareConnect.Services.AppointmentStateMachine;
 using CareConnect.Services.Database;
+using CareConnect.Services.WorkshopStateMachine;
 using Mapster;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
@@ -51,6 +52,13 @@ builder.Services.AddTransient<RescheduledAppointmedState>();
 builder.Services.AddTransient<StartedAppointmentService>();
 builder.Services.AddTransient<CompletedAppointmentState>();
 builder.Services.AddTransient<CanceledAppointmentState>();
+
+builder.Services.AddTransient<BaseWorkshopState>(); 
+builder.Services.AddTransient<InitialWorkshopState>();
+builder.Services.AddTransient<DraftWorkshopState>();    
+builder.Services.AddTransient<PublishedWorkshopState>();
+builder.Services.AddTransient<CanceledWorkshopState>(); 
+builder.Services.AddTransient<ClosedWorkshopState>();   
 
 builder.Services.AddControllers(x =>
 {

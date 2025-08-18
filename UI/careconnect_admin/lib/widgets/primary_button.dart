@@ -6,6 +6,7 @@ class PrimaryButton extends StatelessWidget {
   final IconData? icon;
   final Color? backgroundColor;
   final Color? textColor;
+  final String? tooltip;
 
   const PrimaryButton({
     Key? key,
@@ -14,6 +15,7 @@ class PrimaryButton extends StatelessWidget {
     this.icon,
     this.backgroundColor,
     this.textColor,
+    this.tooltip,
   }) : super(key: key);
 
   @override
@@ -30,25 +32,49 @@ class PrimaryButton extends StatelessWidget {
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
     );
 
-    if (icon != null) {
-      return TextButton.icon(
-        onPressed: onPressed,
-        icon: Icon(icon, color: fgColor),
-        label: Text(
-          label,
-          style: TextStyle(color: fgColor, fontWeight: FontWeight.w500),
-        ),
-        style: style,
-      );
-    } else {
-      return TextButton(
-        onPressed: onPressed,
-        style: style,
-        child: Text(
-          label,
-          style: TextStyle(color: fgColor, fontWeight: FontWeight.w500),
-        ),
-      );
-    }
+    // if (icon != null) {
+    //   return TextButton.icon(
+    //     onPressed: onPressed,
+    //     icon: Icon(icon, color: fgColor),
+    //     label: Text(
+    //       label,
+    //       style: TextStyle(color: fgColor, fontWeight: FontWeight.w500),
+    //     ),
+    //     style: style,
+    //   );
+    // } else {
+    //   return TextButton(
+    //     onPressed: onPressed,
+    //     style: style,
+    //     child: Text(
+    //       label,
+    //       style: TextStyle(color: fgColor, fontWeight: FontWeight.w500),
+    //     ),
+    //   );
+    // }
+
+    final buttonChild = icon != null
+        ? TextButton.icon(
+            onPressed: onPressed,
+            icon: Icon(icon, color: fgColor),
+            label: Text(
+              label,
+              style: TextStyle(color: fgColor, fontWeight: FontWeight.w500),
+            ),
+            style: style,
+          )
+        : TextButton(
+            onPressed: onPressed,
+            style: style,
+            child: Text(
+              label,
+              style: TextStyle(color: fgColor, fontWeight: FontWeight.w500),
+            ),
+          );
+
+    // Wrap with Tooltip only if tooltip is provided
+    return tooltip != null
+        ? Tooltip(message: tooltip!, child: buttonChild)
+        : buttonChild;
   }
 }

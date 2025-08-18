@@ -1,6 +1,7 @@
 import 'package:careconnect_admin/screens/client_list_screen.dart';
 import 'package:careconnect_admin/screens/employee_list_screen.dart';
 import 'package:careconnect_admin/screens/services_list_screen.dart';
+import 'package:careconnect_admin/screens/workshops_list_screen.dart';
 import 'package:careconnect_admin/theme/theme_notifier.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -131,7 +132,7 @@ class _MasterScreenState extends State<MasterScreen> {
                         onTap: () {
                           Navigator.of(context).push(
                             MaterialPageRoute(
-                              builder: (context) => ClientListScreen(),
+                              builder: (context) => WorkshopsListScreen(),
                             ),
                           );
                         },
@@ -288,7 +289,6 @@ class _MasterScreenState extends State<MasterScreen> {
         themeIcon = Icons.dark_mode;
         break;
       case ThemeMode.system:
-      default:
         themeText = "System Theme";
         themeIcon = Icons.brightness_auto;
         break;
@@ -327,7 +327,6 @@ class _MasterScreenState extends State<MasterScreen> {
         tooltip = "Switch to System Theme";
         break;
       case ThemeMode.system:
-      default:
         icon = Icons.brightness_auto;
         tooltip = "Switch to Light Theme";
         break;
