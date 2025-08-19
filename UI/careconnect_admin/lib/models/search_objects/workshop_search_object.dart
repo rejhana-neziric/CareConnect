@@ -1,4 +1,3 @@
-import 'package:careconnect_admin/models/search_objects/workshop_additional_data.dart';
 import 'package:json_annotation/json_annotation.dart';
 
 part 'workshop_search_object.g.dart';
@@ -17,7 +16,6 @@ class WorkshopSearchObject {
   final int? maxParticipants;
   final int? participants;
   final String? workshopType;
-  WorkshopAdditionalData? additionalData;
   int? page;
   String? sortBy;
   bool? sortAscending;
@@ -37,7 +35,7 @@ class WorkshopSearchObject {
     this.maxParticipants,
     this.participants,
     this.workshopType,
-    this.additionalData,
+
     this.page,
     this.sortBy,
     this.sortAscending,

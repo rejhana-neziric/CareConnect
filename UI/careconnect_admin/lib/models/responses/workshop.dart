@@ -1,4 +1,3 @@
-import 'package:careconnect_admin/models/responses/workshop_type.dart';
 import 'package:json_annotation/json_annotation.dart';
 
 part 'workshop.g.dart'; // Don't open or edit this
@@ -17,7 +16,7 @@ class Workshop {
   final int? participants;
   final String? notes;
   final DateTime modifiedDate;
-  final WorkshopType workshopType;
+  final String workshopType;
 
   Workshop({
     required this.workshopId,

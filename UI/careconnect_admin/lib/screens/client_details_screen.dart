@@ -191,7 +191,9 @@ class _ClientDetailsScreenState extends State<ClientDetailsScreen> {
                 children: [
                   Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [buildSectionTitle("Personal Information")],
+                    children: [
+                      buildSectionTitle("Personal Information", colorScheme),
+                    ],
                   ),
                   Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -333,7 +335,7 @@ class _ClientDetailsScreenState extends State<ClientDetailsScreen> {
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          buildSectionTitle("Employment"),
+                          buildSectionTitle("Employment", colorScheme),
                           CustomDropdownField<bool>(
                             width: 400,
                             name: 'employmentStatus',
@@ -414,7 +416,9 @@ class _ClientDetailsScreenState extends State<ClientDetailsScreen> {
                   children: [
                     Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [buildSectionTitle("Personal Information")],
+                      children: [
+                        buildSectionTitle("Personal Information", colorScheme),
+                      ],
                     ),
                     Row(
                       children: [

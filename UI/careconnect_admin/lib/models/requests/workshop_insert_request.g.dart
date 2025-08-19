@@ -1,16 +1,17 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'workshop.dart';
+part of 'workshop_insert_request.dart';
 
 // **************************************************************************
 // JsonSerializableGenerator
 // **************************************************************************
 
-Workshop _$WorkshopFromJson(Map<String, dynamic> json) => Workshop(
-  workshopId: (json['workshopId'] as num).toInt(),
+WorkshopInsertRequest _$WorkshopInsertRequestFromJson(
+  Map<String, dynamic> json,
+) => WorkshopInsertRequest(
   name: json['name'] as String,
   description: json['description'] as String,
-  status: json['status'] as String,
+  workshopType: json['workshopType'] as String,
   startDate: DateTime.parse(json['startDate'] as String),
   endDate: json['endDate'] == null
       ? null
@@ -20,15 +21,14 @@ Workshop _$WorkshopFromJson(Map<String, dynamic> json) => Workshop(
   maxParticipants: (json['maxParticipants'] as num?)?.toInt(),
   participants: (json['participants'] as num?)?.toInt(),
   notes: json['notes'] as String?,
-  modifiedDate: DateTime.parse(json['modifiedDate'] as String),
-  workshopType: json['workshopType'] as String,
 );
 
-Map<String, dynamic> _$WorkshopToJson(Workshop instance) => <String, dynamic>{
-  'workshopId': instance.workshopId,
+Map<String, dynamic> _$WorkshopInsertRequestToJson(
+  WorkshopInsertRequest instance,
+) => <String, dynamic>{
   'name': instance.name,
   'description': instance.description,
-  'status': instance.status,
+  'workshopType': instance.workshopType,
   'startDate': instance.startDate.toIso8601String(),
   'endDate': instance.endDate?.toIso8601String(),
   'price': instance.price,
@@ -36,6 +36,4 @@ Map<String, dynamic> _$WorkshopToJson(Workshop instance) => <String, dynamic>{
   'maxParticipants': instance.maxParticipants,
   'participants': instance.participants,
   'notes': instance.notes,
-  'modifiedDate': instance.modifiedDate.toIso8601String(),
-  'workshopType': instance.workshopType,
 };

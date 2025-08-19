@@ -36,7 +36,7 @@ namespace CareConnect.Models.Responses
 
         //public virtual ICollection<Session> Sessions { get; set; } = new List<Session>();
 
-        public virtual WorkshopType WorkshopType { get; set; } = null!;
+        public  string WorkshopType { get; set; } = null!;
     }
 
 }

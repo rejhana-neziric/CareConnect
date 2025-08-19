@@ -116,6 +116,9 @@ class _EmployeeDetailsScreenState extends State<EmployeeDetailsScreen> {
   Widget _buildForm() {
     final employeeFormProvider = Provider.of<EmployeeFormProvider>(context);
 
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return FormBuilder(
       key: employeeFormProvider.formKey,
       autovalidateMode: AutovalidateMode.disabled,
@@ -126,7 +129,7 @@ class _EmployeeDetailsScreenState extends State<EmployeeDetailsScreen> {
         children: [
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
-            children: [buildSectionTitle("Personal Information")],
+            children: [buildSectionTitle("Personal Information", colorScheme)],
           ),
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -254,7 +257,7 @@ class _EmployeeDetailsScreenState extends State<EmployeeDetailsScreen> {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  buildSectionTitle("Job Details"),
+                  buildSectionTitle("Job Details", colorScheme),
                   CustomTextField(
                     width: 400,
                     name: 'jobTitle',
@@ -281,7 +284,7 @@ class _EmployeeDetailsScreenState extends State<EmployeeDetailsScreen> {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  buildSectionTitle("Qualification"),
+                  buildSectionTitle("Qualification", colorScheme),
                   CustomTextField(
                     width: 400,
                     name: 'qualificationName',

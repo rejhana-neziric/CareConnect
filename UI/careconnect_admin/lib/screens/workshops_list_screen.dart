@@ -7,6 +7,7 @@ import 'package:careconnect_admin/providers/workshop_form_provider.dart';
 import 'package:careconnect_admin/providers/workshop_provider.dart';
 import 'package:careconnect_admin/screens/workshop_details_screen.dart';
 import 'package:careconnect_admin/theme/app_colors.dart';
+import 'package:careconnect_admin/widgets/confirm_dialog.dart';
 import 'package:careconnect_admin/widgets/custom_dropdown_fliter.dart';
 import 'package:careconnect_admin/widgets/no_results.dart';
 import 'package:careconnect_admin/widgets/primary_button.dart';
@@ -61,8 +62,8 @@ class _WorkshopsListScreenState extends State<WorkshopsListScreen> {
 
   final Map<String, String?> workshopTypeOptions = {
     'All Types': null,
-    'For Parents': 'Workshop for Parents',
-    'For Children': 'Workshop for Children',
+    'For Parents': 'Parents',
+    'For Children': 'Children',
   };
 
   WorkshopStatistics? statistics;
@@ -121,6 +122,10 @@ class _WorkshopsListScreenState extends State<WorkshopsListScreen> {
     final stats = await workshopProvider.loadStats();
 
     statistics = stats;
+
+    if (mounted) {
+      setState(() {});
+    }
   }
 
   WorkshopStatus getStatus(String status) {
@@ -195,7 +200,7 @@ class _WorkshopsListScreenState extends State<WorkshopsListScreen> {
           statCard(
             context,
             'Upcoming',
-            statistics?.upcoming,
+            statistics?.upcoming == 0 ? 'No upcoming' : statistics?.upcoming,
             Icons.upcoming,
             Colors.teal,
             width: 300,
@@ -249,6 +254,8 @@ class _WorkshopsListScreenState extends State<WorkshopsListScreen> {
                     labelText: "Search Workshop Name...",
                     border: InputBorder.none,
                     icon: Icon(Icons.search),
+                    filled: true,
+                    fillColor: colorScheme.surfaceContainerLowest,
                   ),
                   onChanged: (value) => loadData(),
                 ),
@@ -271,6 +278,8 @@ class _WorkshopsListScreenState extends State<WorkshopsListScreen> {
               decoration: InputDecoration(
                 labelText: "Price",
                 border: InputBorder.none,
+                filled: true,
+                fillColor: colorScheme.surfaceContainerLowest,
               ),
               onChanged: (value) => loadData(),
             ),
@@ -291,6 +300,8 @@ class _WorkshopsListScreenState extends State<WorkshopsListScreen> {
               decoration: InputDecoration(
                 labelText: "Member Price",
                 border: InputBorder.none,
+                filled: true,
+                fillColor: colorScheme.surfaceContainerLowest,
               ),
               onChanged: (value) => loadData(),
             ),
@@ -377,7 +388,7 @@ class _WorkshopsListScreenState extends State<WorkshopsListScreen> {
             _memberPriceController.clear();
             _sortBy = null;
             selectedSortingOption = null;
-
+            selectedWorkshopTypeOption = null;
             selectedStatusOption = null;
             loadData();
           },
@@ -474,7 +485,7 @@ class _WorkshopCardState extends State<WorkshopCard> {
           borderRadius: BorderRadius.circular(12),
           child: SizedBox(
             width: screenWidth < 350 ? screenWidth * 0.95 : 300,
-            height: 150,
+            // height: 150,
             child: Card(
               color: colorScheme.surfaceContainerLowest,
               margin: EdgeInsets.all(16),
@@ -490,6 +501,8 @@ class _WorkshopCardState extends State<WorkshopCard> {
                 child: SingleChildScrollView(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize:
+                        MainAxisSize.min, // important: shrink to fit content
                     children: [
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -536,22 +549,20 @@ class _WorkshopCardState extends State<WorkshopCard> {
                                 ),
                                 decoration: BoxDecoration(
                                   color:
-                                      widget.workshop.workshopType.name ==
-                                          "Workshop for Parents"
+                                      widget.workshop.workshopType == "Parents"
                                       ? Color(0xFFFFE0D6)
                                       : Color(0xFFD0E8FF),
                                   border: null,
                                   borderRadius: BorderRadius.circular(20),
                                 ),
                                 child: Text(
-                                  widget.workshop.workshopType.name ==
-                                          "Workshop for Parents"
-                                      ? "Workshop for Parents"
-                                      : "Workshop for Children",
+                                  widget.workshop.workshopType == "Parents"
+                                      ? "Parents"
+                                      : "Children",
                                   style: TextStyle(
                                     color:
-                                        widget.workshop.workshopType.name ==
-                                            "Workshop for Parents"
+                                        widget.workshop.workshopType ==
+                                            "Parents"
                                         ? Color.fromARGB(255, 80, 80, 80)
                                         : Color.fromARGB(255, 80, 80, 80),
                                   ),
@@ -592,7 +603,7 @@ class _WorkshopCardState extends State<WorkshopCard> {
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
                       ),
-                      SizedBox(height: 30),
+                      SizedBox(height: 20),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
@@ -643,23 +654,76 @@ class _WorkshopCardState extends State<WorkshopCard> {
                           Text(
                             "Edited: ${DateFormat('d. M. y.').format(widget.workshop.modifiedDate)}",
                           ),
-                          if (widget.workshop.status == "Draft")
-                            PrimaryButton(
-                              onPressed: () {
-                                //todo
-                              },
-                              label: "Publish",
-                            ),
-                          if (widget.workshop.status == "Closed" ||
-                              widget.workshop.status == "Published")
-                            PrimaryButton(
-                              onPressed: () {
-                                //todo
-                              },
-                              label: "Participants",
-                              tooltip: "View participants",
-                            ),
+                          // if (widget.workshop.status == "Draft")
+                          //   PrimaryButton(
+                          //     onPressed: () {
+                          //       //todo
+                          //     },
+                          //     label: "Publish",
+                          //   ),
+                          // if (widget.workshop.status == "Closed" ||
+                          //     widget.workshop.status == "Published")
+                          //   PrimaryButton(
+                          //     onPressed: () {
+                          //       //todo
+                          //     },
+                          //     label: "Participants",
+                          //     tooltip: "View participants",
+                          //   ),
                         ],
+                      ),
+
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: workshopStatusFromString(widget.workshop.status)
+                            .allowedActions
+                            .map(
+                              (action) => Padding(
+                                padding: const EdgeInsets.only(left: 8.0),
+                                child: PrimaryButton(
+                                  onPressed: () async {
+                                    // Provider.of<WorkshopProvider>(
+                                    //   context,
+                                    //   listen: false,
+                                    // ).handleWorkshopAction(
+                                    //   widget.workshop,
+                                    //   action,
+                                    //   context,
+                                    // );
+
+                                    if (action != "View participants") {
+                                      final shouldProceed =
+                                          await CustomConfirmDialog.show(
+                                            context,
+                                            icon: Icons.info,
+                                            title: '$action Workshop',
+                                            content:
+                                                'Are you sure you want to $action this workshop?',
+                                            confirmText: action,
+                                            cancelText: 'Cancel',
+                                          );
+
+                                      if (shouldProceed != true) return;
+                                    }
+
+                                    final result =
+                                        await Provider.of<WorkshopProvider>(
+                                          context,
+                                          listen: false,
+                                        ).handleWorkshopAction(
+                                          widget.workshop,
+                                          action,
+                                          context,
+                                        );
+
+                                    if (result == true) widget.loadData();
+                                  },
+
+                                  label: action,
+                                ),
+                              ),
+                            )
+                            .toList(),
                       ),
                     ],
                   ),

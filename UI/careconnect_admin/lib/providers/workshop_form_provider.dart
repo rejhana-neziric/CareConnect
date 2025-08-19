@@ -1,3 +1,5 @@
+import 'package:careconnect_admin/models/requests/workshop_insert_request.dart';
+import 'package:careconnect_admin/models/requests/workshop_update_request.dart';
 import 'package:careconnect_admin/providers/base_form_provider.dart';
 import 'package:careconnect_admin/providers/workshop_provider.dart';
 import 'package:flutter/material.dart';
@@ -54,49 +56,75 @@ class WorkshopFormProvider
     int? id,
   ) async {
     try {
-      //   final formData = formProvider.formKey.currentState?.value;
+      final formData = formProvider.formKey.currentState?.value;
 
-      //   if (formData == null) {
-      //     return false;
-      //   }
+      if (formData == null) {
+        return false;
+      }
 
-      //   if (!formProvider.isUpdate) {
-      //     final insertRequest = ServiceInsertRequest(
-      //       name: formData['name'],
-      //       description: formData['description'],
-      //       price:
-      //           formData['price'] == null || formData['price'].toString().isEmpty
-      //           ? null
-      //           : double.tryParse(formData['price']),
-      //       memberPrice:
-      //           formData['memberPrice'] == null ||
-      //               formData['memberPrice'].toString().isEmpty
-      //           ? null
-      //           : double.tryParse(formData['memberPrice']),
-      //       isActive: formData['isActive'],
-      //     );
+      if (!formProvider.isUpdate) {
+        final insertRequest = WorkshopInsertRequest(
+          name: formData['name'],
+          description: formData['description'],
+          workshopType: formData['workshopType'],
+          startDate: formData['startDate'],
+          endDate: formData['endDate'],
+          price:
+              formData['price'] == null || formData['price'].toString().isEmpty
+              ? null
+              : double.tryParse(formData['price']),
+          memberPrice:
+              formData['memberPrice'] == null ||
+                  formData['memberPrice'].toString().isEmpty
+              ? null
+              : double.tryParse(formData['memberPrice']),
+          maxParticipants:
+              formData['maxParticipants'] == null ||
+                  formData['maxParticipants'].toString().isEmpty
+              ? null
+              : int.tryParse(formData['maxParticipants']),
+          participants:
+              formData['participants'] == null ||
+                  formData['participants'].toString().isEmpty
+              ? null
+              : int.tryParse(formData['participants']),
+          notes: formData['notes'],
+        );
 
-      //     await entitiyProvider.insert(insertRequest);
-      //   } else {
-      //     final updateRequest = ServiceUpdateRequest(
-      //       name: formData['name'],
-      //       description: formData['description'],
-      //       price:
-      //           formData['price'] == null || formData['price'].toString().isEmpty
-      //           ? null
-      //           : double.tryParse(formData['price']),
-      //       memberPrice:
-      //           formData['memberPrice'] == null ||
-      //               formData['memberPrice'].toString().isEmpty
-      //           ? null
-      //           : double.tryParse(formData['memberPrice']),
-      //       isActive: formData['isActive'],
-      //     );
+        await entitiyProvider.insert(insertRequest);
+      } else {
+        final updateRequest = WorkshopUpdateRequest(
+          name: formData['name'],
+          description: formData['description'],
+          workshopType: formData['workshopType'],
+          startDate: formData['startDate'],
+          endDate: formData['endDate'],
+          price:
+              formData['price'] == null || formData['price'].toString().isEmpty
+              ? null
+              : double.tryParse(formData['price']),
+          memberPrice:
+              formData['memberPrice'] == null ||
+                  formData['memberPrice'].toString().isEmpty
+              ? null
+              : double.tryParse(formData['memberPrice']),
+          maxParticipants:
+              formData['maxParticipants'] == null ||
+                  formData['maxParticipants'].toString().isEmpty
+              ? null
+              : int.tryParse(formData['maxParticipants']),
+          participants:
+              formData['participants'] == null ||
+                  formData['participants'].toString().isEmpty
+              ? null
+              : int.tryParse(formData['participants']),
+          notes: formData['notes'],
+        );
 
-      //     if (id != null) await entitiyProvider.update(id, updateRequest);
-      //   }
+        if (id != null) await entitiyProvider.update(id, updateRequest);
+      }
 
-      //   notifyListeners();
+      notifyListeners();
 
       return true;
     } catch (e) {

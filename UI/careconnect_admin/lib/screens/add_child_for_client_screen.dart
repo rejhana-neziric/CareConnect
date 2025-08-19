@@ -88,6 +88,9 @@ class _AddChildForClientScreenState extends State<AddChildForClientScreen> {
       context,
     );
 
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return FormBuilder(
       key: clientsChildFormProvider.formKey,
       autovalidateMode: AutovalidateMode.disabled,
@@ -119,7 +122,9 @@ class _AddChildForClientScreenState extends State<AddChildForClientScreen> {
                 children: [
                   Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [buildSectionTitle("Personal Information")],
+                    children: [
+                      buildSectionTitle("Personal Information", colorScheme),
+                    ],
                   ),
                   Row(
                     children: [

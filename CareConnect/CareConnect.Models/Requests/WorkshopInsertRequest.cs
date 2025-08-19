@@ -9,7 +9,7 @@ namespace CareConnect.Models.Requests
 
         public string Description { get; set; } = null!;
 
-        public int WorkshopTypeId { get; set; }
+        public string WorkshopType { get; set; }
 
         public DateTime StartDate { get; set; }
 

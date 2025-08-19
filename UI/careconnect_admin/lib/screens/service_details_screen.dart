@@ -114,6 +114,9 @@ class _ServiceDetailsScreenState extends State<ServiceDetailsScreen> {
   Widget _buildForm() {
     final serviceFormProvider = Provider.of<ServiceFormProvider>(context);
 
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return FormBuilder(
       key: serviceFormProvider.formKey,
       autovalidateMode: AutovalidateMode.disabled,
@@ -125,12 +128,12 @@ class _ServiceDetailsScreenState extends State<ServiceDetailsScreen> {
           if (serviceFormProvider.isUpdate)
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,
-              children: [buildSectionTitle("Edit service")],
+              children: [buildSectionTitle("Edit service", colorScheme)],
             ),
           if (!serviceFormProvider.isUpdate)
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,
-              children: [buildSectionTitle("Add new service")],
+              children: [buildSectionTitle("Add new service", colorScheme)],
             ),
           SingleChildScrollView(
             scrollDirection: Axis.horizontal,
@@ -144,8 +147,8 @@ class _ServiceDetailsScreenState extends State<ServiceDetailsScreen> {
                       width: 600,
                       name: 'name',
                       label: 'Service Name',
-                      validator: (value) =>
-                          serviceFormProvider.validateServiceName(value),
+                      validator: (value) => serviceFormProvider
+                          .validateServicWorkshopeName(value),
                       required: true,
                     ),
                     CustomTextField(

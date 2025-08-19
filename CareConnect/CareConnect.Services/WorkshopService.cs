@@ -88,7 +88,7 @@ namespace CareConnect.Services
 
             if (!string.IsNullOrWhiteSpace(search?.WorkshopType))
             {
-                query = query.Where(x => x.WorkshopType.Name == search.WorkshopType);
+                query = query.Where(x => x.WorkshopType == search.WorkshopType);
             }
 
             if (!string.IsNullOrWhiteSpace(search?.SortBy))
@@ -108,18 +108,6 @@ namespace CareConnect.Services
             return query;
         }
 
-        protected override void AddInclude(WorkshopAdditionalData additionalData, ref IQueryable<Database.Workshop> query)
-        {
-            if (additionalData != null)
-            {
-                if (additionalData.IsWorkshopTypeIncluded.HasValue && additionalData.IsWorkshopTypeIncluded == true)
-                {
-                    additionalData.IncludeList.Add("WorkshopType");
-                }
-            }
-
-            base.AddInclude(additionalData, ref query);
-        }
 
         public override void BeforeInsert(WorkshopInsertRequest request, Database.Workshop entity)
         {   

@@ -29,11 +29,6 @@ WorkshopSearchObject _$WorkshopSearchObjectFromJson(
   maxParticipants: (json['maxParticipants'] as num?)?.toInt(),
   participants: (json['participants'] as num?)?.toInt(),
   workshopType: json['workshopType'] as String?,
-  additionalData: json['additionalData'] == null
-      ? null
-      : WorkshopAdditionalData.fromJson(
-          json['additionalData'] as Map<String, dynamic>,
-        ),
   page: (json['page'] as num?)?.toInt(),
   sortBy: json['sortBy'] as String?,
   sortAscending: json['sortAscending'] as bool?,
@@ -56,7 +51,6 @@ Map<String, dynamic> _$WorkshopSearchObjectToJson(
   'maxParticipants': instance.maxParticipants,
   'participants': instance.participants,
   'workshopType': instance.workshopType,
-  'additionalData': instance.additionalData?.toJson(),
   'page': instance.page,
   'sortBy': instance.sortBy,
   'sortAscending': instance.sortAscending,

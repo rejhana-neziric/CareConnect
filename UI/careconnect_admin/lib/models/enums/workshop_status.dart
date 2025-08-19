@@ -57,3 +57,18 @@ WorkshopStatus workshopStatusFromString(String status) {
       return WorkshopStatus.draft; // fallback
   }
 }
+
+extension WorkshopStatusActions on WorkshopStatus {
+  List<String> get allowedActions {
+    switch (this) {
+      case WorkshopStatus.draft:
+        return ['Publish', 'Cancel'];
+      case WorkshopStatus.published:
+        return ['View Participants', 'Close', 'Cancel'];
+      case WorkshopStatus.closed:
+        return ['View Participants'];
+      case WorkshopStatus.canceled:
+        return [];
+    }
+  }
+}

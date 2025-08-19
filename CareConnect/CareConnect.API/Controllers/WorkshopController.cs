@@ -29,7 +29,7 @@ namespace CareConnect.API.Controllers
 
         [HttpPut("{id}/close")]
         [PermissionAuthorize("Close")]
-        public Workshop Start(int id)
+        public Workshop Close(int id)
         {
             return (_service as IWorkshopService)!.Close(id);
         }

@@ -174,6 +174,49 @@ abstract class BaseFormProvider<TFormProvider, TEntityProvider>
     return null;
   }
 
+  String? validateServicWorkshopeName(String? value) {
+    if (value == null || value.trim().isEmpty) return 'This fiels is required.';
+    if (value.length < 3) return 'Name must be at least 3 characters.';
+    if (value.length > 100) {
+      return 'Name must not exceed 100 characters.';
+    }
+    return null;
+  }
+
+  String? validateDescription(String? value) {
+    if (value != null && value.trim().isNotEmpty) {
+      if (value.length > 300) {
+        return 'Description must not exceed 300 characters.';
+      }
+    }
+    return null;
+  }
+
+  String? validatePrice(String? value) {
+    if (value == null || value.trim().isEmpty) {
+      return null;
+    }
+
+    final trimmed = value.trim();
+
+    final priceRegex = RegExp(r'^\d+(\.\d{1,2})?$');
+
+    if (!priceRegex.hasMatch(trimmed)) {
+      return 'Enter a valid price (e.g., 123 or 123.45).';
+    }
+
+    final price = double.tryParse(trimmed);
+    if (price == null) {
+      return 'Price must be a number.';
+    }
+
+    if (price < 0) {
+      return 'Price cannot be negative.';
+    }
+
+    return null;
+  }
+
   Future<bool> saveOrUpdate(
     TFormProvider formProvider,
     TEntityProvider entitiyProvider,

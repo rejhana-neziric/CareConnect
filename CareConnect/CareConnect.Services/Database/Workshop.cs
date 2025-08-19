@@ -11,7 +11,7 @@ public partial class Workshop
 
     public string Description { get; set; } = null!;
 
-    public int WorkshopTypeId { get; set; }
+    public string WorkshopType { get; set; } = null!;
 
     public string Status { get; set; } = null!;
 
@@ -36,6 +36,4 @@ public partial class Workshop
     public virtual ICollection<Review> Reviews { get; set; } = new List<Review>();
 
     public virtual ICollection<Session> Sessions { get; set; } = new List<Session>();
-
-    public virtual WorkshopType WorkshopType { get; set; } = null!;
 }
