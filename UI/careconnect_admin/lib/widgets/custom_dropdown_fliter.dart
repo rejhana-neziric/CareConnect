@@ -1,4 +1,3 @@
-import 'package:careconnect_admin/theme/app_colors.dart';
 import 'package:flutter/material.dart';
 
 class CustomDropdownFliter extends StatelessWidget {
@@ -17,18 +16,22 @@ class CustomDropdownFliter extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return Container(
       decoration: BoxDecoration(
-        border: Border.all(color: AppColors.dustyRose, width: 1),
-        borderRadius: BorderRadius.circular(4),
+        color: colorScheme.surfaceContainerLowest,
+        border: Border.all(color: Colors.grey.shade300),
+        borderRadius: BorderRadius.circular(8),
       ),
       child: DropdownButtonHideUnderline(
         child: DropdownButton<String>(
           value: selectedValue,
           icon: Icon(Icons.keyboard_arrow_down, color: Colors.grey.shade600),
           isExpanded: true,
-          style: TextStyle(color: Colors.black87, fontSize: 14),
-          dropdownColor: Colors.white,
+          style: TextStyle(color: colorScheme.onPrimaryContainer, fontSize: 14),
+          dropdownColor: colorScheme.surfaceContainerLowest,
           items: options.entries.map((entry) {
             return DropdownMenuItem<String>(
               value: entry.value,
@@ -48,7 +51,7 @@ class CustomDropdownFliter extends StatelessWidget {
                       child: Text(
                         entry.key,
                         style: TextStyle(
-                          color: AppColors.mauveGray,
+                          color: colorScheme.onPrimaryContainer,
                           fontSize: 14,
                           fontWeight: FontWeight.w500,
                         ),
@@ -84,7 +87,7 @@ class CustomDropdownFliter extends StatelessWidget {
                       child: Text(
                         entry.key,
                         style: TextStyle(
-                          color: Colors.black87,
+                          color: colorScheme.onPrimaryContainer,
                           fontSize: 14,
                           fontWeight: FontWeight.w500,
                         ),

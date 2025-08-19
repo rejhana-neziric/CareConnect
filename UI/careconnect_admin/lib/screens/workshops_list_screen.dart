@@ -654,22 +654,6 @@ class _WorkshopCardState extends State<WorkshopCard> {
                           Text(
                             "Edited: ${DateFormat('d. M. y.').format(widget.workshop.modifiedDate)}",
                           ),
-                          // if (widget.workshop.status == "Draft")
-                          //   PrimaryButton(
-                          //     onPressed: () {
-                          //       //todo
-                          //     },
-                          //     label: "Publish",
-                          //   ),
-                          // if (widget.workshop.status == "Closed" ||
-                          //     widget.workshop.status == "Published")
-                          //   PrimaryButton(
-                          //     onPressed: () {
-                          //       //todo
-                          //     },
-                          //     label: "Participants",
-                          //     tooltip: "View participants",
-                          //   ),
                         ],
                       ),
 
@@ -682,16 +666,7 @@ class _WorkshopCardState extends State<WorkshopCard> {
                                 padding: const EdgeInsets.only(left: 8.0),
                                 child: PrimaryButton(
                                   onPressed: () async {
-                                    // Provider.of<WorkshopProvider>(
-                                    //   context,
-                                    //   listen: false,
-                                    // ).handleWorkshopAction(
-                                    //   widget.workshop,
-                                    //   action,
-                                    //   context,
-                                    // );
-
-                                    if (action != "View participants") {
+                                    if (action != "View Participants") {
                                       final shouldProceed =
                                           await CustomConfirmDialog.show(
                                             context,

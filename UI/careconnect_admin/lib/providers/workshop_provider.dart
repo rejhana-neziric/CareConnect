@@ -4,6 +4,7 @@ import 'package:careconnect_admin/models/responses/workshop.dart';
 import 'package:careconnect_admin/models/responses/workshop_statistics.dart';
 import 'package:careconnect_admin/models/search_objects/workshop_search_object.dart';
 import 'package:careconnect_admin/providers/base_provider.dart';
+import 'package:careconnect_admin/screens/participant_list_screeen.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
@@ -129,10 +130,14 @@ class WorkshopProvider extends BaseProvider<Workshop> {
   }
 
   void viewWorkshopParticipants(Workshop workshop, BuildContext context) {
-    // Navigator.push(
-    //   context,
-    //   MaterialPageRoute(builder: (_) => ParticipantsScreen(workshop: workshop)),
-    // );
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => ParticipantListScreeen(workshop: workshop),
+      ),
+    );
+
+    //      MaterialPageRoute(builder: (_) => ParticipantListScreeen(workshop: workshop)),
   }
 
   Future<bool> changeState(int id, String action) async {

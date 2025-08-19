@@ -167,7 +167,8 @@ class _WorkshopDetailsScreenState extends State<WorkshopDetailsScreen> {
                                       padding: const EdgeInsets.only(left: 8.0),
                                       child: PrimaryButton(
                                         onPressed: () async {
-                                          if (action != "View participants") {
+                                          print(action);
+                                          if (action != "View Participants") {
                                             final shouldProceed =
                                                 await CustomConfirmDialog.show(
                                                   context,

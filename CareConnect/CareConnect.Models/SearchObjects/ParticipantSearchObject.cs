@@ -5,6 +5,8 @@ namespace CareConnect.Models.SearchObjects
 {
     public class ParticipantSearchObject : BaseSearchObject<ParticipantAdditionalData>
     {
+        public int? WorkshopId { get; set; }
+
         public string? UserFirstNameGTE { get; set; } = null!;
 
         public string? UserLastNameGTE { get; set; } = null!;

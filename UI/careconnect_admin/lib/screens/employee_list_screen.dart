@@ -130,13 +130,16 @@ class _EmployeeListScreenState extends State<EmployeeListScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return MasterScreen(
       "Employees",
 
       Column(
         children: [
           _buildOverview(),
-          _buildSearch(),
+          _buildSearch(colorScheme),
           Consumer<EmployeeProvider>(
             builder: (context, employeeProvider, child) {
               return _buildResultView();
@@ -213,13 +216,13 @@ class _EmployeeListScreenState extends State<EmployeeListScreen> {
     });
   }
 
-  Widget _buildSearch() {
+  Widget _buildSearch(ColorScheme colorScheme) {
     return Padding(
       padding: const EdgeInsets.all(8.0),
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: colorScheme.surfaceContainerLowest,
           border: Border.all(color: Colors.grey.shade300),
           borderRadius: BorderRadius.circular(8),
         ),
@@ -233,11 +236,17 @@ class _EmployeeListScreenState extends State<EmployeeListScreen> {
                 width: 500,
                 child: TextField(
                   controller: _ftsController,
-                  decoration: const InputDecoration(
+                  decoration: InputDecoration(
                     labelText:
                         "Search First Name, Last Name, Email and Job Title",
+
                     border: OutlineInputBorder(),
+                    labelStyle: TextStyle(
+                      color: colorScheme.onPrimaryContainer,
+                    ),
                     prefixIcon: Icon(Icons.search),
+                    fillColor: colorScheme.surfaceContainerLowest,
+                    filled: true,
                   ),
                   onChanged: (value) => loadData(),
                 ),
@@ -307,7 +316,7 @@ class _EmployeeListScreenState extends State<EmployeeListScreen> {
               IconButton(
                 icon: Icon(
                   _sortAscending ? Icons.arrow_upward : Icons.arrow_downward,
-                  color: Colors.black,
+                  color: colorScheme.onPrimaryContainer,
                 ),
                 tooltip: _sortAscending ? 'Ascending' : 'Descending',
                 onPressed: () {
@@ -321,8 +330,6 @@ class _EmployeeListScreenState extends State<EmployeeListScreen> {
               // Refresh Button
               TextButton.icon(
                 onPressed: () {
-                  print(_pickerKey.currentState);
-
                   // if (_ftsController.text.isEmpty == false ||
                   //     _sortBy != null ||
                   //     selectedSortingOption != null ||
@@ -345,11 +352,14 @@ class _EmployeeListScreenState extends State<EmployeeListScreen> {
                   //   _reloadCurrentPageTable();
                   // }
                 },
-                label: const Text(
+                label: Text(
                   "Refresh",
-                  style: TextStyle(color: Colors.black),
+                  style: TextStyle(color: colorScheme.onPrimaryContainer),
                 ),
-                icon: const Icon(Icons.refresh_outlined, color: Colors.black),
+                icon: Icon(
+                  Icons.refresh_outlined,
+                  color: colorScheme.onPrimaryContainer,
+                ),
               ),
             ],
           ),
@@ -361,10 +371,13 @@ class _EmployeeListScreenState extends State<EmployeeListScreen> {
   Widget _buildResultView() {
     return (employees != null && employees?.result.isEmpty == false)
         ? Expanded(
-            child: EmployeeTable(
-              key: tableKey,
-              result: employees,
-              onPageChanged: loadData,
+            child: Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: EmployeeTable(
+                key: tableKey,
+                result: employees,
+                onPageChanged: loadData,
+              ),
             ),
           )
         : Padding(

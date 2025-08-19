@@ -13,5 +13,7 @@ namespace CareConnect.Models.Responses
         public virtual User User { get; set; } = null!;
 
         public virtual Workshop Workshop { get; set; } = null!;
+
+        public virtual Child? Child { get; set; } 
     }
 }

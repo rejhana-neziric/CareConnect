@@ -24,6 +24,13 @@ namespace CareConnect.Services
         {
             query = base.AddFilter(search, query);
 
+            query = query.Include(x => x.Child);
+
+            if (search?.WorkshopId.HasValue == true)
+            {
+                query = query.Where(x => x.WorkshopId == search.WorkshopId);
+            }
+
             if (!string.IsNullOrWhiteSpace(search?.UserFirstNameGTE))
             {
                 query = query.Where(x => x.User.FirstName.StartsWith(search.UserFirstNameGTE));
@@ -52,6 +59,22 @@ namespace CareConnect.Services
             if (search?.RegistrationDateLTE.HasValue == true)
             {
                 query = query.Where(x => x.RegistrationDate <= search.RegistrationDateLTE);
+            }
+
+            if (!string.IsNullOrWhiteSpace(search?.SortBy))
+            {
+                query = query.Include(x => x.AttendanceStatus); 
+
+                query = search?.SortBy switch
+                {
+                    "firstName" => search.SortAscending ? query.OrderBy(x => x.Child == null ? x.User.FirstName : x.Child.FirstName) : 
+                                                          query.OrderByDescending(x => x.Child == null ? x.User.FirstName : x.Child.FirstName),
+                    "lastName" => search.SortAscending ? query.OrderBy(x => x.Child == null ? x.User.LastName : x.Child.LastName) : 
+                                                         query.OrderByDescending(x => x.Child == null ? x.User.LastName : x.Child.LastName),
+                    "date" => search.SortAscending ? query.OrderBy(x => x.RegistrationDate) : query.OrderByDescending(x => x.RegistrationDate),
+                    "status" => search.SortAscending ? query.OrderBy(x => x.AttendanceStatus.Name) : query.OrderByDescending(x => x.AttendanceStatus.Name),
+                    _ => query
+                };
             }
 
             return query;
@@ -96,6 +119,7 @@ namespace CareConnect.Services
                 .Include(u => u.User)
                 .Include(w => w.Workshop)
                 .Include(a => a.AttendanceStatus)
+                .Include(c => c.Child)
                 .First(p => p.UserId == id);
         }
 
