@@ -7,13 +7,11 @@ class WorkshopStatistics {
   final int totalWorkshops;
   final int upcoming;
   final int averageParticipants;
-  final double averageRating;
 
   WorkshopStatistics({
     required this.totalWorkshops,
     required this.upcoming,
     required this.averageParticipants,
-    required this.averageRating,
   });
 
   factory WorkshopStatistics.fromJson(Map<String, dynamic> json) =>

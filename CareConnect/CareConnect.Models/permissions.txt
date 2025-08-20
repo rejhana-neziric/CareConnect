@@ -10,7 +10,7 @@ Instructor: Get, GetById, Insert, Update, Delete
 Member: Get, GetById, Insert, Update, Delete
 Participant: Get, GetById, Insert, Update, Delete
 Payment: Get, GetById, Insert, Update, Delete
-Review: Get, GetById, Insert, Update, Delete
+Review: Get, GetById, Insert, Update, Delete, ChangeVisibility, GetAverage
 Role: Get, GetById, Insert, Update, Delete, AssignPermission
 UsersRole: Get, GetById, Insert, Update, Delete
 Service: Get, GetById, Insert, Update, Delete, GetStatistics

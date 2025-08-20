@@ -131,9 +131,6 @@ namespace CareConnect.Services
             foreach (var session in entity.Sessions)
                 Context.Remove(session);
 
-            foreach (var review in entity.Reviews)
-                Context.Remove(review);
-
             base.BeforeDelete(entity);
         }
 
@@ -216,7 +213,6 @@ namespace CareConnect.Services
                 TotalWorkshops = Context.Workshops.Count(),
                 Upcoming = Context.Workshops.Where(x => x.Status == "Published").Count(),
                 AverageParticipants = (int)Context.Workshops.Average(x => x.Participants),
-                AverageRating = (int)Context.Workshops.SelectMany(x => x.Reviews).Average(y => y.Stars)
 
         };
         }

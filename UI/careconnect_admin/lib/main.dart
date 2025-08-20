@@ -6,6 +6,7 @@ import 'package:careconnect_admin/providers/clients_child_provider.dart';
 import 'package:careconnect_admin/providers/employee_form_provider.dart';
 import 'package:careconnect_admin/providers/employee_provider.dart';
 import 'package:careconnect_admin/providers/participant_provider.dart';
+import 'package:careconnect_admin/providers/review_provider.dart';
 import 'package:careconnect_admin/providers/service_form_provider.dart';
 import 'package:careconnect_admin/providers/service_provider.dart';
 import 'package:careconnect_admin/providers/workshop_form_provider.dart';
@@ -47,6 +48,7 @@ void main() {
         ChangeNotifierProvider<ParticipantProvider>(
           create: (_) => ParticipantProvider(),
         ),
+        ChangeNotifierProvider<ReviewProvider>(create: (_) => ReviewProvider()),
       ],
       child: const MyApp(),
     ),

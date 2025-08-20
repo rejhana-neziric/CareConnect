@@ -10,6 +10,8 @@ namespace CareConnect.Models.SearchObjects
     {
         public string? TitleGTE { get; set; } = null!;
 
+        public bool? IsHidden { get; set; }
+
         public DateTime? PublishDateGTE { get; set; }
 
         public DateTime? PublishDateLTE { get; set; }
@@ -23,7 +25,5 @@ namespace CareConnect.Models.SearchObjects
         public string? EmployeeFirstNameGTE { get; set; } = null!;
 
         public string? EmployeeLastNameGTE { get; set; } = null!;
-
-        public string? WorkshopNameGTE { get; set; } = null!;
     }
 }

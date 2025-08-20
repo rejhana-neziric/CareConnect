@@ -117,6 +117,8 @@ public static class Permissions
         public const string Insert = "Permissions.Review.Insert";
         public const string Update = "Permissions.Review.Update";
         public const string Delete = "Permissions.Review.Delete";
+        public const string ChangeVisibility = "Permissions.Review.ChangeVisibility";
+        public const string GetAverage = "Permissions.Review.GetAverage";
     }
     public static class Role
     {

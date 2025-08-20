@@ -11,6 +11,7 @@ import 'package:careconnect_admin/widgets/confirm_dialog.dart';
 import 'package:careconnect_admin/widgets/custom_dropdown_fliter.dart';
 import 'package:careconnect_admin/widgets/no_results.dart';
 import 'package:careconnect_admin/widgets/primary_button.dart';
+import 'package:careconnect_admin/widgets/snackbar.dart';
 import 'package:careconnect_admin/widgets/stat_card.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
@@ -214,15 +215,6 @@ class _WorkshopsListScreenState extends State<WorkshopsListScreen> {
             Colors.green,
             width: 300,
           ),
-          SizedBox(width: 10),
-          statCard(
-            context,
-            "Average Rating",
-            statistics?.averageRating,
-            Icons.star,
-            Colors.orange,
-            width: 300,
-          ),
         ],
       ),
     );
@@ -369,7 +361,7 @@ class _WorkshopsListScreenState extends State<WorkshopsListScreen> {
         IconButton(
           icon: Icon(
             _sortAscending ? Icons.arrow_upward : Icons.arrow_downward,
-            color: Colors.black,
+            color: colorScheme.onPrimaryContainer,
           ),
           tooltip: _sortAscending ? 'Ascending' : 'Descending',
           onPressed: () {
@@ -392,8 +384,14 @@ class _WorkshopsListScreenState extends State<WorkshopsListScreen> {
             selectedStatusOption = null;
             loadData();
           },
-          label: Text("Refresh", style: TextStyle(color: Colors.black)),
-          icon: Icon(Icons.refresh_outlined, color: Colors.black),
+          label: Text(
+            "Refresh",
+            style: TextStyle(color: colorScheme.onPrimaryContainer),
+          ),
+          icon: Icon(
+            Icons.refresh_outlined,
+            color: colorScheme.onPrimaryContainer,
+          ),
         ),
         SizedBox(width: 32),
       ],
@@ -690,6 +688,16 @@ class _WorkshopCardState extends State<WorkshopCard> {
                                           action,
                                           context,
                                         );
+
+                                    CustomSnackbar.show(
+                                      context,
+                                      message: result
+                                          ? 'Workshop successfully changed.'
+                                          : 'Something went wrong. Please try again.',
+                                      type: result
+                                          ? SnackbarType.success
+                                          : SnackbarType.error,
+                                    );
 
                                     if (result == true) widget.loadData();
                                   },

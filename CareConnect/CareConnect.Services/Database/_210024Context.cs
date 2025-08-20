@@ -427,7 +427,6 @@ public partial class CareConnectContext : DbContext
             entity.Property(e => e.PublishDate).HasColumnType("datetime");
             entity.Property(e => e.Title).HasMaxLength(50);
             entity.Property(e => e.UserId).HasColumnName("UserID");
-            entity.Property(e => e.WorkshopId).HasColumnName("WorkshopID");
 
             entity.HasOne(d => d.Employee).WithMany(p => p.Reviews)
                 .HasForeignKey(d => d.EmployeeId)
@@ -437,10 +436,6 @@ public partial class CareConnectContext : DbContext
                 .HasForeignKey(d => d.UserId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_Reviews_Users");
-
-            entity.HasOne(d => d.Workshop).WithMany(p => p.Reviews)
-                .HasForeignKey(d => d.WorkshopId)
-                .HasConstraintName("FK_Reviews_Workshops");
         });
 
         modelBuilder.Entity<Role>(entity =>

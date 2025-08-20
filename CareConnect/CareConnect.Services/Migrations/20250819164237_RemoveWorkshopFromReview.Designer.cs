@@ -4,6 +4,7 @@ using CareConnect.Services.Database;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace CareConnect.Services.Migrations
 {
     [DbContext(typeof(CareConnectContext))]
-    partial class CareConnectContextModelSnapshot : ModelSnapshot
+    [Migration("20250819164237_RemoveWorkshopFromReview")]
+    partial class RemoveWorkshopFromReview
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -619,12 +622,9 @@ namespace CareConnect.Services.Migrations
                         .HasMaxLength(300)
                         .HasColumnType("nvarchar(300)");
 
-                    b.Property<int>("EmployeeId")
+                    b.Property<int?>("EmployeeId")
                         .HasColumnType("int")
                         .HasColumnName("EmployeeID");
-
-                    b.Property<bool>("IsHidden")
-                        .HasColumnType("bit");
 
                     b.Property<DateTime>("ModifiedDate")
                         .ValueGeneratedOnAdd()
@@ -1146,8 +1146,6 @@ namespace CareConnect.Services.Migrations
                     b.HasOne("CareConnect.Services.Database.Employee", "Employee")
                         .WithMany("Reviews")
                         .HasForeignKey("EmployeeId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
                         .HasConstraintName("FK_Reviews_Employees");
 
                     b.HasOne("CareConnect.Services.Database.User", "User")

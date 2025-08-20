@@ -8,7 +8,5 @@ namespace CareConnect.Models.SearchObjects
 
         public bool? IsEmployeeIncluded { get; set; }
 
-        public bool? IsWorkshopIncluded { get; set; }
-
     }
 }

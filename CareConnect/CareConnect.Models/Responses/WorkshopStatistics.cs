@@ -11,7 +11,5 @@ namespace CareConnect.Models.Responses
         public int Upcoming { get; set; }
 
         public int AverageParticipants { get; set; }
-
-        public double AverageRating { get; set; }
     }
 }

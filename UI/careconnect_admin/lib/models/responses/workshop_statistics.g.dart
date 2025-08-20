@@ -11,7 +11,6 @@ WorkshopStatistics _$WorkshopStatisticsFromJson(Map<String, dynamic> json) =>
       totalWorkshops: (json['totalWorkshops'] as num).toInt(),
       upcoming: (json['upcoming'] as num).toInt(),
       averageParticipants: (json['averageParticipants'] as num).toInt(),
-      averageRating: (json['averageRating'] as num).toDouble(),
     );
 
 Map<String, dynamic> _$WorkshopStatisticsToJson(WorkshopStatistics instance) =>
@@ -19,5 +18,4 @@ Map<String, dynamic> _$WorkshopStatisticsToJson(WorkshopStatistics instance) =>
       'totalWorkshops': instance.totalWorkshops,
       'upcoming': instance.upcoming,
       'averageParticipants': instance.averageParticipants,
-      'averageRating': instance.averageRating,
     };

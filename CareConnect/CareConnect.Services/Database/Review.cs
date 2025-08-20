@@ -13,19 +13,17 @@ public partial class Review
 
     public string Content { get; set; } = null!;
 
+    public bool IsHidden { get; set; } = false; 
+
     public DateTime PublishDate { get; set; }
 
-    public int? WorkshopId { get; set; }
-
-    public int? EmployeeId { get; set; }
+    public int EmployeeId { get; set; }
 
     public int? Stars { get; set; }
 
     public DateTime ModifiedDate { get; set; }
 
-    public virtual Employee? Employee { get; set; }
+    public virtual Employee Employee { get; set; } = null!;
 
     public virtual User User { get; set; } = null!;
-
-    public virtual Workshop? Workshop { get; set; }
 }

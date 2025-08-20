@@ -215,7 +215,7 @@ class _ClientListScreenState extends State<ClientListScreen> {
           _buildSearch(colorScheme),
           Consumer<ClientsChildProvider>(
             builder: (context, clientsChildProvider, child) {
-              return _buildResultView();
+              return _buildResultView(colorScheme);
             },
           ),
         ],
@@ -572,10 +572,12 @@ class _ClientListScreenState extends State<ClientListScreen> {
                 width: 500,
                 child: TextField(
                   controller: _ftsController,
-                  decoration: const InputDecoration(
+                  decoration: InputDecoration(
                     labelText: "Search First Name, Last Name and Email",
                     border: OutlineInputBorder(),
                     prefixIcon: Icon(Icons.search),
+                    fillColor: colorScheme.surfaceContainerLowest,
+                    filled: true,
                   ),
                   onChanged: (value) => loadData(),
                 ),
@@ -659,7 +661,7 @@ class _ClientListScreenState extends State<ClientListScreen> {
               IconButton(
                 icon: Icon(
                   _sortAscending ? Icons.arrow_upward : Icons.arrow_downward,
-                  color: Colors.black,
+                  color: colorScheme.onPrimaryContainer,
                 ),
                 tooltip: _sortAscending ? 'Ascending' : 'Descending',
                 onPressed: () {
@@ -700,8 +702,14 @@ class _ClientListScreenState extends State<ClientListScreen> {
                     _reloadCurrentPageTable();
                   }
                 },
-                label: Text("Refresh", style: TextStyle(color: Colors.black)),
-                icon: Icon(Icons.refresh_outlined, color: Colors.black),
+                label: Text(
+                  "Refresh",
+                  style: TextStyle(color: colorScheme.onPrimaryContainer),
+                ),
+                icon: Icon(
+                  Icons.refresh_outlined,
+                  color: colorScheme.onPrimaryContainer,
+                ),
               ),
             ],
           ),
@@ -710,13 +718,14 @@ class _ClientListScreenState extends State<ClientListScreen> {
     );
   }
 
-  Widget _buildResultView() {
+  Widget _buildResultView(ColorScheme colorScheme) {
     return (result != null && result?.result.isEmpty == false)
         ? Expanded(
             child: ClientsChildTable(
               key: tableKey,
               result: result,
               onPageChanged: loadData,
+              colorScheme: colorScheme,
             ),
           )
         : Padding(
@@ -737,11 +746,13 @@ class _ClientListScreenState extends State<ClientListScreen> {
 class ClientsChildTable extends StatefulWidget {
   final SearchResult<ClientsChild>? result;
   final Future<void> Function({int page}) onPageChanged;
+  final ColorScheme colorScheme;
 
   const ClientsChildTable({
     super.key,
     this.result,
     required this.onPageChanged,
+    required this.colorScheme,
   });
 
   @override
@@ -779,6 +790,7 @@ class _ClientsChildTableState extends State<ClientsChildTable> {
     _dataSource = ClientsChildDataSource(
       clientsChild,
       context,
+      widget.colorScheme,
       totalCount,
       onPageChanged: _fetchPage,
       pageSize: _pageSize,
@@ -884,10 +896,12 @@ class ClientsChildDataSource extends DataTableSource {
   final Future<void> Function(int page)? onPageChanged;
   final int pageSize;
   final int currentPage;
+  final ColorScheme colorScheme;
 
   ClientsChildDataSource(
     this.clientsChild,
     this.context,
+    this.colorScheme,
     this.count, {
     this.onPageChanged,
     this.pageSize = 10,
@@ -935,15 +949,17 @@ class ClientsChildDataSource extends DataTableSource {
               child: ValueListenableBuilder(
                 valueListenable: hoveredRowNotifier,
                 builder: (context, hoveredIndex, _) {
-                  final isHovered = hoveredIndex == index;
+                  final isHoveredParent = hoveredIndex == index;
                   return Text(
                     "${clientChild.client.user?.firstName ?? ""} ${clientChild.client.user?.lastName ?? ""}",
                     style: TextStyle(
-                      decoration: isHovered
+                      decoration: isHoveredParent
                           ? TextDecoration.underline
                           : TextDecoration.none,
-                      color: isHovered ? Colors.blue : Colors.black,
-                      shadows: isHovered
+                      color: isHoveredParent
+                          ? colorScheme.primary
+                          : colorScheme.onPrimaryContainer,
+                      shadows: isHoveredParent
                           ? [
                               Shadow(
                                 color: Colors.blueAccent.withOpacity(0.4),
@@ -993,7 +1009,9 @@ class ClientsChildDataSource extends DataTableSource {
                       decoration: isHovered
                           ? TextDecoration.underline
                           : TextDecoration.none,
-                      color: isHovered ? Colors.blue : Colors.black,
+                      color: isHovered
+                          ? colorScheme.primary
+                          : colorScheme.onPrimaryContainer,
                       shadows: isHovered
                           ? [
                               Shadow(

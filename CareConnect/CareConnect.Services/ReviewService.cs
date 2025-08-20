@@ -23,10 +23,26 @@ namespace CareConnect.Services
         {
             query = base.AddFilter(search, query);
 
+            query = query.Include(x => x.User); 
+            query = query.Include(x => x.Employee).ThenInclude(y => y.User);
+
+
+            if (!string.IsNullOrWhiteSpace(search?.FTS))
+            {
+                query = query.Where(x => x.User.FirstName.StartsWith(search.FTS) || 
+                                         x.User.LastName.StartsWith(search.FTS) ||
+                                         x.Employee.User.FirstName.StartsWith(search.FTS) || 
+                                         x.Employee.User.LastName.StartsWith(search.FTS));
+            }
 
             if (!string.IsNullOrWhiteSpace(search?.TitleGTE))
             {
                 query = query.Where(x => x.Title.StartsWith(search.TitleGTE));
+            }
+
+            if (search?.IsHidden.HasValue == true)
+            {
+                query = query.Where(x => x.IsHidden == search.IsHidden);
             }
 
             if (search?.PublishDateGTE.HasValue == true)
@@ -64,9 +80,16 @@ namespace CareConnect.Services
                 query = query.Where(x => x.Employee.User.LastName.StartsWith(search.EmployeeLastNameGTE));
             }
 
-            if (!string.IsNullOrWhiteSpace(search?.WorkshopNameGTE))
+            if (!string.IsNullOrWhiteSpace(search?.SortBy))
             {
-                query = query.Where(x => x.Workshop.Name.StartsWith(search.WorkshopNameGTE));
+                query = search?.SortBy switch
+                {
+                    "employee" => search.SortAscending ? query.OrderBy(x => x.Employee.User.FirstName) : query.OrderByDescending(x => x.Employee.User.FirstName),
+                    "user" => search.SortAscending ? query.OrderBy(x => x.User.FirstName) : query.OrderByDescending(x => x.User.FirstName),
+                    "rating" => search.SortAscending ? query.OrderBy(x => x.Stars) : query.OrderByDescending(x => x.Stars),
+                    "date" => search.SortAscending ? query.OrderBy(x => x.PublishDate) : query.OrderByDescending(x => x.PublishDate),
+                    _ => query
+                };
             }
 
             return query;
@@ -85,11 +108,6 @@ namespace CareConnect.Services
                 {
                     additionalData.IncludeList.Add("Employee");
                     additionalData.IncludeList.Add("Employee.User");
-                }
-
-                if (additionalData.IsWorkshopIncluded.HasValue && additionalData.IsWorkshopIncluded == true)
-                {
-                    additionalData.IncludeList.Add("Workshop");
                 }
             }
 
@@ -111,7 +129,6 @@ namespace CareConnect.Services
             return Context.Reviews
                 .Include(u => u.User)
                 .Include(e => e.Employee)
-                .Include(w => w.Workshop)
                 .First(r => r.ReviewId == id);
         }
 
@@ -138,5 +155,36 @@ namespace CareConnect.Services
 
             base.AfterDelete(id);
         }
+
+        public Models.Responses.Review ChangeVisibility(int id)
+        {
+            var review = Context.Reviews.Find(id);
+
+            if (review == null) return null; 
+
+            review.IsHidden = !review.IsHidden;
+
+            Context.SaveChanges();
+
+            review = GetByIdWithIncludes(id);   
+
+            return Mapper.Map<Models.Responses.Review>(review); 
+        }
+
+
+        public double GetAverage(int? employeeId)
+        {
+            IQueryable<Review> query = Context.Reviews.Where(x => !x.IsHidden && x.Stars.HasValue);
+
+            if (employeeId.HasValue)
+                query = query.Where(x => x.EmployeeId == employeeId.Value);
+
+            double average = query.Any()
+                ? query.Average(x => x.Stars.Value)
+                : 0.0;
+
+            return average;
+        }
+
     }
 }
