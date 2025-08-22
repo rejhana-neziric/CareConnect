@@ -9,6 +9,8 @@ import 'package:careconnect_admin/providers/participant_provider.dart';
 import 'package:careconnect_admin/providers/review_provider.dart';
 import 'package:careconnect_admin/providers/service_form_provider.dart';
 import 'package:careconnect_admin/providers/service_provider.dart';
+import 'package:careconnect_admin/providers/service_type_from_provider.dart';
+import 'package:careconnect_admin/providers/service_type_provider.dart';
 import 'package:careconnect_admin/providers/workshop_form_provider.dart';
 import 'package:careconnect_admin/providers/workshop_provider.dart';
 import 'package:careconnect_admin/screens/login_screen.dart';
@@ -49,6 +51,10 @@ void main() {
           create: (_) => ParticipantProvider(),
         ),
         ChangeNotifierProvider<ReviewProvider>(create: (_) => ReviewProvider()),
+        ChangeNotifierProvider<ServiceTypeProvider>(
+          create: (_) => ServiceTypeProvider(),
+        ),
+        ChangeNotifierProvider(create: (_) => ServiceTypeFromProvider()),
       ],
       child: const MyApp(),
     ),

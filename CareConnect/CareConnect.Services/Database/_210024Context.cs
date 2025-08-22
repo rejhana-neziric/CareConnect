@@ -58,6 +58,8 @@ public partial class CareConnectContext : DbContext
 
     public virtual DbSet<Service> Services { get; set; }
 
+    public virtual DbSet<ServiceType> ServiceTypes { get; set; }
+
     public virtual DbSet<Session> Sessions { get; set; }
 
     public virtual DbSet<User> Users { get; set; }
@@ -476,6 +478,21 @@ public partial class CareConnectContext : DbContext
                 .HasColumnType("datetime");
             entity.Property(e => e.Name).HasMaxLength(100);
             entity.Property(e => e.Price).HasColumnType("decimal(18, 2)");
+
+
+            entity.HasOne(d => d.ServiceType).WithMany(p => p.Services)
+                .HasForeignKey(d => d.ServiceTypeId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_Services_ServiceTypes");
+        });
+
+        modelBuilder.Entity<ServiceType>(entity =>
+        {
+            entity.HasKey(e => e.ServiceTypeId); 
+
+            entity.Property(e => e.ServiceTypeId).HasColumnName("ServiceTypeId");
+            entity.Property(e => e.Description).HasColumnType("text");
+            entity.Property(e => e.Name).HasMaxLength(200);
         });
 
         modelBuilder.Entity<Session>(entity =>

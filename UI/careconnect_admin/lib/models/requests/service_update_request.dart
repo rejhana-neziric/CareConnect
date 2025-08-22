@@ -9,6 +9,7 @@ class ServiceUpdateRequest {
   double? price;
   double? memberPrice;
   bool? isActive;
+  int? serviceTypeId;
 
   ServiceUpdateRequest({
     this.name,
@@ -16,6 +17,7 @@ class ServiceUpdateRequest {
     this.price,
     this.memberPrice,
     this.isActive,
+    this.serviceTypeId,
   });
 
   factory ServiceUpdateRequest.fromJson(Map<String, dynamic> json) =>

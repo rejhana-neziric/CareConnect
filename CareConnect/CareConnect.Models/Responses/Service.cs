@@ -14,6 +14,11 @@ namespace CareConnect.Models.Responses
 
         public decimal? MemberPrice { get; set; }
 
+        public int ServiceTypeId { get; set; }
+
+
+        public ServiceType ServiceType { get; set; }
+
         public bool IsActive { get; set; } 
 
         public DateTime ModifiedDate { get; set; }

@@ -17,6 +17,8 @@ namespace CareConnect.Models.Requests
 
         public bool? IsActive { get; set; }
 
+        public int? ServiceTypeId { get; set; }
+
         [JsonIgnore]
         public DateTime ModifiedDate { get; set; } = DateTime.Now;
     }

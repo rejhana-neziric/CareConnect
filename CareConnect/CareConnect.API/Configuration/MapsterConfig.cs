@@ -101,6 +101,15 @@ namespace CareConnect.API.Configuration
 
             //TypeAdapterConfig<ClientsChild, Models.Responses.ClientsChild>.NewConfig()
             //    .Map(dest => dest.LastAppointment, src => src.Appointments.OrderByDescending(a => a.Date).FirstOrDefault().Date);
+
+
+            TypeAdapterConfig<ServiceType, Models.Responses.ServiceType>
+                .NewConfig()
+                .Map(dest => dest.NumberOfServices,
+                     src => src.Services != null ? src.Services.Count : 0);
+
+
+
         }
     }
 }

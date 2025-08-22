@@ -14,6 +14,10 @@ Service _$ServiceFromJson(Map<String, dynamic> json) => Service(
   memberPrice: (json['memberPrice'] as num?)?.toDouble(),
   isActive: json['isActive'] as bool,
   modifiedDate: DateTime.parse(json['modifiedDate'] as String),
+  serviceType: json['serviceType'] == null
+      ? null
+      : ServiceType.fromJson(json['serviceType'] as Map<String, dynamic>),
+  serviceTypeId: (json['serviceTypeId'] as num).toInt(),
 );
 
 Map<String, dynamic> _$ServiceToJson(Service instance) => <String, dynamic>{
@@ -24,4 +28,6 @@ Map<String, dynamic> _$ServiceToJson(Service instance) => <String, dynamic>{
   'memberPrice': instance.memberPrice,
   'isActive': instance.isActive,
   'modifiedDate': instance.modifiedDate.toIso8601String(),
+  'serviceType': instance.serviceType,
+  'serviceTypeId': instance.serviceTypeId,
 };

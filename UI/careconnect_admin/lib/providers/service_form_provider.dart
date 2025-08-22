@@ -33,6 +33,7 @@ class ServiceFormProvider
               ? null
               : double.tryParse(formData['memberPrice']),
           isActive: formData['isActive'],
+          serviceTypeId: formData['serviceTypeId'],
         );
 
         await entitiyProvider.insert(insertRequest);
@@ -50,6 +51,7 @@ class ServiceFormProvider
               ? null
               : double.tryParse(formData['memberPrice']),
           isActive: formData['isActive'],
+          serviceTypeId: formData['serviceTypeId'],
         );
 
         if (id != null) await entitiyProvider.update(id, updateRequest);

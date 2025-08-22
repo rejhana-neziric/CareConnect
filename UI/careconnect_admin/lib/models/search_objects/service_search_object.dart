@@ -9,6 +9,7 @@ class ServiceSearchObject {
   double? price;
   double? memberPrice;
   bool? isActive;
+  int? serviceTypeId;
   int? page;
   String? sortBy;
   bool? sortAscending;
@@ -21,6 +22,7 @@ class ServiceSearchObject {
     this.price,
     this.memberPrice,
     this.isActive,
+    this.serviceTypeId,
     this.page,
     this.sortBy,
     this.sortAscending,

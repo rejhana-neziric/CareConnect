@@ -17,9 +17,9 @@ import 'package:provider/provider.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 
 class WorkshopDetailsScreen extends StatefulWidget {
-  Workshop? workshop;
+  final Workshop? workshop;
 
-  WorkshopDetailsScreen({super.key, this.workshop});
+  const WorkshopDetailsScreen({super.key, this.workshop});
 
   @override
   State<WorkshopDetailsScreen> createState() => _WorkshopDetailsScreenState();
@@ -31,6 +31,7 @@ class _WorkshopDetailsScreenState extends State<WorkshopDetailsScreen> {
   late WorkshopProvider workshopProvider;
   late WorkshopFormProvider workshopFormProvider;
   bool isLoading = true;
+  Workshop? _currentWorkshop;
 
   @override
   void didChangeDependencies() {
@@ -43,6 +44,7 @@ class _WorkshopDetailsScreenState extends State<WorkshopDetailsScreen> {
 
     workshopProvider = context.read<WorkshopProvider>();
     workshopFormProvider = context.read<WorkshopFormProvider>();
+    _currentWorkshop = widget.workshop;
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       initForm();
@@ -50,30 +52,30 @@ class _WorkshopDetailsScreenState extends State<WorkshopDetailsScreen> {
   }
 
   Future<void> initForm() async {
-    if (widget.workshop == null) {
+    if (_currentWorkshop == null) {
       workshopFormProvider.setForInsert();
     } else {
       workshopFormProvider.setForUpdate({
-        "name": widget.workshop?.name,
-        "status": widget.workshop?.status,
-        "description": widget.workshop?.description,
-        "workshopType": widget.workshop?.workshopType,
-        "startDate": widget.workshop?.startDate,
-        "endDate": widget.workshop?.endDate,
-        "price": widget.workshop?.price == null
+        "name": _currentWorkshop?.name,
+        "status": _currentWorkshop?.status,
+        "description": _currentWorkshop?.description,
+        "workshopType": _currentWorkshop?.workshopType,
+        "startDate": _currentWorkshop?.startDate,
+        "endDate": _currentWorkshop?.endDate,
+        "price": _currentWorkshop?.price == null
             ? ""
-            : widget.workshop?.price.toString(),
-        "memberPrice": widget.workshop?.memberPrice == null
+            : _currentWorkshop?.price.toString(),
+        "memberPrice": _currentWorkshop?.memberPrice == null
             ? ""
-            : widget.workshop?.memberPrice.toString(),
-        "maxParticipants": widget.workshop?.maxParticipants == null
+            : _currentWorkshop?.memberPrice.toString(),
+        "maxParticipants": _currentWorkshop?.maxParticipants == null
             ? ""
-            : widget.workshop?.maxParticipants.toString(),
-        "participants": widget.workshop?.participants == null
+            : _currentWorkshop?.maxParticipants.toString(),
+        "participants": _currentWorkshop?.participants == null
             ? ""
-            : widget.workshop?.participants.toString(),
-        "modifiedDate": widget.workshop?.modifiedDate,
-        "notes": widget.workshop?.notes ?? "No notes",
+            : _currentWorkshop?.participants.toString(),
+        "modifiedDate": _currentWorkshop?.modifiedDate,
+        "notes": _currentWorkshop?.notes ?? "No notes",
       });
     }
 
@@ -154,13 +156,13 @@ class _WorkshopDetailsScreenState extends State<WorkshopDetailsScreen> {
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    if (widget.workshop != null)
+                    if (_currentWorkshop != null)
                       SizedBox(
                         width: 600,
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.end,
                           children:
-                              workshopStatusFromString(widget.workshop!.status)
+                              workshopStatusFromString(_currentWorkshop!.status)
                                   .allowedActions
                                   .map(
                                     (action) => Padding(
@@ -188,7 +190,7 @@ class _WorkshopDetailsScreenState extends State<WorkshopDetailsScreen> {
                                                     WorkshopProvider
                                                   >(context, listen: false)
                                                   .handleWorkshopAction(
-                                                    widget.workshop!,
+                                                    _currentWorkshop!,
                                                     action,
                                                     context,
                                                   );
@@ -199,13 +201,12 @@ class _WorkshopDetailsScreenState extends State<WorkshopDetailsScreen> {
                                                       WorkshopProvider
                                                     >(context, listen: false)
                                                     .getById(
-                                                      widget
-                                                          .workshop!
+                                                      _currentWorkshop!
                                                           .workshopId,
                                                     );
 
                                             setState(() {
-                                              widget.workshop = updated;
+                                              _currentWorkshop = updated;
                                             });
                                           }
                                         },
@@ -225,7 +226,7 @@ class _WorkshopDetailsScreenState extends State<WorkshopDetailsScreen> {
                           .validateServicWorkshopeName(value),
                       required: true,
                     ),
-                    if (widget.workshop != null)
+                    if (_currentWorkshop != null)
                       CustomTextField(
                         width: 600,
                         name: 'status',
@@ -343,7 +344,7 @@ class _WorkshopDetailsScreenState extends State<WorkshopDetailsScreen> {
       width: 600,
       child: Row(
         children: [
-          if (widget.workshop != null)
+          if (_currentWorkshop != null)
             PrimaryButton(
               onPressed: () async {
                 delete();
@@ -354,7 +355,7 @@ class _WorkshopDetailsScreenState extends State<WorkshopDetailsScreen> {
 
           Spacer(),
 
-          if (widget.workshop == null || widget.workshop?.status == "Draft")
+          if (_currentWorkshop == null || _currentWorkshop?.status == "Draft")
             Row(
               mainAxisSize: MainAxisSize.min,
               children: [
@@ -379,7 +380,7 @@ class _WorkshopDetailsScreenState extends State<WorkshopDetailsScreen> {
   }
 
   void delete() async {
-    final id = widget.workshop?.workshopId;
+    final id = _currentWorkshop?.workshopId;
 
     final shouldProceed = await CustomConfirmDialog.show(
       context,
@@ -418,8 +419,8 @@ class _WorkshopDetailsScreenState extends State<WorkshopDetailsScreen> {
       return;
     }
 
-    final id = widget.workshop?.workshopId;
-    final isInsert = widget.workshop == null;
+    final id = _currentWorkshop?.workshopId;
+    final isInsert = _currentWorkshop == null;
 
     final shouldProceed = await CustomConfirmDialog.show(
       context,

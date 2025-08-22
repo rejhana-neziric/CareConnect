@@ -40,8 +40,9 @@ builder.Services.AddTransient<IPaymentService, PaymentService>();
 builder.Services.AddTransient<IReviewService, ReviewService>();
 builder.Services.AddTransient<IRoleService, RoleService>();
 builder.Services.AddTransient<IUsersRoleService, UsersRoleService>();
-builder.Services.AddTransient<ISessionService, SessionService>(); 
-builder.Services.AddTransient<IServiceService, ServiceService>(); 
+builder.Services.AddTransient<ISessionService, SessionService>();
+builder.Services.AddTransient<IServiceService, ServiceService>();
+builder.Services.AddTransient<IServiceTypeService, ServiceTypeService>();
 builder.Services.AddTransient<IWorkshopService, WorkshopService>();
 
 builder.Services.AddTransient<BaseAppointmentState>();

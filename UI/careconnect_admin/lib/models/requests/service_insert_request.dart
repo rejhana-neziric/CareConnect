@@ -9,6 +9,7 @@ class ServiceInsertRequest {
   double? price;
   double? memberPrice;
   bool isActive;
+  int serviceTypeId;
 
   ServiceInsertRequest({
     required this.name,
@@ -16,6 +17,7 @@ class ServiceInsertRequest {
     this.price,
     this.memberPrice,
     required this.isActive,
+    required this.serviceTypeId,
   });
 
   factory ServiceInsertRequest.fromJson(Map<String, dynamic> json) =>

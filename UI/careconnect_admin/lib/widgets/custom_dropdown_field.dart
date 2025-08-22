@@ -9,6 +9,7 @@ class CustomDropdownField<T> extends StatelessWidget {
   final String? Function(T?)? validator;
   final bool enabled;
   final bool required;
+  final T? initialValue;
 
   const CustomDropdownField({
     super.key,
@@ -19,6 +20,7 @@ class CustomDropdownField<T> extends StatelessWidget {
     this.validator,
     this.enabled = true,
     this.required = false,
+    this.initialValue,
   });
 
   @override

@@ -146,6 +146,14 @@ public static class Permissions
         public const string Delete = "Permissions.Service.Delete";
         public const string GetStatistics = "Permissions.Service.GetStatistics";
     }
+    public static class ServiceType
+    {
+        public const string Get = "Permissions.ServiceType.Get";
+        public const string GetById = "Permissions.ServiceType.GetById";
+        public const string Insert = "Permissions.ServiceType.Insert";
+        public const string Update = "Permissions.ServiceType.Update";
+        public const string Delete = "Permissions.ServiceType.Delete";
+    }
     public static class Session
     {
         public const string Get = "Permissions.Session.Get";

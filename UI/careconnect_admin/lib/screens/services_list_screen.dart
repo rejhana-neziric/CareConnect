@@ -2,15 +2,22 @@ import 'package:careconnect_admin/layouts/master_screen.dart';
 import 'package:careconnect_admin/models/responses/search_result.dart';
 import 'package:careconnect_admin/models/responses/service.dart';
 import 'package:careconnect_admin/models/responses/service_statistics.dart';
+import 'package:careconnect_admin/models/responses/service_type.dart';
 import 'package:careconnect_admin/providers/service_form_provider.dart';
 import 'package:careconnect_admin/providers/service_provider.dart';
+import 'package:careconnect_admin/providers/service_type_from_provider.dart';
+import 'package:careconnect_admin/providers/service_type_provider.dart';
 import 'package:careconnect_admin/screens/service_details_screen.dart';
 import 'package:careconnect_admin/theme/app_colors.dart';
+import 'package:careconnect_admin/widgets/confirm_dialog.dart';
 import 'package:careconnect_admin/widgets/custom_dropdown_fliter.dart';
+import 'package:careconnect_admin/widgets/custom_text_field.dart';
 import 'package:careconnect_admin/widgets/no_results.dart';
 import 'package:careconnect_admin/widgets/primary_button.dart';
+import 'package:careconnect_admin/widgets/snackbar.dart';
 import 'package:careconnect_admin/widgets/stat_card.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
@@ -23,13 +30,18 @@ class ServicesListScreen extends StatefulWidget {
 
 class _ServicesListScreenState extends State<ServicesListScreen> {
   late ServiceProvider serviceProvider;
+  late ServiceTypeProvider serviceTypeProvider;
+  late ServiceTypeFromProvider serviceTypeFromProvider;
 
   SearchResult<Service>? services;
   int currentPage = 0;
 
+  SearchResult<ServiceType>? serviceTypes;
+  ServiceType? selectedServiceType;
+  Map<String, String?> serviceTypeOptions = {};
+
   final _ftsController = TextEditingController();
   final _priceController = TextEditingController();
-  final _memberPriceController = TextEditingController();
 
   String? _sortBy;
   bool _sortAscending = true;
@@ -64,6 +76,8 @@ class _ServicesListScreenState extends State<ServicesListScreen> {
   void initState() {
     super.initState();
     serviceProvider = context.read<ServiceProvider>();
+    serviceTypeProvider = context.read<ServiceTypeProvider>();
+    serviceTypeFromProvider = context.read<ServiceTypeFromProvider>();
     loadData();
   }
 
@@ -78,10 +92,9 @@ class _ServicesListScreenState extends State<ServicesListScreen> {
       price: _priceController.text.isNotEmpty
           ? double.tryParse(_priceController.text)
           : null,
-      memberPrice: _memberPriceController.text.isNotEmpty
-          ? double.tryParse(_memberPriceController.text)
-          : null,
+
       isActive: isActive,
+      serviceTypeId: selectedServiceType?.serviceTypeId,
       sortBy: _sortBy,
       sortAscending: _sortAscending,
     );
@@ -89,6 +102,7 @@ class _ServicesListScreenState extends State<ServicesListScreen> {
     services = result;
 
     loadStats();
+    loadServiceTypes();
 
     if (mounted) {
       setState(() {});
@@ -103,44 +117,221 @@ class _ServicesListScreenState extends State<ServicesListScreen> {
     statistics = stats;
   }
 
+  Future<void> loadServiceTypes() async {
+    final result = await serviceTypeProvider.loadData();
+
+    setState(() {
+      serviceTypes = result;
+
+      if (serviceTypes != null) {
+        serviceTypeOptions = {
+          'All': null,
+          for (final type in serviceTypes!.result) type.name: type.name,
+        };
+      }
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return MasterScreen(
       "Services",
-      SingleChildScrollView(
-        scrollDirection: Axis.vertical,
-        child: Column(
-          children: [
-            _buildOverview(),
-            _buildSearch(),
-            Consumer<ServiceProvider>(
-              builder: (context, serviceProvider, child) {
-                return _buildResultView();
-              },
+      Row(
+        children: [
+          Expanded(
+            child: SingleChildScrollView(
+              child: Column(
+                children: [
+                  _buildOverview(),
+                  _buildSearch(colorScheme),
+                  Consumer<ServiceProvider>(
+                    builder: (context, serviceProvider, child) {
+                      return _buildResultView();
+                    },
+                  ),
+                ],
+              ),
             ),
-          ],
-        ),
+          ),
+          Consumer<ServiceTypeProvider>(
+            builder: (context, serviceTypeProvider, child) {
+              return _buildServiceTypesList(colorScheme);
+            },
+          ),
+        ],
       ),
+
       button: SizedBox(
         child: Align(
           alignment: Alignment.topRight,
           child: PrimaryButton(
             onPressed: () async {
-              final result = await Navigator.push(
+              final selectedType = await showServiceTypeDialog(
                 context,
-                MaterialPageRoute(
-                  builder: (context) => ChangeNotifierProvider(
-                    create: (_) => ServiceFormProvider(),
-                    child: ServiceDetailsScreen(service: null),
-                  ),
-                ),
+                serviceTypes!.result,
               );
 
-              if (result == true) loadData();
+              if (selectedType != null) {
+                final result = await Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => ChangeNotifierProvider(
+                      create: (_) => ServiceFormProvider(),
+                      child: ServiceDetailsScreen(
+                        service: null,
+                        serviceTypeId: selectedType,
+                      ),
+                    ),
+                  ),
+                );
+
+                if (result == true) loadData();
+              }
             },
             label: 'Add Service',
           ),
         ),
+      ),
+    );
+  }
+
+  Future<int?> showServiceTypeDialog(
+    BuildContext context,
+    List<ServiceType> serviceTypes,
+  ) async {
+    int? selectedTypeId;
+
+    return showDialog<int>(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+          title: const Text("Choose Service Type"),
+          content: StatefulBuilder(
+            builder: (context, setState) {
+              return DropdownButton<int>(
+                isExpanded: true,
+                hint: const Text("Select service type"),
+                value: selectedTypeId,
+                items: serviceTypes
+                    .map(
+                      (type) => DropdownMenuItem<int>(
+                        value: type.serviceTypeId,
+                        child: Text(type.name),
+                      ),
+                    )
+                    .toList(),
+                onChanged: (value) {
+                  setState(() {
+                    selectedTypeId = value;
+                  });
+                },
+              );
+            },
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(null),
+              child: const Text("Cancel"),
+            ),
+            PrimaryButton(
+              onPressed: () {
+                if (selectedTypeId != null) {
+                  Navigator.of(context).pop(selectedTypeId);
+                }
+              },
+              label: "Continue",
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _buildServiceTypesList(ColorScheme colorScheme) {
+    return SizedBox(
+      width: 280,
+      child: Column(
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Text(
+                  "Service Types",
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 18,
+                    color: colorScheme.primaryContainer,
+                  ),
+                ),
+              ),
+              IconButton(
+                onPressed: () {
+                  setState(() {
+                    initServiceTypeForm(null);
+                  });
+                  showAddServiceTypeDialog(context, null);
+                },
+                icon: Icon(Icons.add),
+                tooltip: "Add Service Type",
+              ),
+            ],
+          ),
+          const Divider(),
+          Expanded(
+            child: ListView.builder(
+              itemCount: serviceTypes?.result.length,
+              itemBuilder: (context, index) {
+                final type = serviceTypes?.result[index];
+                bool isHovered = false;
+
+                return StatefulBuilder(
+                  builder: (context, setHoverState) {
+                    return MouseRegion(
+                      onEnter: (_) => setHoverState(() => isHovered = true),
+                      onExit: (_) => setHoverState(() => isHovered = false),
+                      child: Tooltip(
+                        message: "View service type details",
+                        child: GestureDetector(
+                          onTap: () {
+                            initServiceTypeForm(type);
+                            showAddServiceTypeDialog(context, type);
+                          },
+                          child: Container(
+                            decoration: BoxDecoration(
+                              color: isHovered
+                                  ? colorScheme.secondaryContainer
+                                  : Colors.transparent,
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+
+                            padding: const EdgeInsets.symmetric(horizontal: 12),
+                            child: ListTile(
+                              title: Text(
+                                "${type?.name ?? ""} (${type?.numberOfServices ?? "0"})",
+                                style: TextStyle(
+                                  color: colorScheme.onSecondaryContainer,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    );
+                  },
+                );
+              },
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -163,11 +354,11 @@ class _ServicesListScreenState extends State<ServicesListScreen> {
             statistics?.totalServices,
             Icons.groups,
             Colors.teal,
+            // width: 300,
           ),
           SizedBox(width: 20),
           statCard(
             context,
-
             'Average Price',
             statistics?.averagePrice == null
                 ? 0
@@ -190,13 +381,13 @@ class _ServicesListScreenState extends State<ServicesListScreen> {
     );
   }
 
-  Widget _buildSearch() {
+  Widget _buildSearch(ColorScheme colorScheme) {
     return Row(
       children: [
         Flexible(
           child: Padding(
             padding: const EdgeInsets.only(
-              left: 90.0,
+              left: 30.0,
               top: 0.0,
               right: 0.0,
               bottom: 0.0,
@@ -204,11 +395,11 @@ class _ServicesListScreenState extends State<ServicesListScreen> {
             child: ConstrainedBox(
               constraints: BoxConstraints(maxWidth: 600),
               child: Container(
-                padding: EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                padding: EdgeInsets.symmetric(horizontal: 4, vertical: 2),
                 decoration: BoxDecoration(
                   border: Border.all(color: Colors.grey),
                   borderRadius: BorderRadius.circular(8),
-                  color: AppColors.white,
+                  color: colorScheme.surfaceContainerLowest,
                 ),
                 child: TextField(
                   controller: _ftsController,
@@ -216,6 +407,9 @@ class _ServicesListScreenState extends State<ServicesListScreen> {
                     labelText: "Search Service Name...",
                     border: InputBorder.none,
                     icon: Icon(Icons.search),
+                    fillColor: colorScheme.surfaceContainerLowest,
+                    filled: true,
+                    labelStyle: TextStyle(fontSize: 15),
                   ),
                   onChanged: (value) => loadData(),
                 ),
@@ -223,7 +417,7 @@ class _ServicesListScreenState extends State<ServicesListScreen> {
             ),
           ),
         ),
-        SizedBox(width: 32),
+        SizedBox(width: 8),
         ConstrainedBox(
           constraints: BoxConstraints(maxWidth: 150),
           child: Container(
@@ -231,49 +425,51 @@ class _ServicesListScreenState extends State<ServicesListScreen> {
             decoration: BoxDecoration(
               border: Border.all(color: Colors.grey),
               borderRadius: BorderRadius.circular(8),
-              color: AppColors.white,
+              color: colorScheme.surfaceContainerLowest,
             ),
             child: TextField(
               controller: _priceController,
               decoration: InputDecoration(
                 labelText: "Price",
                 border: InputBorder.none,
+                fillColor: colorScheme.surfaceContainerLowest,
+                filled: true,
+                labelStyle: TextStyle(fontSize: 15),
               ),
               onChanged: (value) => loadData(),
             ),
           ),
         ),
-        SizedBox(width: 32),
-        ConstrainedBox(
-          constraints: BoxConstraints(maxWidth: 150),
-          child: Container(
-            padding: EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-            decoration: BoxDecoration(
-              border: Border.all(color: Colors.grey),
-              borderRadius: BorderRadius.circular(8),
-              color: AppColors.white,
-            ),
-            child: TextField(
-              controller: _memberPriceController,
-              decoration: InputDecoration(
-                labelText: "Member Price",
-                border: InputBorder.none,
-              ),
-              onChanged: (value) => loadData(),
-            ),
+        SizedBox(width: 8),
+        SizedBox(
+          width: 280,
+          child: CustomDropdownFliter(
+            selectedValue: selectedServiceType?.name,
+            options: serviceTypeOptions,
+            name: "Service Type: ",
+            onChanged: (newType) {
+              setState(() {
+                final idx = serviceTypes?.result.indexWhere(
+                  (s) => s.name == newType,
+                );
+                selectedServiceType = idx == -1
+                    ? null
+                    : serviceTypes?.result[idx!];
+              });
+              loadData();
+            },
           ),
         ),
-        SizedBox(width: 32),
-
+        SizedBox(width: 8),
         ConstrainedBox(
           constraints: BoxConstraints(maxWidth: 250),
           child: Container(
-            color: AppColors.white,
-            width: 250,
+            color: colorScheme.surfaceContainerLowest,
+            width: 180,
             child: CustomDropdownFliter(
               selectedValue: selectedIsActiveOption,
               options: isActiveOptions,
-              name: "Available Status: ",
+              name: "Status: ",
               onChanged: (newStatus) {
                 setState(() {
                   selectedIsActiveOption = newStatus;
@@ -290,11 +486,11 @@ class _ServicesListScreenState extends State<ServicesListScreen> {
             ),
           ),
         ),
-        SizedBox(width: 32),
+        SizedBox(width: 8),
         ConstrainedBox(
           constraints: BoxConstraints(maxWidth: 200),
           child: Container(
-            color: AppColors.white,
+            color: colorScheme.surfaceContainerLowest,
             width: 200,
             child: CustomDropdownFliter(
               selectedValue: selectedSortingOption,
@@ -314,7 +510,7 @@ class _ServicesListScreenState extends State<ServicesListScreen> {
         IconButton(
           icon: Icon(
             _sortAscending ? Icons.arrow_upward : Icons.arrow_downward,
-            color: Colors.black,
+            color: colorScheme.onPrimaryContainer,
           ),
           tooltip: _sortAscending ? 'Ascending' : 'Descending',
           onPressed: () {
@@ -330,15 +526,21 @@ class _ServicesListScreenState extends State<ServicesListScreen> {
           onPressed: () async {
             _ftsController.clear();
             _priceController.clear();
-            _memberPriceController.clear();
             _sortBy = null;
             selectedSortingOption = null;
             selectedIsActiveOption = null;
+            selectedServiceType = null;
             isActive = null;
             loadData();
           },
-          label: Text("Refresh", style: TextStyle(color: Colors.black)),
-          icon: Icon(Icons.refresh_outlined, color: Colors.black),
+          label: Text(
+            "Refresh",
+            style: TextStyle(color: colorScheme.onPrimaryContainer),
+          ),
+          icon: Icon(
+            Icons.refresh_outlined,
+            color: colorScheme.onPrimaryContainer,
+          ),
         ),
         SizedBox(width: 32),
       ],
@@ -349,7 +551,7 @@ class _ServicesListScreenState extends State<ServicesListScreen> {
     return (services != null && services?.result.isEmpty == false)
         ? GridView.count(
             crossAxisCount: 2,
-            childAspectRatio: 450 / 150,
+            childAspectRatio: 450 / 200,
             shrinkWrap: true,
             physics: NeverScrollableScrollPhysics(),
             padding: const EdgeInsets.all(64),
@@ -378,6 +580,233 @@ class _ServicesListScreenState extends State<ServicesListScreen> {
   Widget _buildService(Service service) {
     return ServiceCard(service: service, loadData: loadData);
   }
+
+  Future<void> showAddServiceTypeDialog(
+    BuildContext context,
+    ServiceType? serviceType,
+  ) async {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
+    final serviceTypeFromProvider = context.read<ServiceTypeFromProvider>();
+
+    return showDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          title: serviceType == null
+              ? Text("Add Sercice Type")
+              : Text("Edit Service Type"),
+          content: FormBuilder(
+            key: serviceTypeFromProvider.formKey,
+            initialValue: _initialValue,
+            autovalidateMode: AutovalidateMode.disabled,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                CustomTextField(
+                  width: 400,
+                  name: "name",
+                  label: "Name",
+                  required: true,
+                  validator:
+                      serviceTypeFromProvider.validateServicWorkshopeName,
+                ),
+                const SizedBox(height: 16),
+                CustomTextField(
+                  width: 400,
+                  name: "description",
+                  label: "Description",
+                  maxLines: 5,
+                  hintText: 'Write a short and clear description...',
+                  validator: serviceTypeFromProvider.validateDescription,
+                ),
+              ],
+            ),
+          ),
+          actions: [
+            if (serviceType != null)
+              PrimaryButton(
+                onPressed: () async {
+                  final result = deleteServiceType(serviceType);
+
+                  if (result == true) {
+                    loadServiceTypes();
+                    loadData();
+                  }
+                },
+                label: 'Delete',
+                backgroundColor: colorScheme.error,
+              ),
+            SizedBox(width: 130),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                PrimaryButton(
+                  onPressed: () async {
+                    Navigator.pop(context);
+                  },
+                  label: 'Cancel',
+                ),
+                SizedBox(width: 10),
+                PrimaryButton(
+                  onPressed: () async {
+                    final result = saveServiceType(serviceType);
+
+                    if (result == true) {
+                      loadServiceTypes();
+                      loadData();
+                    }
+                  },
+                  label: 'Save',
+                ),
+              ],
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Map<String, dynamic> _initialValue = {};
+  bool isLoading = true;
+
+  Future<void> initServiceTypeForm(ServiceType? serviceType) async {
+    if (serviceType == null) {
+      serviceTypeFromProvider.setForInsert();
+    } else {
+      serviceTypeFromProvider.setForUpdate({
+        "name": serviceType.name,
+        "description": serviceType.description,
+      });
+    }
+
+    setState(() {
+      _initialValue = Map<String, dynamic>.from(
+        serviceTypeFromProvider.initialData,
+      );
+      isLoading = false;
+    });
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (serviceTypeFromProvider.formKey.currentState != null) {
+        serviceTypeFromProvider.formKey.currentState!.patchValue(_initialValue);
+      }
+    });
+
+    setState(() {});
+  }
+
+  Future<bool> deleteServiceType(ServiceType serviceType) async {
+    final id = serviceType.serviceTypeId;
+
+    if (serviceType.numberOfServices == null ||
+        serviceType.numberOfServices == 0) {
+      final shouldProceed = await CustomConfirmDialog.show(
+        context,
+        icon: Icons.info,
+
+        title: 'Delete Service Type',
+        content: 'Are you sure you want to delete this service type?',
+        confirmText: 'Delete',
+        cancelText: 'Cancel',
+      );
+
+      if (shouldProceed != true) return false;
+
+      final success = await serviceTypeProvider.delete(id);
+
+      if (!mounted) return false;
+
+      CustomSnackbar.show(
+        context,
+        message: success
+            ? 'Service type successfully deleted.'
+            : 'Something went wrong. Please try again.',
+        type: success ? SnackbarType.success : SnackbarType.error,
+      );
+
+      if (success) {
+        Navigator.of(context).pop();
+      }
+
+      return success;
+    } else {
+      await CustomConfirmDialog.show(
+        context,
+        icon: Icons.info,
+        title: 'Unable to delete',
+        content:
+            'This service type cannot be deleted because ${serviceType.numberOfServices} services are still using it.',
+        confirmText: 'OK',
+      );
+
+      return false;
+    }
+  }
+
+  Future<bool> saveServiceType(ServiceType? serviceType) async {
+    final formState = serviceTypeFromProvider.formKey.currentState;
+
+    if (formState == null || !formState.saveAndValidate()) {
+      debugPrint('Form is not valid or state is null');
+      return false;
+    }
+
+    final id = serviceType?.serviceTypeId;
+    final isInsert = serviceType == null;
+
+    final shouldProceed = await CustomConfirmDialog.show(
+      context,
+      icon: Icons.info,
+      iconBackgroundColor: AppColors.mauveGray,
+      title: isInsert ? 'Add New Service' : 'Save Changes',
+      content: isInsert
+          ? 'Are you sure you want to add a new service?'
+          : 'Are you sure you want to save the service?',
+      confirmText: 'Continue',
+      cancelText: 'Cancel',
+    );
+
+    if (shouldProceed != true) return false;
+
+    final success = await serviceTypeFromProvider.saveOrUpdate(
+      serviceTypeFromProvider,
+      serviceTypeProvider,
+      id,
+    );
+
+    if (!mounted) return false;
+
+    CustomSnackbar.show(
+      context,
+      message: success
+          ? (serviceTypeFromProvider.isUpdate
+                ? 'Service type updated.'
+                : 'Service type added.')
+          : 'Something went wrong. Please try again.',
+      type: success ? SnackbarType.success : SnackbarType.error,
+    );
+
+    if (success && !serviceTypeFromProvider.isUpdate) {
+      setState(() {});
+      serviceTypeFromProvider.resetForm();
+    }
+
+    if (success) {
+      serviceTypeFromProvider.saveInitialValue();
+    }
+    serviceTypeFromProvider.success = success;
+
+    Navigator.of(context).pop();
+
+    return success;
+  }
 }
 
 class ServiceCard extends StatefulWidget {
@@ -400,7 +829,7 @@ class _ServiceCardState extends State<ServiceCard> {
 
     double screenWidth = MediaQuery.of(context).size.width;
     return Tooltip(
-      message: "Click to view service details.",
+      message: "View service details.",
       child: MouseRegion(
         onEnter: (_) => setState(() => isHovered = true),
         onExit: (_) => setState(() => isHovered = false),
@@ -443,12 +872,16 @@ class _ServiceCardState extends State<ServiceCard> {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Text(
-                            widget.service.name,
-                            style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                              color: AppColors.mauveGray,
+                          Expanded(
+                            child: Text(
+                              widget.service.name,
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                                color: AppColors.mauveGray,
+                              ),
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
                             ),
                           ),
                           Container(
@@ -476,7 +909,22 @@ class _ServiceCardState extends State<ServiceCard> {
                           ),
                         ],
                       ),
-                      SizedBox(height: 20),
+                      Container(
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                        child: Padding(
+                          padding: const EdgeInsets.all(0.0),
+                          child: Text(
+                            widget.service.serviceType?.name ?? "",
+                            style: TextStyle(
+                              fontWeight: FontWeight.w500,
+                              fontSize: 12,
+                            ),
+                          ),
+                        ),
+                      ),
+                      SizedBox(height: 10),
                       Text(
                         widget.service.description == null
                             ? "No description."

@@ -4,6 +4,7 @@ using CareConnect.Models.SearchObjects;
 using CareConnect.Services.Database;
 using MapsterMapper;
 using Microsoft.EntityFrameworkCore;
+using static Permissions;
 
 namespace CareConnect.Services
 {
@@ -14,6 +15,8 @@ namespace CareConnect.Services
         public override IQueryable<Database.Service> AddFilter(ServiceSearchObject search, IQueryable<Database.Service> query)
         {
             query = base.AddFilter(search, query);
+
+            query = query.Include(x => x.ServiceType); 
 
             if (!string.IsNullOrWhiteSpace(search?.NameGTE))
             {
@@ -33,6 +36,11 @@ namespace CareConnect.Services
             if (search?.IsActive.HasValue == true)
             {
                 query = query.Where(x => x.IsActive == search.IsActive);
+            }
+
+            if (search?.ServiceTypeId.HasValue == true)
+            {
+                query = query.Where(x => x.ServiceTypeId == search.ServiceTypeId);
             }
 
             if (!string.IsNullOrWhiteSpace(search?.SortBy))
@@ -82,13 +90,15 @@ namespace CareConnect.Services
 
         public override void BeforeUpdate(ServiceUpdateRequest request, ref Database.Service entity)
         {
+            entity = GetByIdWithIncludes(entity.ServiceId); 
+
             base.BeforeUpdate(request, ref entity);
         }
 
         public override Database.Service GetByIdWithIncludes(int id)
         {
-            return Context.Services
-                .First(s => s.ServiceId == id);
+            return Context.Services.Include(x => x.ServiceType)
+                .First(x => x.ServiceId == id);
         }
 
         public override void BeforeDelete(Database.Service entity)

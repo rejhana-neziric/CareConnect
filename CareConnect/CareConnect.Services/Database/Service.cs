@@ -17,7 +17,11 @@ public partial class Service
 
     public bool IsActive { get; set; } = true;
 
+    public int ServiceTypeId { get; set; }
+
     public DateTime ModifiedDate { get; set; }
+
+    public virtual ServiceType ServiceType { get; set; } = null!;
 
     public virtual ICollection<EmployeeAvailability> EmployeeAvailabilities { get; set; } = new List<EmployeeAvailability>();
 }

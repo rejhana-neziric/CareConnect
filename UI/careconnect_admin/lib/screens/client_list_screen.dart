@@ -336,25 +336,25 @@ class _ClientListScreenState extends State<ClientListScreen> {
     );
   }
 
-  Widget _buildShimmerBar({required double height}) {
-    return Column(
-      children: [
-        Container(
-          height: 16,
-          width: 20,
-          color: Colors.white,
-          margin: const EdgeInsets.only(bottom: 8),
-        ),
-        Container(width: 20, height: height, color: Colors.white),
-        Container(
-          height: 16,
-          width: 30,
-          margin: const EdgeInsets.only(top: 8),
-          color: Colors.white,
-        ),
-      ],
-    );
-  }
+  // Widget _buildShimmerBar({required double height}) {
+  //   return Column(
+  //     children: [
+  //       Container(
+  //         height: 16,
+  //         width: 20,
+  //         color: Colors.white,
+  //         margin: const EdgeInsets.only(bottom: 8),
+  //       ),
+  //       Container(width: 20, height: height, color: Colors.white),
+  //       Container(
+  //         height: 16,
+  //         width: 30,
+  //         margin: const EdgeInsets.only(top: 8),
+  //         color: Colors.white,
+  //       ),
+  //     ],
+  //   );
+  // }
 
   Widget buildShimmerBarChartPlaceholder() {
     return Shimmer.fromColors(

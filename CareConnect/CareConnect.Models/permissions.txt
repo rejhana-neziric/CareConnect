@@ -14,6 +14,7 @@ Review: Get, GetById, Insert, Update, Delete, ChangeVisibility, GetAverage
 Role: Get, GetById, Insert, Update, Delete, AssignPermission
 UsersRole: Get, GetById, Insert, Update, Delete
 Service: Get, GetById, Insert, Update, Delete, GetStatistics
+ServiceType: Get, GetById, Insert, Update, Delete
 Session: Get, GetById, Insert, Update, Delete
 User: Login, GetPermission
 Workshop: Get, GetById, Insert, Update, Delete, Publish, Cancel, Close, AllowedActions, GetStatistics
