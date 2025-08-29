@@ -10,6 +10,7 @@ class CustomDropdownField<T> extends StatelessWidget {
   final bool enabled;
   final bool required;
   final T? initialValue;
+  final void Function(T?)? onChanged;
 
   const CustomDropdownField({
     super.key,
@@ -21,6 +22,7 @@ class CustomDropdownField<T> extends StatelessWidget {
     this.enabled = true,
     this.required = false,
     this.initialValue,
+    this.onChanged,
   });
 
   @override
@@ -94,7 +96,14 @@ class CustomDropdownField<T> extends StatelessWidget {
                       isExpanded: true,
                       isDense: true,
                       value: field.value,
-                      onChanged: enabled ? field.didChange : null,
+                      onChanged: enabled
+                          ? (value) {
+                              field.didChange(value);
+                              if (onChanged != null) {
+                                onChanged!(value);
+                              }
+                            }
+                          : null,
                       items: items,
                     ),
                   ),

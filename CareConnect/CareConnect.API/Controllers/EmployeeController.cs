@@ -19,5 +19,19 @@ namespace CareConnect.API.Controllers
         {
             return (_service as EmployeeService).GetStatistics();    
         }
+
+        [HttpPost("{employeeId}/availabilty")]
+        [PermissionAuthorize("CreateEmployeeAvailability")]
+        public Models.Responses.Employee CreateEmployeeAvailability(int employeeId, List<EmployeeAvailabilityInsertRequest> availability)
+        {
+            return (_service as EmployeeService).CreateEmployeeAvailability(employeeId, availability);
+        }
+
+        [HttpPatch("{employeeId}/availabilty")]
+        [PermissionAuthorize("UpdateEmployeeAvailability")]
+        public Models.Responses.Employee UpdateEmployeeAvailability(int employeeId, [FromBody]EmployeeAvailabilityChanges availability)
+        {
+            return (_service as EmployeeService).UpdateEmployeeAvailability(employeeId, availability);
+        }
     }
 }

@@ -19,6 +19,9 @@ Employee _$EmployeeFromJson(Map<String, dynamic> json) => Employee(
   qualification: json['qualification'] == null
       ? null
       : Qualification.fromJson(json['qualification'] as Map<String, dynamic>),
+  employeeAvailabilities: (json['employeeAvailabilities'] as List<dynamic>)
+      .map((e) => EmployeeAvailability.fromJson(e as Map<String, dynamic>))
+      .toList(),
 );
 
 Map<String, dynamic> _$EmployeeToJson(Employee instance) => <String, dynamic>{
@@ -28,4 +31,7 @@ Map<String, dynamic> _$EmployeeToJson(Employee instance) => <String, dynamic>{
   'modifiedDate': instance.modifiedDate.toIso8601String(),
   'user': instance.user?.toJson(),
   'qualification': instance.qualification?.toJson(),
+  'employeeAvailabilities': instance.employeeAvailabilities
+      .map((e) => e.toJson())
+      .toList(),
 };

@@ -62,15 +62,15 @@ namespace CareConnect.Services.WorkshopStateMachine
             switch (stateName)
             {
                 case "Initial":
-                    return _serviceProvider.GetService<InitialWorkshopState>();
+                    return _serviceProvider.GetService<InitialWorkshopState>()!;
                 case "Draft":
-                    return _serviceProvider.GetService<DraftWorkshopState>();
+                    return _serviceProvider.GetService<DraftWorkshopState>()!;
                 case "Published":
-                    return _serviceProvider.GetService<PublishedWorkshopState>();
+                    return _serviceProvider.GetService<PublishedWorkshopState>()!;
                 case "Closed":
-                    return _serviceProvider.GetService<ClosedWorkshopState>();
+                    return _serviceProvider.GetService<ClosedWorkshopState>()!;
                 case "Canceled":
-                    return _serviceProvider.GetService<CanceledWorkshopState>();
+                    return _serviceProvider.GetService<CanceledWorkshopState>()!;
 
                 default:
                     throw new Exception($"State {stateName} not defined.");

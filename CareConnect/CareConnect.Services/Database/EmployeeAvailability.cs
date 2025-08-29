@@ -13,13 +13,9 @@ public partial class EmployeeAvailability
 
     public string DayOfWeek { get; set; } = null!;
 
-    public DateTime StartTime { get; set; }
+    public string StartTime { get; set; } = null!;
 
-    public DateTime EndTime { get; set; }
-
-    public bool IsAvailable { get; set; }
-
-    public string? ReasonOfUnavailability { get; set; }
+    public string EndTime { get; set; } = null!;
 
     public DateTime ModifiedDate { get; set; }
 

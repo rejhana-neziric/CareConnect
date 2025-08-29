@@ -1,4 +1,4 @@
-import 'package:careconnect_admin/theme/app_colors_extension.dart';
+import 'package:careconnect_admin/core/theme/app_colors_extension.dart';
 import 'package:flutter/material.dart';
 
 const Color primaryMain = Color(0xFFEDEDEE); // #ededee

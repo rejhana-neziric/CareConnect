@@ -14,12 +14,19 @@ using CareConnect.Models.SearchObjects;
 using System.Globalization;
 using CareConnect.Models.Responses;
 using Microsoft.EntityFrameworkCore.Internal;
+using static Permissions;
+using Azure.Core;
 
 namespace CareConnect.Services
 {
     public class EmployeeService : BaseCRUDService<Models.Responses.Employee, EmployeeSearchObject, EmployeeAdditionalData, Database.Employee, EmployeeInsertRequest, EmployeeUpdateRequest>, IEmployeeService
     {
-        public EmployeeService(CareConnectContext context, IMapper mapper) : base(context, mapper) { }
+        private readonly IEmployeeAvailabilityService _employeeAvailabilityService;
+
+        public EmployeeService(CareConnectContext context, IMapper mapper, IEmployeeAvailabilityService employeeAvailabilityService) : base(context, mapper) 
+        {
+            _employeeAvailabilityService = employeeAvailabilityService; 
+        }
 
 
         public override IQueryable<Database.Employee> AddFilter(EmployeeSearchObject search, IQueryable<Database.Employee> query)
@@ -104,6 +111,7 @@ namespace CareConnect.Services
                 if (additionalData.IsEmployeeAvailabilityIncluded.HasValue && additionalData.IsEmployeeAvailabilityIncluded == true)
                 {
                     additionalData.IncludeList.Add("EmployeeAvailabilities");
+                    additionalData.IncludeList.Add("EmployeeAvailabilities.Service");
                 }
             }
 
@@ -152,7 +160,7 @@ namespace CareConnect.Services
         public override Database.Employee GetByIdWithIncludes(int id)
         {
             return Context.Employees
-                .Include(e => e.EmployeeAvailabilities)
+                .Include(e => e.EmployeeAvailabilities).ThenInclude(e => e.Service)
                 .Include(e => e.EmployeePayHistories)
                 .Include(e => e.Reviews)
                 .Include(e => e.Sessions)
@@ -198,6 +206,84 @@ namespace CareConnect.Services
                 EmployedThisMonth = Context.Employees.Count(e => e.HireDate.Month == now.Month && e.HireDate.Year == now.Year),
                 CurrentlyEmployed = Context.Employees.Count(e => e.EndDate == null),
             };
+        }
+
+        public Models.Responses.Employee CreateEmployeeAvailability(int employeeId, List<EmployeeAvailabilityInsertRequest> availability)
+        {
+            using var transaction = Context.Database.BeginTransaction();
+
+            try
+            {
+                if(availability.Any())
+                {
+                    foreach(var request in availability)
+                    {
+                        _employeeAvailabilityService.Insert(request);
+                    }
+                }
+              
+                Context.SaveChanges();
+
+                transaction.Commit();
+
+                var response = Context.Employees.Include(x => x.User).Include(x => x.EmployeeAvailabilities).ThenInclude(x => x.Service).Where(x => x.EmployeeId == employeeId); 
+
+                return Mapper.Map<Models.Responses.Employee>(response);
+
+            }
+            catch (Exception ex)
+            {
+
+                transaction.Rollback();
+                throw;
+            }
+        }
+
+        public Models.Responses.Employee UpdateEmployeeAvailability(int employeeId, EmployeeAvailabilityChanges availability)
+        {
+            using var transaction = Context.Database.BeginTransaction();
+
+            try
+            {
+                if (availability.toCreate.Any())
+                {
+                    foreach (var request in availability.toCreate)
+                    {
+                        _employeeAvailabilityService.Insert(request);
+                    }
+                }
+
+                if (availability.toUpdate.Any())
+                {
+                    foreach (var request in availability.toUpdate)
+                    {
+                        _employeeAvailabilityService.Update(request.Key, request.Value);
+                    }
+                }
+
+                if (availability.toDelete.Any())
+                {
+                    foreach (var request in availability.toDelete)
+                    {
+                        _employeeAvailabilityService.Delete(request);
+                    }
+                }
+
+                Context.SaveChanges();
+
+                transaction.Commit();
+                
+                var response = Context.Employees.Include(x => x.User).Include(x => x.EmployeeAvailabilities).ThenInclude(x => x.Service).FirstOrDefault(x => x.EmployeeId == employeeId);
+
+                return Mapper.Map<Models.Responses.Employee>(response);
+
+            }
+            catch (Exception ex)
+            {
+
+                transaction.Rollback();
+                throw;
+            }
         }
     }
 }

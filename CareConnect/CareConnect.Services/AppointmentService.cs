@@ -56,12 +56,12 @@ namespace CareConnect.Services
                 query = query.Where(x => x.EmployeeAvailability.Employee.User.LastName.StartsWith(search.EmployeeLastNameGTE));
             }
 
-            if (search?.StartTime.HasValue == true)
+            if (!string.IsNullOrWhiteSpace(search?.StartTime))
             {
                 query = query.Where(x => x.EmployeeAvailability.StartTime == search.StartTime);
             }
 
-            if (search?.EndTime.HasValue == true)
+            if (!string.IsNullOrWhiteSpace(search?.EndTime))
             {
                 query = query.Where(x => x.EmployeeAvailability.EndTime == search.EndTime);
             }

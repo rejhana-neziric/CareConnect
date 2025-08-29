@@ -300,27 +300,24 @@ namespace CareConnect.Services.Migrations
                         .HasColumnType("int")
                         .HasColumnName("EmployeeID");
 
-                    b.Property<DateTime>("EndTime")
-                        .HasColumnType("datetime");
-
-                    b.Property<bool>("IsAvailable")
-                        .HasColumnType("bit");
+                    b.Property<string>("EndTime")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
 
                     b.Property<DateTime>("ModifiedDate")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime")
                         .HasDefaultValueSql("(getdate())");
 
-                    b.Property<string>("ReasonOfUnavailability")
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
-
                     b.Property<int?>("ServiceId")
                         .HasColumnType("int")
                         .HasColumnName("ServiceID");
 
-                    b.Property<DateTime>("StartTime")
-                        .HasColumnType("datetime");
+                    b.Property<string>("StartTime")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
 
                     b.HasKey("EmployeeAvailabilityId")
                         .HasName("PK__Employee__A9E4B8771C174821");

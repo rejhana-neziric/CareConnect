@@ -6,19 +6,17 @@ namespace CareConnect.Models.Responses
 {
     public class EmployeeAvailability
     {
+        public int EmployeeAvailabilityId { get; set; }
+
         public string DayOfWeek { get; set; } = null!;
 
-        public DateTime StartTime { get; set; }
+        public string StartTime { get; set; } = null!;
 
-        public DateTime EndTime { get; set; }
-
-        public bool IsAvailable { get; set; }
-
-        public string? ReasonOfUnavailability { get; set; }
+        public string EndTime { get; set; } = null!;
 
         public DateTime ModifiedDate { get; set; }
 
-        public virtual Employee Employee { get; set; } = null!;
+        //public virtual Employee Employee { get; set; } = null!;
 
         public virtual Service? Service { get; set; }
     }

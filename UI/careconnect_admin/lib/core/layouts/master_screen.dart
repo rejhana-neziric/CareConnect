@@ -1,9 +1,11 @@
 import 'package:careconnect_admin/screens/client_list_screen.dart';
+import 'package:careconnect_admin/screens/employee_availability/employee_availability_details_screen.dart';
+import 'package:careconnect_admin/screens/employee_availability/employee_availability_list_screen.dart';
 import 'package:careconnect_admin/screens/employee_list_screen.dart';
 import 'package:careconnect_admin/screens/review_list_screen.dart';
 import 'package:careconnect_admin/screens/services_list_screen.dart';
 import 'package:careconnect_admin/screens/workshops_list_screen.dart';
-import 'package:careconnect_admin/theme/theme_notifier.dart';
+import 'package:careconnect_admin/core/theme/theme_notifier.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -92,6 +94,26 @@ class _MasterScreenState extends State<MasterScreen> {
                             ),
                           );
                         },
+                      ),
+                      ListTile(
+                        leading: Icon(Icons.badge),
+                        title: Text("Employee Availability"),
+                        onTap: () => Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (context) =>
+                                EmployeeAvailabilityListScreen(),
+                          ),
+                        ),
+                      ),
+                      ListTile(
+                        leading: Icon(Icons.badge),
+                        title: Text("Employee Availability Details"),
+                        onTap: () => Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (context) =>
+                                EmployeeAvailabilityDetailsScreen(),
+                          ),
+                        ),
                       ),
                       ListTile(
                         leading: Icon(Icons.group),

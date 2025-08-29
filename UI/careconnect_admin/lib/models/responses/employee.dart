@@ -1,3 +1,4 @@
+import 'package:careconnect_admin/models/responses/employee_availability.dart';
 import 'package:careconnect_admin/models/responses/qualification.dart';
 import 'package:careconnect_admin/models/responses/user.dart';
 import 'package:json_annotation/json_annotation.dart';
@@ -12,6 +13,7 @@ class Employee {
   final DateTime modifiedDate;
   final User? user;
   final Qualification? qualification;
+  List<EmployeeAvailability> employeeAvailabilities;
 
   bool get employed => endDate == null;
 
@@ -22,6 +24,7 @@ class Employee {
     required this.modifiedDate,
     this.user,
     this.qualification,
+    required this.employeeAvailabilities,
   });
 
   factory Employee.fromJson(Map<String, dynamic> json) =>

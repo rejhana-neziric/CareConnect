@@ -28,19 +28,14 @@ namespace CareConnect.Services
                 query = query.Where(x => x.DayOfWeek == search.DayOfWeek);
             }
 
-            if (search?.StartTime.HasValue == true)
+            if (!string.IsNullOrWhiteSpace(search?.StartTime))
             {
                 query = query.Where(x => x.StartTime == search.StartTime);
             }
 
-            if (search?.EndTime.HasValue == true)
+            if (!string.IsNullOrWhiteSpace(search?.EndTime))
             {
                 query = query.Where(x => x.EndTime == search.EndTime);
-            }
-
-            if (search?.IsAvailable.HasValue == true)
-            {
-                query = query.Where(x => x.IsAvailable == search.IsAvailable);
             }
 
             if (!string.IsNullOrWhiteSpace(search?.EmployeeFirstNameGTE))

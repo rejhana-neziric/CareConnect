@@ -1,13 +1,14 @@
-import 'package:careconnect_admin/layouts/master_screen.dart';
+import 'package:careconnect_admin/core/layouts/master_screen.dart';
 import 'package:careconnect_admin/models/responses/search_result.dart';
 import 'package:careconnect_admin/models/responses/service.dart';
 import 'package:careconnect_admin/models/responses/service_type.dart';
 import 'package:careconnect_admin/providers/service_form_provider.dart';
 import 'package:careconnect_admin/providers/service_provider.dart';
 import 'package:careconnect_admin/providers/service_type_provider.dart';
-import 'package:careconnect_admin/theme/app_colors.dart';
-import 'package:careconnect_admin/utils.dart';
+import 'package:careconnect_admin/core/theme/app_colors.dart';
+import 'package:careconnect_admin/core/utils.dart';
 import 'package:careconnect_admin/widgets/confirm_dialog.dart';
+import 'package:careconnect_admin/widgets/custom_checkbox_field.dart';
 import 'package:careconnect_admin/widgets/custom_date_field.dart';
 import 'package:careconnect_admin/widgets/custom_dropdown_field.dart';
 import 'package:careconnect_admin/widgets/custom_text_field.dart';
@@ -172,32 +173,20 @@ class _ServiceDetailsScreenState extends State<ServiceDetailsScreen> {
                           .validateServicWorkshopeName(value),
                       required: true,
                     ),
-                    // CustomTextField(
-                    //   width: 600,
-                    //   name: 'serviceTypeId',
-                    //   label: 'Service Type',
-                    //   // validator: (value) => serviceFormProvider
-                    //   //     .validateServicWorkshopeName(value),
-                    //   required: true,
-                    // ),
+
                     if (widget.service != null)
                       CustomDropdownField<int>(
                         width: 600,
                         name: 'serviceTypeId',
                         label: 'Service Type',
                         items: buildServiceTypeItems(serviceTypes),
-                        // initialValue: currentService
-                        //     .serviceTypeId, // Make sure this matches one of the item values
+
                         required: true,
                         validator: (value) {
                           if (value == null) return 'Service type is required';
                           return null;
                         },
                       ),
-                    // buildServiceTypeDropdown(
-                    //   serviceTypes: serviceTypes,
-                    //   service: widget.service!,
-                    // ),
                     CustomTextField(
                       width: 600,
                       name: 'description',
@@ -218,15 +207,10 @@ class _ServiceDetailsScreenState extends State<ServiceDetailsScreen> {
                       label: 'Member Price',
                       validator: serviceFormProvider.validatePrice,
                     ),
-                    CustomDropdownField<bool>(
+                    CustomCheckboxField(
                       width: 600,
                       name: 'isActive',
-                      label: 'Availability',
-                      items: [
-                        DropdownMenuItem(value: true, child: Text('Active')),
-                        DropdownMenuItem(value: false, child: Text('Inactive')),
-                      ],
-                      validator: serviceFormProvider.validateNonEmptyBool,
+                      label: "Is Service Active",
                     ),
                     if (serviceFormProvider.isUpdate)
                       CustomDateField(
@@ -251,39 +235,11 @@ class _ServiceDetailsScreenState extends State<ServiceDetailsScreen> {
   ) {
     return serviceTypes.map((serviceType) {
       return DropdownMenuItem<int>(
-        value: serviceType
-            .serviceTypeId, // This should be the actual ID from your model
-        child: Text(serviceType.name), // This is what gets displayed
+        value: serviceType.serviceTypeId,
+        child: Text(serviceType.name),
       );
     }).toList();
   }
-
-  // Widget buildServiceTypeDropdown({
-  //   required List<ServiceType> serviceTypes,
-  //   required Service service,
-  // }) {
-  //   return CustomDropdownField<int>(
-  //     width: 400,
-  //     name: "serviceTypeId",
-  //     label: "Service Type",
-  //     required: true,
-
-  //     items: serviceTypes.map((type) {
-  //       return DropdownMenuItem<int>(
-  //         value: type.serviceTypeId,
-  //         child: Text(type.name),
-  //       );
-  //     }).toList(),
-
-  //     initialValue: serviceTypes.indexWhere(
-  //       (type) => type.serviceTypeId == service.serviceTypeId,
-  //     ),
-  //     validator: (value) {
-  //       if (value == null) return "Please select a service type";
-  //       return null;
-  //     },
-  //   );
-  // }
 
   Widget _actionButtons() {
     final theme = Theme.of(context);

@@ -245,13 +245,12 @@ public partial class CareConnectContext : DbContext
             entity.Property(e => e.EmployeeAvailabilityId).HasColumnName("EmployeeAvailabilityID");
             entity.Property(e => e.DayOfWeek).HasMaxLength(20);
             entity.Property(e => e.EmployeeId).HasColumnName("EmployeeID");
-            entity.Property(e => e.EndTime).HasColumnType("datetime");
+            entity.Property(e => e.EndTime).HasMaxLength(20);
             entity.Property(e => e.ModifiedDate)
                 .HasDefaultValueSql("(getdate())")
                 .HasColumnType("datetime");
-            entity.Property(e => e.ReasonOfUnavailability).HasMaxLength(500);
             entity.Property(e => e.ServiceId).HasColumnName("ServiceID");
-            entity.Property(e => e.StartTime).HasColumnType("datetime");
+            entity.Property(e => e.StartTime).HasMaxLength(20);
 
             entity.HasOne(d => d.Employee).WithMany(p => p.EmployeeAvailabilities)
                 .HasForeignKey(d => d.EmployeeId)

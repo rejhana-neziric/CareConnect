@@ -7,24 +7,24 @@ namespace CareConnect.Models.SearchObjects
 {
     public class AppointmentSearchObject : BaseSearchObject<AppointmentAdditionalData>
     {
-        public string? AppointmentType { get; set; } = null!;
+        public string? AppointmentType { get; set; } 
 
         public DateTime? DateGTE { get; set; }
 
         public DateTime? DateLTE { get; set; }
 
-        public string? AttendanceStatusName { get; set; } = null!;
+        public string? AttendanceStatusName { get; set; }
 
-        public string? EmployeeFirstNameGTE { get; set; } = null!;
+        public string? EmployeeFirstNameGTE { get; set; }
 
-        public string? EmployeeLastNameGTE { get; set; } = null!;
+        public string? EmployeeLastNameGTE { get; set; } 
 
-        public DateTime? StartTime { get; set; }
+        public string? StartTime { get; set; }
 
-        public DateTime? EndTime { get; set; }
+        public string? EndTime { get; set; }
 
-        public string? UserFirstNameGTE { get; set; } = null!;
+        public string? UserFirstNameGTE { get; set; } 
 
-        public string? UserLastNameGTE { get; set; } = null!;
+        public string? UserLastNameGTE { get; set; }
     }
 }

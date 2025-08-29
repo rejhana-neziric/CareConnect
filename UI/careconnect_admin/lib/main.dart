@@ -3,6 +3,8 @@ import 'package:careconnect_admin/providers/children_diagnosis_provider.dart';
 import 'package:careconnect_admin/providers/client_provider.dart';
 import 'package:careconnect_admin/providers/clients_child_form_provider.dart';
 import 'package:careconnect_admin/providers/clients_child_provider.dart';
+import 'package:careconnect_admin/providers/employee_availability_provider.dart';
+import 'package:careconnect_admin/providers/employee_form_availability_provider.dart';
 import 'package:careconnect_admin/providers/employee_form_provider.dart';
 import 'package:careconnect_admin/providers/employee_provider.dart';
 import 'package:careconnect_admin/providers/participant_provider.dart';
@@ -14,8 +16,8 @@ import 'package:careconnect_admin/providers/service_type_provider.dart';
 import 'package:careconnect_admin/providers/workshop_form_provider.dart';
 import 'package:careconnect_admin/providers/workshop_provider.dart';
 import 'package:careconnect_admin/screens/login_screen.dart';
-import 'package:careconnect_admin/theme/app_colors.dart';
-import 'package:careconnect_admin/theme/theme_notifier.dart';
+import 'package:careconnect_admin/core/theme/app_colors.dart';
+import 'package:careconnect_admin/core/theme/theme_notifier.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -29,24 +31,32 @@ void main() {
         ChangeNotifierProvider<AttendanceStatusProvider>(
           create: (_) => AttendanceStatusProvider(),
         ),
-        ChangeNotifierProvider(create: (_) => EmployeeFormProvider()),
+        ChangeNotifierProvider<EmployeeFormProvider>(
+          create: (_) => EmployeeFormProvider(),
+        ),
         ChangeNotifierProvider<ClientProvider>(create: (_) => ClientProvider()),
         ChangeNotifierProvider<ClientsChildProvider>(
           create: (_) => ClientsChildProvider(),
         ),
-        ChangeNotifierProvider(create: (_) => ClientsChildFormProvider()),
+        ChangeNotifierProvider<ClientsChildFormProvider>(
+          create: (_) => ClientsChildFormProvider(),
+        ),
         ChangeNotifierProvider<ChildrenDiagnosisProvider>(
           create: (_) => ChildrenDiagnosisProvider(),
         ),
         ChangeNotifierProvider<ServiceProvider>(
           create: (_) => ServiceProvider(),
         ),
-        ChangeNotifierProvider(create: (_) => ServiceFormProvider()),
+        ChangeNotifierProvider<ServiceFormProvider>(
+          create: (_) => ServiceFormProvider(),
+        ),
         ChangeNotifierProvider(create: (_) => ThemeNotifier()),
         ChangeNotifierProvider<WorkshopProvider>(
           create: (_) => WorkshopProvider(),
         ),
-        ChangeNotifierProvider(create: (_) => WorkshopFormProvider()),
+        ChangeNotifierProvider<WorkshopFormProvider>(
+          create: (_) => WorkshopFormProvider(),
+        ),
         ChangeNotifierProvider<ParticipantProvider>(
           create: (_) => ParticipantProvider(),
         ),
@@ -54,7 +64,15 @@ void main() {
         ChangeNotifierProvider<ServiceTypeProvider>(
           create: (_) => ServiceTypeProvider(),
         ),
-        ChangeNotifierProvider(create: (_) => ServiceTypeFromProvider()),
+        ChangeNotifierProvider<ServiceTypeFromProvider>(
+          create: (_) => ServiceTypeFromProvider(),
+        ),
+        ChangeNotifierProvider<EmployeeAvailabilityProvider>(
+          create: (_) => EmployeeAvailabilityProvider(),
+        ),
+        ChangeNotifierProvider<EmployeeFormAvailabilityProvider>(
+          create: (_) => EmployeeFormAvailabilityProvider(),
+        ),
       ],
       child: const MyApp(),
     ),

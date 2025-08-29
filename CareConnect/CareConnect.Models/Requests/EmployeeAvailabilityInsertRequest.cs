@@ -21,10 +21,6 @@ namespace CareConnect.Models.Requests
         [RegularExpression(@"^\d{2}:\d{2}(:\d{2})?$", ErrorMessage = "StartTime must be in format HH:mm or HH:mm:ss.")]
         public string EndTime { get; set; }
 
-        public bool IsAvailable { get; set; }
-
-        public string? ReasonOfUnavailability { get; set; }
-
         [JsonIgnore]
         public DateTime ModifiedDate { get; set; } = DateTime.Now; 
     }

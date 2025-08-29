@@ -1,11 +1,12 @@
-import 'package:careconnect_admin/layouts/master_screen.dart';
+import 'package:careconnect_admin/core/layouts/master_screen.dart';
 import 'package:careconnect_admin/models/responses/employee.dart';
 import 'package:careconnect_admin/models/responses/search_result.dart';
 import 'package:careconnect_admin/providers/employee_form_provider.dart';
 import 'package:careconnect_admin/providers/employee_provider.dart';
-import 'package:careconnect_admin/theme/app_colors.dart';
-import 'package:careconnect_admin/utils.dart';
+import 'package:careconnect_admin/core/theme/app_colors.dart';
+import 'package:careconnect_admin/core/utils.dart';
 import 'package:careconnect_admin/widgets/confirm_dialog.dart';
+import 'package:careconnect_admin/widgets/custom_checkbox_field.dart';
 import 'package:careconnect_admin/widgets/custom_date_field.dart';
 import 'package:careconnect_admin/widgets/custom_dropdown_field.dart';
 import 'package:careconnect_admin/widgets/custom_text_field.dart';
@@ -236,15 +237,10 @@ class _EmployeeDetailsScreenState extends State<EmployeeDetailsScreen> {
                     enabled: !employeeFormProvider.isUpdate,
                   ),
                   if (employeeFormProvider.isUpdate)
-                    CustomDropdownField<bool>(
+                    CustomCheckboxField(
                       width: 400,
                       name: 'status',
-                      label: 'Status',
-                      items: [
-                        DropdownMenuItem(value: true, child: Text('Active')),
-                        DropdownMenuItem(value: false, child: Text('Inactive')),
-                      ],
-                      validator: employeeFormProvider.validateNonEmptyBool,
+                      label: "Is Employee Active",
                     ),
                 ],
               ),

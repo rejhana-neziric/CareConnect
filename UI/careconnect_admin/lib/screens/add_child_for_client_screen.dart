@@ -1,11 +1,11 @@
-import 'package:careconnect_admin/layouts/master_screen.dart';
+import 'package:careconnect_admin/core/layouts/master_screen.dart';
 import 'package:careconnect_admin/models/responses/client.dart';
 import 'package:careconnect_admin/models/responses/clients_child.dart';
 import 'package:careconnect_admin/models/responses/search_result.dart';
 import 'package:careconnect_admin/providers/clients_child_form_provider.dart';
 import 'package:careconnect_admin/providers/clients_child_provider.dart';
-import 'package:careconnect_admin/theme/app_colors.dart';
-import 'package:careconnect_admin/utils.dart';
+import 'package:careconnect_admin/core/theme/app_colors.dart';
+import 'package:careconnect_admin/core/utils.dart';
 import 'package:careconnect_admin/widgets/confirm_dialog.dart';
 import 'package:careconnect_admin/widgets/custom_date_field.dart';
 import 'package:careconnect_admin/widgets/custom_dropdown_field.dart';

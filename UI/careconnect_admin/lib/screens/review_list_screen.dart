@@ -1,8 +1,8 @@
-import 'package:careconnect_admin/layouts/master_screen.dart';
+import 'package:careconnect_admin/core/layouts/master_screen.dart';
 import 'package:careconnect_admin/models/responses/review.dart';
 import 'package:careconnect_admin/models/responses/search_result.dart';
 import 'package:careconnect_admin/providers/review_provider.dart';
-import 'package:careconnect_admin/theme/app_colors.dart';
+import 'package:careconnect_admin/core/theme/app_colors.dart';
 import 'package:careconnect_admin/widgets/confirm_dialog.dart';
 import 'package:careconnect_admin/widgets/custom_dropdown_fliter.dart';
 import 'package:careconnect_admin/widgets/no_results.dart';

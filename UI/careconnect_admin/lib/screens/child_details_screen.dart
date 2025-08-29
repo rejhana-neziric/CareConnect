@@ -1,4 +1,4 @@
-import 'package:careconnect_admin/layouts/master_screen.dart';
+import 'package:careconnect_admin/core/layouts/master_screen.dart';
 import 'package:careconnect_admin/models/responses/appointment.dart';
 import 'package:careconnect_admin/models/responses/child.dart';
 import 'package:careconnect_admin/models/responses/children_diagnosis.dart';
@@ -10,7 +10,7 @@ import 'package:careconnect_admin/models/search_objects/children_diagnosis_searc
 import 'package:careconnect_admin/providers/children_diagnosis_provider.dart';
 import 'package:careconnect_admin/providers/clients_child_form_provider.dart';
 import 'package:careconnect_admin/providers/clients_child_provider.dart';
-import 'package:careconnect_admin/theme/app_colors.dart';
+import 'package:careconnect_admin/core/theme/app_colors.dart';
 import 'package:careconnect_admin/widgets/primary_button.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';

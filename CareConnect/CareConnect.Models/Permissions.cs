@@ -69,6 +69,8 @@ public static class Permissions
         public const string Update = "Permissions.Employee.Update";
         public const string Delete = "Permissions.Employee.Delete";
         public const string GetStatistics = "Permissions.Employee.GetStatistics";
+        public const string CreateEmployeeAvailability = "Permissions.Employee.CreateEmployeeAvailability";
+        public const string UpdateEmployeeAvailability = "Permissions.Employee.UpdateEmployeeAvailability";
     }
     public static class EmployeePayHistory
     {

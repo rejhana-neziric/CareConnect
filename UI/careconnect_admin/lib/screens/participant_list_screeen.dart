@@ -1,4 +1,4 @@
-import 'package:careconnect_admin/layouts/master_screen.dart';
+import 'package:careconnect_admin/core/layouts/master_screen.dart';
 import 'package:careconnect_admin/models/responses/attendance_status.dart';
 import 'package:careconnect_admin/models/responses/participant.dart';
 import 'package:careconnect_admin/models/responses/search_result.dart';

@@ -9,13 +9,11 @@ part of 'employee_availability.dart';
 EmployeeAvailability _$EmployeeAvailabilityFromJson(
   Map<String, dynamic> json,
 ) => EmployeeAvailability(
+  employeeAvailabilityId: (json['employeeAvailabilityId'] as num).toInt(),
   dayOfWeek: json['dayOfWeek'] as String,
-  startTime: DateTime.parse(json['startTime'] as String),
-  endTime: DateTime.parse(json['endTime'] as String),
-  isAvailable: json['isAvailable'] as bool,
-  reasonOfUnavailability: json['reasonOfUnavailability'] as String?,
+  startTime: json['startTime'] as String,
+  endTime: json['endTime'] as String,
   modifiedDate: DateTime.parse(json['modifiedDate'] as String),
-  employee: Employee.fromJson(json['employee'] as Map<String, dynamic>),
   service: json['service'] == null
       ? null
       : Service.fromJson(json['service'] as Map<String, dynamic>),
@@ -24,12 +22,10 @@ EmployeeAvailability _$EmployeeAvailabilityFromJson(
 Map<String, dynamic> _$EmployeeAvailabilityToJson(
   EmployeeAvailability instance,
 ) => <String, dynamic>{
+  'employeeAvailabilityId': instance.employeeAvailabilityId,
   'dayOfWeek': instance.dayOfWeek,
-  'startTime': instance.startTime.toIso8601String(),
-  'endTime': instance.endTime.toIso8601String(),
-  'isAvailable': instance.isAvailable,
-  'reasonOfUnavailability': instance.reasonOfUnavailability,
+  'startTime': instance.startTime,
+  'endTime': instance.endTime,
   'modifiedDate': instance.modifiedDate.toIso8601String(),
-  'employee': instance.employee.toJson(),
   'service': instance.service?.toJson(),
 };
