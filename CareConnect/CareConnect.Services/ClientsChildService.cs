@@ -117,10 +117,10 @@ namespace CareConnect.Services
                 }
 
 
-                if (additionalData.IsAppoinmentIncluded.HasValue && additionalData.IsAppoinmentIncluded == true)
-                {
-                    additionalData.IncludeList.Add("Appointments");
-                }
+                //if (additionalData.IsAppoinmentIncluded.HasValue && additionalData.IsAppoinmentIncluded == true)
+                //{
+                //    additionalData.IncludeList.Add("Appointments");
+                //}
             }
 
             base.AddInclude(additionalData, ref query);
@@ -305,6 +305,30 @@ namespace CareConnect.Services
             if (response == null) return null;
 
             return Mapper.Map<Models.Responses.ClientsChild>(response);
+        }
+
+        public List<Models.Responses.Appointment> GetAppointment(int clientId, int childId)
+        {
+            var client = Context.Clients.Find(clientId);
+
+            var child = Context.Children.Find(childId);
+
+            var clientsChild = Context.ClientsChildren.Where(x => x.ClientId == clientId && x.ChildId == childId).FirstOrDefault(); 
+
+            if (client == null || child == null || clientsChild == null) return null;
+
+            var response = Context.ClientsChildren.Where(x => x.ClientId == clientId && x.ChildId == childId).SelectMany(x => x.Appointments).ToList();
+
+            if (response.Any() == false) return null;
+
+            List<Models.Responses.Appointment> list = new List<Models.Responses.Appointment>();
+
+            foreach (var appointment in response)
+            {
+                list.Add(Mapper.Map<Models.Responses.Appointment>(appointment));
+            }
+
+            return list;
         }
 
     }

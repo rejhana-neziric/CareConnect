@@ -108,11 +108,11 @@ namespace CareConnect.Services
                     additionalData.IncludeList.Add("Qualification");
                 }
 
-                if (additionalData.IsEmployeeAvailabilityIncluded.HasValue && additionalData.IsEmployeeAvailabilityIncluded == true)
-                {
-                    additionalData.IncludeList.Add("EmployeeAvailabilities");
-                    additionalData.IncludeList.Add("EmployeeAvailabilities.Service");
-                }
+                //if (additionalData.IsEmployeeAvailabilityIncluded.HasValue && additionalData.IsEmployeeAvailabilityIncluded == true)
+                //{
+                //    additionalData.IncludeList.Add("EmployeeAvailabilities");
+                //    additionalData.IncludeList.Add("EmployeeAvailabilities.Service");
+                //}
             }
 
             base.AddInclude(additionalData, ref query);
@@ -206,6 +206,26 @@ namespace CareConnect.Services
                 EmployedThisMonth = Context.Employees.Count(e => e.HireDate.Month == now.Month && e.HireDate.Year == now.Year),
                 CurrentlyEmployed = Context.Employees.Count(e => e.EndDate == null),
             };
+        }
+
+        public List<Models.Responses.EmployeeAvailability> GetEmployeeAvailability(int employeeId)
+        {
+            var employee = Context.Employees.Find(employeeId);
+
+            if (employee == null) return null; 
+
+            var response = Context.EmployeeAvailabilities.Where(x => x.EmployeeId == employeeId).Include(x => x.Service).ToList();
+
+            if (response.Any() == false) return null; 
+
+            List<Models.Responses.EmployeeAvailability> list = new List<Models.Responses.EmployeeAvailability>();   
+
+            foreach (var availability in response)
+            {
+                list.Add(Mapper.Map<Models.Responses.EmployeeAvailability>(availability));  
+            }
+
+            return list;    
         }
 
         public Models.Responses.Employee CreateEmployeeAvailability(int employeeId, List<EmployeeAvailabilityInsertRequest> availability)

@@ -1,10 +1,12 @@
 import 'package:careconnect_admin/core/layouts/master_screen.dart';
-import 'package:careconnect_admin/models/responses/attendance_status.dart';
-import 'package:careconnect_admin/models/responses/participant.dart';
+import 'package:careconnect_admin/models/enums/appointment_status.dart';
+import 'package:careconnect_admin/models/responses/appointment.dart';
+import 'package:careconnect_admin/models/responses/child.dart';
+import 'package:careconnect_admin/models/responses/employee.dart';
 import 'package:careconnect_admin/models/responses/search_result.dart';
-import 'package:careconnect_admin/models/responses/workshop.dart';
-import 'package:careconnect_admin/providers/attendance_status_provider.dart';
-import 'package:careconnect_admin/providers/participant_provider.dart';
+import 'package:careconnect_admin/providers/appointment_provider.dart';
+import 'package:careconnect_admin/providers/child_provider.dart';
+import 'package:careconnect_admin/providers/employee_provider.dart';
 import 'package:careconnect_admin/widgets/custom_dropdown_fliter.dart';
 import 'package:careconnect_admin/widgets/no_results.dart';
 import 'package:careconnect_admin/widgets/primary_button.dart';
@@ -13,19 +15,19 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
-class ParticipantListScreeen extends StatefulWidget {
-  final Workshop workshop;
-  const ParticipantListScreeen({super.key, required this.workshop});
+class AppointmentListScreen extends StatefulWidget {
+  const AppointmentListScreen({super.key});
 
   @override
-  State<ParticipantListScreeen> createState() => _ParticipantListScreeenState();
+  State<AppointmentListScreen> createState() => _AppointmentListScreenState();
 }
 
-class _ParticipantListScreeenState extends State<ParticipantListScreeen> {
-  late ParticipantProvider participantProvider;
-  late AttendanceStatusProvider attendanceStatusProvider;
+class _AppointmentListScreenState extends State<AppointmentListScreen> {
+  late AppointmentProvider appointmentProvider;
+  late EmployeeProvider employeeProvider;
+  late ChildProvider childProvider;
 
-  SearchResult<Participant>? result;
+  SearchResult<Appointment>? result;
   int currentPage = 0;
 
   bool isLoading = false;
@@ -35,21 +37,41 @@ class _ParticipantListScreeenState extends State<ParticipantListScreeen> {
   String? _sortBy;
   bool _sortAscending = true;
 
-  List<AttendanceStatus> attendanceStatus = [];
-  AttendanceStatus? selectedAttendanceStatus;
-  Map<String, String?> attendanceOptions = {};
-
   String? selectedSortingOption;
 
   final Map<String, String?> sortingOptions = {
     'Not sorted': null,
-    'First Name': 'firstName',
-    'Last Name': 'lastName',
-    'Registration Date': 'date',
-    'Attendance Status': 'status',
+    'Employee First Name': 'employeeFirstName',
+    'Employee Last Name': 'employeeLastName',
+    'Clients First Name': 'clientFirstName',
+    'Clients Last Name': 'clientLastName',
+    'Childs First Name': 'childFirstName',
+    'Childs Last Name': 'childLastName',
+    'Date': 'date',
+    'Status': 'status',
   };
 
-  final GlobalKey<_ParticipantTableState> tableKey = GlobalKey();
+  List<Employee> employees = [];
+  Map<String, String?> employeesOption = {};
+  String? selectedEmployee;
+
+  List<Child> children = [];
+  Map<String, String?> childrenOption = {};
+  String? selectedChild;
+
+  String? selectedStatusOption;
+
+  final Map<String, String?> statusOptions = {
+    'All Status': null,
+    'Scheduled': 'Scheduled',
+    'Confirmed': 'Confirmed',
+    'Rescheduled': 'Rescheduled',
+    'Canceled': 'Canceled',
+    'Started': 'Started',
+    'Completed': 'Completed',
+  };
+
+  final GlobalKey<_AppointmentTableState> tableKey = GlobalKey();
 
   @override
   void didChangeDependencies() {
@@ -59,10 +81,12 @@ class _ParticipantListScreeenState extends State<ParticipantListScreeen> {
   @override
   void initState() {
     super.initState();
-    participantProvider = context.read<ParticipantProvider>();
-    attendanceStatusProvider = context.read<AttendanceStatusProvider>();
+    appointmentProvider = context.read<AppointmentProvider>();
+    employeeProvider = context.read<EmployeeProvider>();
+    childProvider = context.read<ChildProvider>();
     loadData();
-    loadAttendanceStatus();
+    loadEmployees();
+    loadChildren();
   }
 
   Future<void> loadData({int page = 0}) async {
@@ -73,18 +97,34 @@ class _ParticipantListScreeenState extends State<ParticipantListScreeen> {
     try {
       tableKey.currentState?.currentPage = 0;
 
-      final participantProvider = Provider.of<ParticipantProvider>(
+      final appointmentProvider = Provider.of<AppointmentProvider>(
         context,
         listen: false,
       );
 
-      final finalResult = await participantProvider.loadData(
+      List<String> partsEmployee = selectedEmployee?.split(" ") ?? [];
+      List<String> partsChild = selectedChild?.split(" ") ?? [];
+
+      final finalResult = await appointmentProvider.loadData(
         fts: _ftsController.text,
-        workshopId: widget.workshop.workshopId,
-        userFirstNameGTE: _ftsController.text,
-        userLastNameGTE: _ftsController.text,
-        attendanceStatusNameGTE: selectedAttendanceStatus?.name,
+        appointmentType: _ftsController.text,
+        employeeFirstName: partsEmployee.isNotEmpty == true
+            ? partsEmployee.first
+            : null,
+        employeeLastName: partsEmployee.length > 1
+            ? partsEmployee.sublist(1).join(" ")
+            : null,
+        childFirstName: partsChild.isNotEmpty == true ? partsChild.first : null,
+        childLastName: partsChild.length > 1
+            ? partsChild.sublist(1).join(" ")
+            : null,
+        dateGTE: null,
+        dateLTE: null,
+        attendanceStatusName: null,
+        startTime: null,
+        endTime: null,
         page: page,
+        status: selectedStatusOption,
         sortBy: _sortBy,
         sortAscending: _sortAscending,
       );
@@ -101,15 +141,32 @@ class _ParticipantListScreeenState extends State<ParticipantListScreeen> {
     }
   }
 
-  Future<void> loadAttendanceStatus() async {
-    var result = await attendanceStatusProvider.get();
+  Future<void> loadEmployees() async {
+    final response = await employeeProvider.loadData();
 
     setState(() {
-      attendanceStatus = result.result;
-      attendanceOptions = {
+      employees = response?.result ?? [];
+
+      employeesOption = {
         'All': null,
-        for (final status in attendanceStatus)
-          if (status.name != null) status.name!: status.name,
+        for (final employee in employees)
+          '${employee.user?.firstName} ${employee.user?.lastName}':
+              '${employee.user?.firstName} ${employee.user?.lastName}',
+      };
+    });
+  }
+
+  Future<void> loadChildren() async {
+    final response = await childProvider.get();
+
+    setState(() {
+      children = response.result;
+
+      childrenOption = {
+        'All': null,
+        for (final child in children)
+          '${child.firstName} ${child.lastName}':
+              '${child.firstName} ${child.lastName}',
       };
     });
   }
@@ -120,35 +177,21 @@ class _ParticipantListScreeenState extends State<ParticipantListScreeen> {
     final colorScheme = theme.colorScheme;
 
     return MasterScreen(
-      "Participants",
+      'Appointments',
       Center(
         child: Column(
           mainAxisSize: MainAxisSize.max,
           children: [
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: SizedBox(
-                width: 1200,
-                height: 50,
-                child: Text(
-                  "${widget.workshop.name}: ${result?.totalCount == 0 ? 'No participant found' : '${result?.totalCount} participant found'}",
-                  style: TextStyle(
-                    color: colorScheme.primary,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 20,
-                  ),
-                ),
-              ),
-            ),
             _buildSearch(colorScheme),
-            Consumer<ParticipantProvider>(
-              builder: (context, clientsChildProvider, child) {
-                return _buildResultView(widget.workshop);
+            Consumer<AppointmentProvider>(
+              builder: (context, appointmentProvider, child) {
+                return _buildResultView();
               },
             ),
           ],
         ),
       ),
+      button: PrimaryButton(onPressed: () {}, label: 'Add Appointment'),
     );
   }
 
@@ -167,44 +210,65 @@ class _ParticipantListScreeenState extends State<ParticipantListScreeen> {
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              // Search field
-              SizedBox(
-                width: 500,
-                child: TextField(
-                  controller: _ftsController,
-                  decoration: InputDecoration(
-                    labelText: "Search First Name and Last Name",
-                    border: OutlineInputBorder(),
-                    prefixIcon: Icon(Icons.search),
-                    filled: true,
-                    fillColor: colorScheme.surfaceContainerLowest,
-                  ),
-                  onChanged: (value) => loadData(),
-                ),
-              ),
-              const SizedBox(width: 8),
-              //Sort By Attendance Status
+              // Employee
               SizedBox(
                 width: 220,
                 child: CustomDropdownFliter(
-                  selectedValue: selectedAttendanceStatus?.name,
-                  options: attendanceOptions,
-                  name: "Attendance Status: ",
-                  onChanged: (newStatus) {
+                  selectedValue: selectedEmployee,
+                  options: employeesOption,
+                  name: "Employee: ",
+                  onChanged: (newEmployee) {
                     setState(() {
-                      final idx = attendanceStatus.indexWhere(
-                        (s) => s.name == newStatus,
-                      );
-                      selectedAttendanceStatus = idx == -1
-                          ? null
-                          : attendanceStatus[idx];
+                      selectedEmployee = newEmployee;
                     });
                     loadData();
                   },
                 ),
               ),
+
               const SizedBox(width: 8),
-              //Sort By Dropdown
+
+              // Child
+              SizedBox(
+                width: 220,
+                child: CustomDropdownFliter(
+                  selectedValue: selectedChild,
+                  options: childrenOption,
+                  name: "Child: ",
+                  onChanged: (newChild) {
+                    setState(() {
+                      selectedChild = newChild;
+                    });
+                    loadData();
+                  },
+                ),
+              ),
+
+              const SizedBox(width: 8),
+
+              // Status
+              ConstrainedBox(
+                constraints: BoxConstraints(maxWidth: 250),
+                child: Container(
+                  color: colorScheme.surfaceContainerLowest,
+                  width: 180,
+                  child: CustomDropdownFliter(
+                    selectedValue: selectedStatusOption,
+                    options: statusOptions,
+                    name: "Status: ",
+                    onChanged: (newStatus) {
+                      setState(() {
+                        selectedStatusOption = newStatus;
+                      });
+                      loadData();
+                    },
+                  ),
+                ),
+              ),
+
+              const SizedBox(width: 8),
+
+              // Sort By Dropdown
               SizedBox(
                 width: 220,
                 child: CustomDropdownFliter(
@@ -220,7 +284,9 @@ class _ParticipantListScreeenState extends State<ParticipantListScreeen> {
                   },
                 ),
               ),
+
               const SizedBox(width: 8),
+
               // Asc/Desc Toggle
               IconButton(
                 icon: Icon(
@@ -233,13 +299,17 @@ class _ParticipantListScreeenState extends State<ParticipantListScreeen> {
                   loadData();
                 },
               ),
+
               const SizedBox(width: 8),
+
               // Refresh Button
               TextButton.icon(
                 onPressed: () {
                   _ftsController.clear();
                   _sortBy = null;
-                  selectedAttendanceStatus = null;
+                  selectedEmployee = null;
+                  selectedChild = null;
+                  selectedStatusOption = null;
                   selectedSortingOption = null;
                   loadData();
                 },
@@ -259,7 +329,7 @@ class _ParticipantListScreeenState extends State<ParticipantListScreeen> {
     );
   }
 
-  Widget _buildResultView(Workshop workshop) {
+  Widget _buildResultView() {
     if (isLoading) {
       return const Expanded(child: Center(child: CircularProgressIndicator()));
     }
@@ -271,11 +341,10 @@ class _ParticipantListScreeenState extends State<ParticipantListScreeen> {
           child: Padding(
             padding: const EdgeInsets.all(8.0),
             child: SizedBox(
-              width: 1200,
-              child: ParticipantTable(
+              width: 1500,
+              child: AppointmentTable(
                 key: tableKey,
                 result: result,
-                workshop: workshop,
                 onPageChanged: loadData,
               ),
             ),
@@ -288,9 +357,9 @@ class _ParticipantListScreeenState extends State<ParticipantListScreeen> {
       padding: const EdgeInsets.all(128.0),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
-        children: [
+        children: const [
           NoResultsWidget(
-            message: 'No participant found.',
+            message: 'No appointments found.',
             icon: Icons.sentiment_dissatisfied,
           ),
         ],
@@ -299,28 +368,22 @@ class _ParticipantListScreeenState extends State<ParticipantListScreeen> {
   }
 }
 
-class ParticipantTable extends StatefulWidget {
-  final SearchResult<Participant>? result;
-  final Workshop workshop;
+class AppointmentTable extends StatefulWidget {
+  final SearchResult<Appointment>? result;
   final Future<void> Function({int page}) onPageChanged;
 
-  const ParticipantTable({
-    super.key,
-    this.result,
-    required this.workshop,
-    required this.onPageChanged,
-  });
+  const AppointmentTable({super.key, this.result, required this.onPageChanged});
 
   @override
-  State<ParticipantTable> createState() => _ParticipantTableState();
+  State<AppointmentTable> createState() => _AppointmentTableState();
 }
 
-class _ParticipantTableState extends State<ParticipantTable> {
+class _AppointmentTableState extends State<AppointmentTable> {
   final int _pageSize = 10;
   int currentPage = 0;
   bool isLoading = false;
-  ParticipantDataSource? _dataSource;
-  late ParticipantProvider participantProvider;
+  AppointmentDataSource? _dataSource;
+  late AppointmentProvider appointmentProvider;
 
   bool isHoveredParent = false;
   bool isHoveredChild = false;
@@ -329,11 +392,11 @@ class _ParticipantTableState extends State<ParticipantTable> {
   void initState() {
     super.initState();
     _updateDataSource();
-    participantProvider = context.read<ParticipantProvider>();
+    appointmentProvider = context.read<AppointmentProvider>();
   }
 
   @override
-  void didUpdateWidget(ParticipantTable oldWidget) {
+  void didUpdateWidget(AppointmentTable oldWidget) {
     super.didUpdateWidget(oldWidget);
 
     if (oldWidget.result != widget.result) {
@@ -342,12 +405,11 @@ class _ParticipantTableState extends State<ParticipantTable> {
   }
 
   void _updateDataSource() {
-    final participants = widget.result?.result ?? [];
+    final appointments = widget.result?.result ?? [];
     final totalCount = widget.result?.totalCount ?? 0;
 
-    _dataSource = ParticipantDataSource(
-      participants,
-      widget.workshop,
+    _dataSource = AppointmentDataSource(
+      appointments,
       context,
       totalCount,
       onPageChanged: _fetchPage,
@@ -396,9 +458,9 @@ class _ParticipantTableState extends State<ParticipantTable> {
 
   @override
   Widget build(BuildContext context) {
-    final participants = widget.result?.result ?? [];
+    final appointments = widget.result?.result ?? [];
 
-    if (isLoading && participants.isEmpty) {
+    if (isLoading && appointments.isEmpty) {
       return const Center(child: CircularProgressIndicator());
     }
 
@@ -413,19 +475,14 @@ class _ParticipantTableState extends State<ParticipantTable> {
           wrapInCard: false,
           renderEmptyRowsInTheEnd: false,
           columns: [
-            if (widget.workshop.workshopType == 'Children')
-              DataColumn2(label: Text('Child Name')),
-            DataColumn2(
-              label: Text(
-                widget.workshop.workshopType == "Children"
-                    ? 'Parent Name'
-                    : 'Participant Name',
-              ),
-            ),
-            DataColumn2(label: Text('Email')),
-            DataColumn2(label: Text('Attandance Status')),
-            DataColumn2(label: Text('Registration Date')),
-            DataColumn2(label: Text('Details')),
+            DataColumn2(label: Text('Client'), size: ColumnSize.S),
+            DataColumn2(label: Text('Child'), size: ColumnSize.S),
+            DataColumn2(label: Text('Employee'), size: ColumnSize.S),
+            DataColumn2(label: Text('Service'), size: ColumnSize.L),
+            DataColumn2(label: Text('Date'), size: ColumnSize.S),
+            DataColumn2(label: Text('Time'), size: ColumnSize.S),
+            DataColumn2(label: Text('Status'), size: ColumnSize.S),
+            DataColumn2(label: Text('Actions'), size: ColumnSize.S),
           ],
           source: _dataSource!,
           rowsPerPage: _pageSize,
@@ -454,18 +511,16 @@ class _ParticipantTableState extends State<ParticipantTable> {
   }
 }
 
-class ParticipantDataSource extends DataTableSource {
-  final List<Participant> participants;
-  final Workshop workshop;
+class AppointmentDataSource extends DataTableSource {
+  final List<Appointment> appointments;
   final BuildContext context;
   final int? count;
   final Future<void> Function(int page)? onPageChanged;
   final int pageSize;
   final int currentPage;
 
-  ParticipantDataSource(
-    this.participants,
-    this.workshop,
+  AppointmentDataSource(
+    this.appointments,
     this.context,
     this.count, {
     this.onPageChanged,
@@ -483,37 +538,68 @@ class ParticipantDataSource extends DataTableSource {
 
     final localIndex = index % pageSize;
 
-    if (localIndex < 0 || localIndex >= participants.length) return null;
+    if (localIndex < 0 || localIndex >= appointments.length) return null;
 
-    final participant = participants[localIndex];
+    final appointment = appointments[localIndex];
 
     return DataRow.byIndex(
       index: index,
       cells: [
-        if (workshop.workshopType == 'Children')
-          DataCell(
-            Text(
-              "${participant.child?.firstName} ${participant.child?.lastName}",
-            ),
-          ),
-        DataCell(
-          Text("${participant.user?.firstName} ${participant.user?.lastName}"),
-        ),
-        DataCell(Text(participant.user?.email ?? "")),
-        DataCell(Text(participant.attendanceStatus.name ?? "")),
         DataCell(
           Text(
-            DateFormat(
-              'd. M. y.',
-            ).format(participant.registrationDate).toString(),
+            '${appointment.clientsChild.client.user?.firstName} ${appointment.clientsChild.client.user?.lastName}',
           ),
         ),
         DataCell(
-          PrimaryButton(
-            onPressed: () {
-              //todo
+          Text(
+            '${appointment.clientsChild.child.firstName} ${appointment.clientsChild.child.lastName}',
+          ),
+        ),
+        DataCell(
+          Text(
+            '${appointment.employeeAvailability?.employee.user?.firstName} ${appointment.employeeAvailability?.employee.user?.lastName}',
+          ),
+        ),
+        DataCell(
+          Text(appointment.employeeAvailability?.service?.name ?? 'No service'),
+        ),
+        DataCell(
+          Text(DateFormat('d. M. y.').format(appointment.date).toString()),
+        ),
+        DataCell(Text(appointment.employeeAvailability?.startTime ?? '')),
+        DataCell(
+          Container(
+            padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+            decoration: BoxDecoration(
+              color: appointmentStatusFromString(
+                appointment.stateMachine ?? '',
+              ).backgroundColor,
+              border: null,
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: Text(
+              appointmentStatusFromString(appointment.stateMachine ?? '').label,
+              style: TextStyle(
+                color: appointmentStatusFromString(
+                  appointment.stateMachine ?? '',
+                ).textColor,
+              ),
+            ),
+          ),
+        ),
+        DataCell(
+          DropdownButton<String>(
+            hint: Text("Actions"),
+            items: appointmentStatusFromString(appointment.stateMachine ?? '')
+                .allowedActions
+                .map(
+                  (action) =>
+                      DropdownMenuItem(value: action, child: Text(action)),
+                )
+                .toList(),
+            onChanged: (value) {
+              // todo
             },
-            label: 'View Profile',
           ),
         ),
       ],
@@ -524,7 +610,7 @@ class ParticipantDataSource extends DataTableSource {
   bool get isRowCountApproximate => false;
 
   @override
-  int get rowCount => count ?? participants.length;
+  int get rowCount => count ?? appointments.length;
 
   @override
   int get selectedRowCount => 0;

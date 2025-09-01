@@ -15,16 +15,18 @@ namespace CareConnect.Models.SearchObjects
 
         public string? AttendanceStatusName { get; set; }
 
-        public string? EmployeeFirstNameGTE { get; set; }
+        public string? EmployeeFirstName { get; set; }
 
-        public string? EmployeeLastNameGTE { get; set; } 
+        public string? EmployeeLastName { get; set; } 
 
         public string? StartTime { get; set; }
 
         public string? EndTime { get; set; }
 
-        public string? UserFirstNameGTE { get; set; } 
+        public string? Status { get; set; }
 
-        public string? UserLastNameGTE { get; set; }
+        public string? ChildFirstName { get; set; } 
+
+        public string? ChildLastName { get; set; }
     }
 }

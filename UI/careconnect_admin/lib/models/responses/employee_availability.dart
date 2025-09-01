@@ -1,3 +1,4 @@
+import 'package:careconnect_admin/models/responses/employee.dart';
 import 'package:careconnect_admin/models/time_slot.dart';
 import 'package:flutter/material.dart';
 
@@ -15,6 +16,7 @@ class EmployeeAvailability {
   final String endTime;
   final DateTime modifiedDate;
   final Service? service;
+  final Employee employee;
 
   EmployeeAvailability({
     required this.employeeAvailabilityId,
@@ -22,6 +24,7 @@ class EmployeeAvailability {
     required this.startTime,
     required this.endTime,
     required this.modifiedDate,
+    required this.employee,
     this.service,
   });
 

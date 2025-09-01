@@ -41,6 +41,7 @@ public static class Permissions
         public const string Delete = "Permissions.ClientsChild.Delete";
         public const string GetStatistics = "Permissions.ClientsChild.GetStatistics";
         public const string GetClientAndChildByIds = "Permissions.ClientsChild.GetClientAndChildByIds";
+        public const string GetAppointment = "Permissions.ClientsChild.GetAppointment";
     }
     public static class Client
     {
@@ -69,6 +70,7 @@ public static class Permissions
         public const string Update = "Permissions.Employee.Update";
         public const string Delete = "Permissions.Employee.Delete";
         public const string GetStatistics = "Permissions.Employee.GetStatistics";
+        public const string GetEmployeeAvailability = "Permissions.Employee.GetEmployeeAvailability";
         public const string CreateEmployeeAvailability = "Permissions.Employee.CreateEmployeeAvailability";
         public const string UpdateEmployeeAvailability = "Permissions.Employee.UpdateEmployeeAvailability";
     }

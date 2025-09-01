@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:careconnect_admin/models/responses/appointment.dart';
 import 'package:careconnect_admin/models/responses/child.dart';
 import 'package:careconnect_admin/models/responses/clients_child.dart';
 import 'package:careconnect_admin/models/responses/clients_child_statistics.dart';
@@ -261,5 +262,36 @@ class ClientsChildProvider extends BaseProvider<ClientsChild> {
     final statistics = await getStatistics();
     notifyListeners();
     return statistics;
+  }
+
+  Future<List<Appointment>> getAppointment({
+    required int clientId,
+    required int childId,
+  }) async {
+    var url = "$baseUrl$endpoint/$clientId/$childId/appointment";
+    var uri = Uri.parse(url);
+    var headers = createHeaders();
+
+    var response = await http.get(uri, headers: headers);
+
+    if (isValidResponse(response)) {
+      if (response.body.isNotEmpty) {
+        var data = jsonDecode(response.body);
+
+        List<Appointment> result = [];
+
+        for (var item in data) {
+          result.add(Appointment.fromJson(item));
+        }
+
+        notifyListeners();
+
+        return result;
+      } else {
+        return [];
+      }
+    } else {
+      throw new Exception("Unknown error");
+    }
   }
 }

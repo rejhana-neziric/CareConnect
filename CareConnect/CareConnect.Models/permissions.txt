@@ -1,10 +1,10 @@
 ﻿Appointment: Get, GetById, Insert, Update, Delete, Cancel, Confirm, Start, Complete, Reschedule, AllowedActions
 Child: Get, GetById, Insert, Update, Delete
 ChildrenDiagnosis: Get, GetById, Insert, Update, Delete
-ClientsChild: Get, GetById, Insert, Update, Delete, GetStatistics, GetClientAndChildByIds
+ClientsChild: Get, GetById, Insert, Update, Delete, GetStatistics, GetClientAndChildByIds, GetAppointment
 Client: Get, GetById, Insert, Update, Delete, GetChildren, AddChildren, RemoveChildren
 EmployeeAvailability: Get, GetById, Insert, Update, Delete
-Employee: Get, GetById, Insert, Update, Delete, GetStatistics, CreateEmployeeAvailability, UpdateEmployeeAvailability
+Employee: Get, GetById, Insert, Update, Delete, GetStatistics, GetEmployeeAvailability, CreateEmployeeAvailability, UpdateEmployeeAvailability
 EmployeePayHistory: Get, GetById, Insert, Update, Delete
 Instructor: Get, GetById, Insert, Update, Delete
 Member: Get, GetById, Insert, Update, Delete

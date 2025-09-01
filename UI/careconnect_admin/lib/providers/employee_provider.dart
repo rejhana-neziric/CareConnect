@@ -3,6 +3,7 @@ import 'package:careconnect_admin/models/requests/employee_availability_changes.
 import 'package:careconnect_admin/models/requests/employee_availability_insert_request.dart';
 import 'package:careconnect_admin/models/requests/employee_availability_update_request.dart';
 import 'package:careconnect_admin/models/responses/employee.dart';
+import 'package:careconnect_admin/models/responses/employee_availability.dart';
 import 'package:careconnect_admin/models/responses/search_result.dart';
 import 'package:careconnect_admin/models/search_objects/employee_additional_data.dart';
 import 'package:careconnect_admin/models/search_objects/employee_search_object.dart';
@@ -81,21 +82,54 @@ class EmployeeProvider extends BaseProvider<Employee> {
     return result;
   }
 
-  Future<Employee> getEmployeeAvailability(int employeeId) async {
-    final filterObject = EmployeeSearchObject(
-      additionalData: EmployeeAdditionalData(
-        isUserIncluded: true,
-        isEmployeeAvailabilityIncluded: true,
-      ),
-      includeTotalCount: true,
-    );
+  // Future<Employee> getEmployeeAvailability(int employeeId) async {
 
-    final filter = filterObject.toJson();
+  //   GetEmployeeAvailability
 
-    final result = await getById(employeeId, filter: filter);
+  //   final filterObject = EmployeeSearchObject(
+  //     additionalData: EmployeeAdditionalData(
+  //       isUserIncluded: true,
+  //       isEmployeeAvailabilityIncluded: true,
+  //     ),
+  //     includeTotalCount: true,
+  //   );
 
-    notifyListeners();
-    return result;
+  //   final filter = filterObject.toJson();
+
+  //   final result = await getById(employeeId, filter: filter);
+
+  //   notifyListeners();
+  //   return result;
+  // }
+
+  Future<List<EmployeeAvailability>> getEmployeeAvailability(
+    int employeeId,
+  ) async {
+    var url = "$baseUrl$endpoint/$employeeId/availability";
+    var uri = Uri.parse(url);
+    var headers = createHeaders();
+
+    var response = await http.get(uri, headers: headers);
+
+    if (isValidResponse(response)) {
+      if (response.body.isNotEmpty) {
+        var data = jsonDecode(response.body);
+
+        List<EmployeeAvailability> result = [];
+
+        for (var item in data) {
+          result.add(EmployeeAvailability.fromJson(item));
+        }
+
+        notifyListeners();
+
+        return result;
+      } else {
+        return [];
+      }
+    } else {
+      throw new Exception("Unknown error");
+    }
   }
 
   Future<Employee> createEmployeeAvailability(
@@ -103,7 +137,7 @@ class EmployeeProvider extends BaseProvider<Employee> {
     List<TimeSlot> availability,
     //List<EmployeeAvailabilityInsertRequest> availability,
   ) async {
-    var url = "$baseUrl$endpoint/$employeeId/availabilty";
+    var url = "$baseUrl$endpoint/$employeeId/availability";
     var uri = Uri.parse(url);
     var headers = createHeaders();
 
@@ -138,12 +172,13 @@ class EmployeeProvider extends BaseProvider<Employee> {
 
     if (!changes.hasChanges) {
       // No changes, return current data
-      final current = await getEmployeeAvailability(employeeId);
+      // final current = await getEmployeeAvailability(employeeId);
+      final current = await getById(employeeId);
       // if (current != null) return current;
       return current;
     }
 
-    var url = "$baseUrl$endpoint/$employeeId/availabilty";
+    var url = "$baseUrl$endpoint/$employeeId/availability";
     var uri = Uri.parse(url);
     var headers = createHeaders();
 

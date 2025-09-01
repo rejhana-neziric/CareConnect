@@ -46,14 +46,14 @@ namespace CareConnect.Services
                 query = query.Where(x => x.AttendanceStatus.Name == search.AttendanceStatusName);
             }
 
-            if (!string.IsNullOrWhiteSpace(search?.EmployeeFirstNameGTE))
+            if (!string.IsNullOrWhiteSpace(search?.EmployeeFirstName))
             {
-                query = query.Where(x => x.EmployeeAvailability.Employee.User.FirstName.StartsWith(search.EmployeeFirstNameGTE));
+                query = query.Where(x => x.EmployeeAvailability.Employee.User.FirstName == search.EmployeeFirstName);
             }
 
-            if (!string.IsNullOrWhiteSpace(search?.EmployeeLastNameGTE))
+            if (!string.IsNullOrWhiteSpace(search?.EmployeeLastName))
             {
-                query = query.Where(x => x.EmployeeAvailability.Employee.User.LastName.StartsWith(search.EmployeeLastNameGTE));
+                query = query.Where(x => x.EmployeeAvailability.Employee.User.LastName == search.EmployeeLastName);
             }
 
             if (!string.IsNullOrWhiteSpace(search?.StartTime))
@@ -66,15 +66,37 @@ namespace CareConnect.Services
                 query = query.Where(x => x.EmployeeAvailability.EndTime == search.EndTime);
             }
 
-            //if (!string.IsNullOrWhiteSpace(search?.UserFirstNameGTE))
-            //{
-            //    query = query.Where(x => x.User.FirstName.StartsWith(search.UserFirstNameGTE));
-            //}
+            if (!string.IsNullOrWhiteSpace(search?.Status))
+            {
+                query = query.Where(x => x.StateMachine == search.Status);
+            }
 
-            //if (!string.IsNullOrWhiteSpace(search?.UserLastNameGTE))
-            //{
-            //    query = query.Where(x => x.User.LastName.StartsWith(search.UserLastNameGTE));
-            //}
+            if (!string.IsNullOrWhiteSpace(search?.ChildFirstName))
+            {
+                query = query.Where(x => x.ClientsChild.Child.FirstName == search.ChildFirstName);
+            }
+
+            if (!string.IsNullOrWhiteSpace(search?.ChildLastName))
+            {
+                query = query.Where(x => x.ClientsChild.Child.LastName == search.ChildLastName);
+            }
+
+
+            if (!string.IsNullOrWhiteSpace(search?.SortBy))
+            {
+                query = search?.SortBy switch
+                {
+                    "employeeFirstName" => search.SortAscending ? query.OrderBy(x => x.EmployeeAvailability.Employee.User.FirstName) : query.OrderByDescending(x => x.EmployeeAvailability.Employee.User.FirstName),
+                    "employeeLastName" => search.SortAscending ? query.OrderBy(x => x.EmployeeAvailability.Employee.User.LastName) : query.OrderByDescending(x => x.EmployeeAvailability.Employee.User.LastName),
+                    "clientFirstName" => search.SortAscending ? query.OrderBy(x => x.ClientsChild.Client.User.FirstName) : query.OrderByDescending(x => x.ClientsChild.Client.User.FirstName),
+                    "clientLastName" => search.SortAscending ? query.OrderBy(x => x.ClientsChild.Client.User.LastName) : query.OrderByDescending(x => x.ClientsChild.Client.User.LastName),
+                    "childFirstName" => search.SortAscending ? query.OrderBy(x => x.ClientsChild.Child.FirstName) : query.OrderByDescending(x => x.ClientsChild.Child.FirstName),
+                    "childLastName" => search.SortAscending ? query.OrderBy(x => x.ClientsChild.Child.LastName) : query.OrderByDescending(x => x.ClientsChild.Child.LastName),
+                    "date" => search.SortAscending ? query.OrderBy(x => x.Date) : query.OrderByDescending(x => x.Date),
+                    "status" => search.SortAscending ? query.OrderBy(x => x.StateMachine) : query.OrderByDescending(x => x.StateMachine),
+                    _ => query
+                };
+            }
 
             return query;
         }
@@ -83,14 +105,20 @@ namespace CareConnect.Services
         {
             if (additionalData != null)
             {
-                //if (additionalData.IsUserIncluded.HasValue && additionalData.IsUserIncluded == true)
-                //{
-                //    additionalData.IncludeList.Add("User");
-                //}
+                if (additionalData.IsClientsChildIncluded.HasValue && additionalData.IsClientsChildIncluded == true)
+                {
+                    additionalData.IncludeList.Add("ClientsChild");
+                    additionalData.IncludeList.Add("ClientsChild.Client");
+                    additionalData.IncludeList.Add("ClientsChild.Client.User"); 
+                    additionalData.IncludeList.Add("ClientsChild.Child");
+                }
 
                 if (additionalData.IsEmployeeAvailabilityIncluded.HasValue && additionalData.IsEmployeeAvailabilityIncluded == true)
                 {
                     additionalData.IncludeList.Add("EmployeeAvailability");
+                    additionalData.IncludeList.Add("EmployeeAvailability.Employee");
+                    additionalData.IncludeList.Add("EmployeeAvailability.Employee.User");
+                    additionalData.IncludeList.Add("EmployeeAvailability.Service");
                 }
 
                 if (additionalData.IsAttendanceStatusIncluded.HasValue && additionalData.IsAttendanceStatusIncluded == true)
@@ -111,8 +139,16 @@ namespace CareConnect.Services
         public override Database.Appointment GetByIdWithIncludes(int id)
         {
             return Context.Appointments
-                //.Include(u => u.User)
+                .Include(c => c.ClientsChild)
+                    .ThenInclude(c => c.Child)
+                .Include(c => c.ClientsChild)
+                    .ThenInclude(c => c.Client)
+                        .ThenInclude(c => c.User)
                 .Include(e => e.EmployeeAvailability)
+                    .ThenInclude(e => e.Employee)
+                        .ThenInclude(e => e.User)
+                .Include(e => e.EmployeeAvailability)
+                    .ThenInclude(s => s.Service)
                 .Include(a => a.AttendanceStatus)
                 .First(a => a.AppointmentId == id);
         }

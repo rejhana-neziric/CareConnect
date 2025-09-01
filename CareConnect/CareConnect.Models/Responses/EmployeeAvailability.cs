@@ -16,7 +16,7 @@ namespace CareConnect.Models.Responses
 
         public DateTime ModifiedDate { get; set; }
 
-        //public virtual Employee Employee { get; set; } = null!;
+        public virtual Employee Employee { get; set; } = null!;
 
         public virtual Service? Service { get; set; }
     }

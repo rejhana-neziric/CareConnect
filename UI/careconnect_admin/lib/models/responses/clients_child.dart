@@ -1,4 +1,3 @@
-import 'package:careconnect_admin/models/responses/appointment.dart';
 import 'package:careconnect_admin/models/responses/child.dart';
 import 'package:careconnect_admin/models/responses/client.dart';
 
@@ -10,12 +9,12 @@ part 'clients_child.g.dart';
 class ClientsChild {
   final Child child;
   final Client client;
-  final List<Appointment> appointments;
+  // final List<Appointment> appointments;
 
   ClientsChild({
     required this.child,
     required this.client,
-    required this.appointments,
+    // required this.appointments,
   });
 
   factory ClientsChild.fromJson(Map<String, dynamic> json) =>

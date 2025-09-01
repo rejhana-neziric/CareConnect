@@ -11,8 +11,6 @@ EmployeeAdditionalData _$EmployeeAdditionalDataFromJson(
 ) => EmployeeAdditionalData(
   isUserIncluded: json['isUserIncluded'] as bool?,
   isQualificationIncluded: json['isQualificationIncluded'] as bool?,
-  isEmployeeAvailabilityIncluded:
-      json['isEmployeeAvailabilityIncluded'] as bool?,
 );
 
 Map<String, dynamic> _$EmployeeAdditionalDataToJson(
@@ -20,5 +18,4 @@ Map<String, dynamic> _$EmployeeAdditionalDataToJson(
 ) => <String, dynamic>{
   'isUserIncluded': instance.isUserIncluded,
   'isQualificationIncluded': instance.isQualificationIncluded,
-  'isEmployeeAvailabilityIncluded': instance.isEmployeeAvailabilityIncluded,
 };

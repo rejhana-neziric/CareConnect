@@ -12,7 +12,7 @@ namespace CareConnect.Models.Responses
 
         //public DateTime? LastAppointment { get; set; }
 
-        public virtual ICollection<Appointment> Appointments { get; set; } = new List<Appointment>();
+        //public virtual ICollection<Appointment> Appointments { get; set; } = new List<Appointment>();
 
     }
 }

@@ -11,7 +11,6 @@ ClientsChildAdditionalData _$ClientsChildAdditionalDataFromJson(
 ) => ClientsChildAdditionalData(
   isClientIncluded: json['isClientIncluded'] as bool?,
   isChildIncluded: json['isChildIncluded'] as bool?,
-  isAppoinmentIncluded: json['isAppoinmentIncluded'] as bool?,
 );
 
 Map<String, dynamic> _$ClientsChildAdditionalDataToJson(
@@ -19,5 +18,4 @@ Map<String, dynamic> _$ClientsChildAdditionalDataToJson(
 ) => <String, dynamic>{
   'isClientIncluded': instance.isClientIncluded,
   'isChildIncluded': instance.isChildIncluded,
-  'isAppoinmentIncluded': instance.isAppoinmentIncluded,
 };

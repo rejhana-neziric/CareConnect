@@ -1,3 +1,4 @@
+import 'package:careconnect_admin/screens/appointment_list_screen.dart';
 import 'package:careconnect_admin/screens/client_list_screen.dart';
 import 'package:careconnect_admin/screens/employee_availability/employee_availability_details_screen.dart';
 import 'package:careconnect_admin/screens/employee_availability/employee_availability_list_screen.dart';
@@ -144,7 +145,7 @@ class _MasterScreenState extends State<MasterScreen> {
                         onTap: () {
                           Navigator.of(context).push(
                             MaterialPageRoute(
-                              builder: (context) => ClientListScreen(),
+                              builder: (context) => AppointmentListScreen(),
                             ),
                           );
                         },

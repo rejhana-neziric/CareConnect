@@ -14,6 +14,7 @@ EmployeeAvailability _$EmployeeAvailabilityFromJson(
   startTime: json['startTime'] as String,
   endTime: json['endTime'] as String,
   modifiedDate: DateTime.parse(json['modifiedDate'] as String),
+  employee: Employee.fromJson(json['employee'] as Map<String, dynamic>),
   service: json['service'] == null
       ? null
       : Service.fromJson(json['service'] as Map<String, dynamic>),
@@ -28,4 +29,5 @@ Map<String, dynamic> _$EmployeeAvailabilityToJson(
   'endTime': instance.endTime,
   'modifiedDate': instance.modifiedDate.toIso8601String(),
   'service': instance.service?.toJson(),
+  'employee': instance.employee.toJson(),
 };

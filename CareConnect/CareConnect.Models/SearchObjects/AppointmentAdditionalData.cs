@@ -4,7 +4,7 @@ namespace CareConnect.Models.SearchObjects
 {
     public class AppointmentAdditionalData : BaseAdditionalSearchRequestData
     {
-        public bool? IsUserIncluded { get; set; }
+        public bool? IsClientsChildIncluded { get; set; }
 
         public bool? IsEmployeeAvailabilityIncluded { get; set; }
 

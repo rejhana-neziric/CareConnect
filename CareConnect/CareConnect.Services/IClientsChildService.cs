@@ -15,7 +15,8 @@ namespace CareConnect.Services
 
         public ClientsChildStatistics GetStatistics();
 
-        public Models.Responses.ClientsChild GetClientAndChildByIds(int clientId, int childId);
+        public ClientsChild GetClientAndChildByIds(int clientId, int childId);
 
+        public List<Appointment> GetAppointment(int clientId, int childId); 
     }
 }

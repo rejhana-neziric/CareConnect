@@ -10,6 +10,6 @@ namespace CareConnect.Models.SearchObjects
 
         public bool? IsChildIncluded { get; set; }
 
-        public bool? IsAppoinmentIncluded { get; set; }
+        //public bool? IsAppoinmentIncluded { get; set; }
     }
 }

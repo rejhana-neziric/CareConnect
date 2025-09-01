@@ -42,6 +42,8 @@ class _ChildDetailsScreenState extends State<ChildDetailsScreen> {
 
   SearchResult<ChildrenDiagnosis>? childrenDiagnosis;
 
+  List<Appointment>? appointments;
+
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
@@ -60,9 +62,12 @@ class _ChildDetailsScreenState extends State<ChildDetailsScreen> {
     });
 
     loadDiagnosis();
+    loadAppointments();
 
     if (clientsChildProvider.shouldRefresh) {
       loadDiagnosis();
+      loadAppointments();
+
       clientsChildProvider.markRefreshed();
     }
   }
@@ -93,6 +98,19 @@ class _ChildDetailsScreenState extends State<ChildDetailsScreen> {
     }
 
     return result;
+  }
+
+  Future<void> loadAppointments() async {
+    final result = await clientsChildProvider.getAppointment(
+      clientId: widget.client.user!.userId,
+      childId: widget.child.childId,
+    );
+
+    if (mounted) {
+      setState(() {
+        appointments = result;
+      });
+    }
   }
 
   Future<ClientsChild?> loadData() async {
@@ -207,7 +225,7 @@ class _ChildDetailsScreenState extends State<ChildDetailsScreen> {
   }
 
   Widget appointmentSchedule() {
-    final appointments = clientsChild?.appointments;
+    // final appointments = clientsChild?.appointments;
 
     return SizedBox(
       width: 400,
@@ -231,8 +249,8 @@ class _ChildDetailsScreenState extends State<ChildDetailsScreen> {
                   ),
                 ),
                 SizedBox(height: 12),
-                ...((appointments != null && appointments.isNotEmpty)
-                    ? buildAppointments(appointments)
+                ...((appointments != null && appointments?.isNotEmpty == true)
+                    ? buildAppointments(appointments!)
                     : [const Text("No appointments scheduled.")]),
                 SizedBox(height: 340),
                 Align(

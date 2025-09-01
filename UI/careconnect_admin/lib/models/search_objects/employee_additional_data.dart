@@ -6,12 +6,12 @@ part 'employee_additional_data.g.dart';
 class EmployeeAdditionalData {
   bool? isUserIncluded;
   bool? isQualificationIncluded;
-  bool? isEmployeeAvailabilityIncluded;
+  // bool? isEmployeeAvailabilityIncluded;
 
   EmployeeAdditionalData({
     this.isUserIncluded,
     this.isQualificationIncluded,
-    this.isEmployeeAvailabilityIncluded,
+    // this.isEmployeeAvailabilityIncluded,
   });
 
   factory EmployeeAdditionalData.fromJson(Map<String, dynamic> json) =>

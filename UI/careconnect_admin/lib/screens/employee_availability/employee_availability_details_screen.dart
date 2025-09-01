@@ -56,7 +56,12 @@ class _EmployeeAvailabilityDetailsScreenState
     currentSlots = {};
     originalSlots = {};
 
-    for (var el in response.employeeAvailabilities) {
+    // for (var el in response.employeeAvailabilities) {
+    //   currentSlots[el.employeeAvailabilityId] = el.toTimeSlot();
+    //   originalSlots[el.employeeAvailabilityId] = el.toTimeSlot();
+    // }
+
+    for (var el in response) {
       currentSlots[el.employeeAvailabilityId] = el.toTimeSlot();
       originalSlots[el.employeeAvailabilityId] = el.toTimeSlot();
     }
