@@ -1,8 +1,11 @@
+import 'package:careconnect_admin/models/auth_credentials.dart';
+import 'package:careconnect_admin/providers/auth_provider.dart';
 import 'package:careconnect_admin/screens/appointment_list_screen.dart';
 import 'package:careconnect_admin/screens/client_list_screen.dart';
 import 'package:careconnect_admin/screens/employee_availability/employee_availability_details_screen.dart';
 import 'package:careconnect_admin/screens/employee_availability/employee_availability_list_screen.dart';
 import 'package:careconnect_admin/screens/employee_list_screen.dart';
+import 'package:careconnect_admin/screens/login_screen.dart';
 import 'package:careconnect_admin/screens/review_list_screen.dart';
 import 'package:careconnect_admin/screens/services_list_screen.dart';
 import 'package:careconnect_admin/screens/workshops_list_screen.dart';
@@ -34,6 +37,8 @@ class _MasterScreenState extends State<MasterScreen> {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
     final themeNotifier = Provider.of<ThemeNotifier>(context);
+
+    final auth = Provider.of<AuthProvider>(context);
 
     return Scaffold(
       body: Row(
@@ -96,6 +101,7 @@ class _MasterScreenState extends State<MasterScreen> {
                           );
                         },
                       ),
+                      // if (auth.user?.roles.contains('Superadmin') ?? false)
                       ListTile(
                         leading: Icon(Icons.badge),
                         title: Text("Employee Availability"),
@@ -191,6 +197,29 @@ class _MasterScreenState extends State<MasterScreen> {
                             builder: (context) => ClientListScreen(),
                           ),
                         ),
+                      ),
+
+                      ListTile(
+                        leading: Icon(Icons.logout_outlined),
+                        title: Text("Logout"),
+                        onTap: () {
+                          AuthCredentials.username = null;
+                          AuthCredentials.password = null;
+
+                          final auth = Provider.of<AuthProvider>(
+                            context,
+                            listen: false,
+                          );
+
+                          auth.logout();
+
+                          Navigator.pushReplacement(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => LoginScreen(),
+                            ),
+                          );
+                        },
                       ),
 
                       Padding(

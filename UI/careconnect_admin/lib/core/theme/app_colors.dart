@@ -98,7 +98,8 @@ class AppTheme {
     onSecondary: AppColors.black,
     secondaryContainer: AppColors.mauveGray,
     onSecondaryContainer: AppColors.white,
-    surface: AppSurfaces.darkSurfaceContainer,
+    surface: AppSurfaces
+        .darkSurfaceContainerLowest, //AppSurfaces.darkSurfaceContainer,
     onSurface: AppColors.textPrimaryDark,
     surfaceContainerLowest: AppSurfaces.darkSurfaceContainerLowest,
     surfaceContainerLow: AppSurfaces.darkSurfaceContainerLow,

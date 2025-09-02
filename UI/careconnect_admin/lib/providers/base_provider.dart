@@ -1,6 +1,6 @@
 import 'dart:convert';
 import 'package:careconnect_admin/models/responses/search_result.dart';
-import 'package:careconnect_admin/providers/auth_provider.dart';
+import 'package:careconnect_admin/models/auth_credentials.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/http.dart';
@@ -187,8 +187,8 @@ abstract class BaseProvider<T> with ChangeNotifier {
   }
 
   Map<String, String> createHeaders() {
-    String username = AuthProvider.username ?? "";
-    String password = AuthProvider.password ?? "";
+    String username = AuthCredentials.username ?? "";
+    String password = AuthCredentials.password ?? "";
 
     String basicAuth =
         "Basic ${base64Encode(utf8.encode('$username:$password'))}";

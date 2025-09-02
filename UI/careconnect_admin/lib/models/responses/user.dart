@@ -14,6 +14,7 @@ class User {
   final String gender;
   final String? address;
   final bool status;
+  final List<String> roles;
   //final List<UserRoleResponse> usersRoles;
 
   User({
@@ -27,6 +28,7 @@ class User {
     required this.gender,
     this.address,
     required this.status,
+    required this.roles,
     //required this.usersRoles,
   });
 

@@ -6,6 +6,8 @@ namespace CareConnect.Models.Responses
 {
     public class Permission
     {
+        public int PermissionId { get; set; }
+
         public string Name { get; set; } = null!;
     }
 }

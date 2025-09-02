@@ -112,7 +112,7 @@ abstract class BaseFormProvider<TFormProvider, TEntityProvider>
       return 'Password must be at least 8 characters.';
     }
     if (value != null && value.length > 32) {
-      return 'Password must not exceed 32 characters';
+      return 'Password must not exceed 32 characters.';
     }
     return null;
   }

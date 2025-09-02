@@ -33,5 +33,7 @@ namespace CareConnect.Models.Responses
         public string? Address { get; set; }
 
         public virtual ICollection<UsersRole> UsersRoles { get; set; } = new List<UsersRole>();
+
+        public List<string> Roles { get; set; } = new List<string>();
     }
 }

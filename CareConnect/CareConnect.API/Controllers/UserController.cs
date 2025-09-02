@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace CareConnect.API.Controllers
 {
     [ApiController]
-    [Route("api/[controller]")]
+    [Route("[controller]")]
     [Authorize]
     public class UserController : ControllerBase
     {

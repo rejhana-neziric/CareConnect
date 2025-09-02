@@ -1,5 +1,6 @@
 import 'package:careconnect_admin/providers/appointment_provider.dart';
 import 'package:careconnect_admin/providers/attendance_status_provider.dart';
+import 'package:careconnect_admin/providers/auth_provider.dart';
 import 'package:careconnect_admin/providers/child_provider.dart';
 import 'package:careconnect_admin/providers/children_diagnosis_provider.dart';
 import 'package:careconnect_admin/providers/client_provider.dart';
@@ -15,6 +16,7 @@ import 'package:careconnect_admin/providers/service_form_provider.dart';
 import 'package:careconnect_admin/providers/service_provider.dart';
 import 'package:careconnect_admin/providers/service_type_from_provider.dart';
 import 'package:careconnect_admin/providers/service_type_provider.dart';
+import 'package:careconnect_admin/providers/user_provider.dart';
 import 'package:careconnect_admin/providers/workshop_form_provider.dart';
 import 'package:careconnect_admin/providers/workshop_provider.dart';
 import 'package:careconnect_admin/screens/login_screen.dart';
@@ -79,6 +81,8 @@ void main() {
           create: (_) => AppointmentProvider(),
         ),
         ChangeNotifierProvider<ChildProvider>(create: (_) => ChildProvider()),
+        ChangeNotifierProvider<UserProvider>(create: (_) => UserProvider()),
+        ChangeNotifierProvider<AuthProvider>(create: (_) => AuthProvider()),
       ],
       child: const MyApp(),
     ),

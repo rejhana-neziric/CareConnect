@@ -109,7 +109,8 @@ namespace CareConnect.API.Configuration
                      src => src.Services != null ? src.Services.Count : 0);
 
 
-
-        }
+            TypeAdapterConfig<User, Models.Responses.User>
+                .NewConfig()
+                .Map(dest => dest.Roles, src => src.UsersRoles.Select(ur => ur.Role.Name).ToList());}
     }
 }
