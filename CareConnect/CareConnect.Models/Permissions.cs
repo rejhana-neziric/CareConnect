@@ -114,6 +114,12 @@ public static class Permissions
         public const string Update = "Permissions.Payment.Update";
         public const string Delete = "Permissions.Payment.Delete";
     }
+    public static class Report
+    {
+        public const string GetReportData = "Permissions.Report.GetReportData";
+        public const string GetKPI = "Permissions.Report.GetKPI";
+        public const string GetInsights = "Permissions.Report.GetInsights";
+    }
     public static class Review
     {
         public const string Get = "Permissions.Review.Get";

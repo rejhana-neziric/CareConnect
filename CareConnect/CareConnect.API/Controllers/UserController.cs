@@ -1,4 +1,5 @@
-﻿using CareConnect.Models.SearchObjects;
+﻿using CareConnect.API.Filters;
+using CareConnect.Models.SearchObjects;
 using CareConnect.Services;
 using CareConnect.Services.Database;
 using Microsoft.AspNetCore.Authorization;
@@ -26,6 +27,7 @@ namespace CareConnect.API.Controllers
         }
 
         [HttpGet("permissions")]
+        [PermissionAuthorize("GetPermission")]
         public List<string> GetPermissions(string username)
         {
             return _userService.GetPermissions(username); 

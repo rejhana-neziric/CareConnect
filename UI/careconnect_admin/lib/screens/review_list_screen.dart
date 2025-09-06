@@ -32,6 +32,8 @@ class _ReviewListScreenState extends State<ReviewListScreen> {
   String? _sortBy;
   bool _sortAscending = true;
 
+  bool isLoading = false;
+
   String? selectedSortingOption;
 
   final Map<String, String?> sortingOptions = {
@@ -67,27 +69,40 @@ class _ReviewListScreenState extends State<ReviewListScreen> {
   }
 
   Future<SearchResult<Review>?> loadData() async {
-    final reviewProvider = Provider.of<ReviewProvider>(context, listen: false);
+    setState(() {
+      isLoading = true;
+    });
 
-    final result = await reviewProvider.loadData(
-      fts: _ftsController.text,
-      isHidden: isHidden,
-      publishDateGTE: null,
-      publishDateLTE: null,
-      stars: null,
-      sortBy: _sortBy,
-      sortAscending: _sortAscending,
-    );
+    try {
+      final reviewProvider = Provider.of<ReviewProvider>(
+        context,
+        listen: false,
+      );
 
-    reviews = result;
+      final result = await reviewProvider.loadData(
+        fts: _ftsController.text,
+        isHidden: isHidden,
+        publishDateGTE: null,
+        publishDateLTE: null,
+        stars: null,
+        sortBy: _sortBy,
+        sortAscending: _sortAscending,
+      );
 
-    averageRating = await reviewProvider.getAverage();
+      reviews = result;
 
-    if (mounted) {
-      setState(() {});
+      averageRating = await reviewProvider.getAverage();
+
+      if (mounted) {
+        setState(() {});
+      }
+
+      return reviews;
+    } finally {
+      setState(() {
+        isLoading = false;
+      });
     }
-
-    return reviews;
   }
 
   @override
@@ -248,37 +263,45 @@ class _ReviewListScreenState extends State<ReviewListScreen> {
   }
 
   Widget _buildResultView() {
-    return (reviews != null && reviews?.result.isEmpty == false)
-        ? Center(
-            child: StaggeredGridView.countBuilder(
-              crossAxisCount: 2,
-              shrinkWrap: true,
-              physics: NeverScrollableScrollPhysics(),
-              padding: const EdgeInsets.symmetric(
-                horizontal: 180.0,
-                vertical: 64.0,
-              ),
-              crossAxisSpacing: 32,
-              mainAxisSpacing: 16,
-              itemCount: reviews!.result.length,
-              itemBuilder: (context, index) {
-                return buildReviews(reviews!.result)[index];
-              },
-              staggeredTileBuilder: (index) => StaggeredTile.fit(1),
-            ),
-          )
-        : Padding(
-            padding: const EdgeInsets.all(128.0),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                NoResultsWidget(
-                  message: 'No results found. Please try again.',
-                  icon: Icons.sentiment_dissatisfied,
-                ),
-              ],
-            ),
-          );
+    if (isLoading) {
+      return const SizedBox(
+        height: 400,
+        child: Center(child: CircularProgressIndicator()),
+      );
+    }
+
+    if (reviews != null && reviews!.result.isNotEmpty) {
+      return Center(
+        child: StaggeredGridView.countBuilder(
+          crossAxisCount: 2,
+          shrinkWrap: true,
+          physics: NeverScrollableScrollPhysics(),
+          padding: const EdgeInsets.symmetric(
+            horizontal: 180.0,
+            vertical: 64.0,
+          ),
+          crossAxisSpacing: 32,
+          mainAxisSpacing: 16,
+          itemCount: reviews!.result.length,
+          itemBuilder: (context, index) {
+            return buildReviews(reviews!.result)[index];
+          },
+          staggeredTileBuilder: (index) => StaggeredTile.fit(1),
+        ),
+      );
+    }
+    return Padding(
+      padding: const EdgeInsets.all(128.0),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          NoResultsWidget(
+            message: 'No results found. Please try again.',
+            icon: Icons.sentiment_dissatisfied,
+          ),
+        ],
+      ),
+    );
   }
 
   List<Widget> buildReviews(List<Review> review) {

@@ -6,6 +6,7 @@ import 'package:careconnect_admin/screens/employee_availability/employee_availab
 import 'package:careconnect_admin/screens/employee_availability/employee_availability_list_screen.dart';
 import 'package:careconnect_admin/screens/employee_list_screen.dart';
 import 'package:careconnect_admin/screens/login_screen.dart';
+import 'package:careconnect_admin/screens/report_screen.dart';
 import 'package:careconnect_admin/screens/review_list_screen.dart';
 import 'package:careconnect_admin/screens/services_list_screen.dart';
 import 'package:careconnect_admin/screens/workshops_list_screen.dart';
@@ -38,7 +39,7 @@ class _MasterScreenState extends State<MasterScreen> {
     final colorScheme = theme.colorScheme;
     final themeNotifier = Provider.of<ThemeNotifier>(context);
 
-    final auth = Provider.of<AuthProvider>(context);
+    //final auth = Provider.of<AuthProvider>(context);
 
     return Scaffold(
       body: Row(
@@ -184,7 +185,7 @@ class _MasterScreenState extends State<MasterScreen> {
                         onTap: () {
                           Navigator.of(context).push(
                             MaterialPageRoute(
-                              builder: (context) => ClientListScreen(),
+                              builder: (context) => ReportsScreen(),
                             ),
                           );
                         },

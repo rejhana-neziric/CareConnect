@@ -2,7 +2,7 @@ import 'package:careconnect_admin/models/responses/employee.dart';
 import 'package:careconnect_admin/models/responses/user.dart';
 import 'package:json_annotation/json_annotation.dart';
 
-part 'review.g.dart'; // Don't open or edit this
+part 'review.g.dart';
 
 @JsonSerializable()
 class Review {

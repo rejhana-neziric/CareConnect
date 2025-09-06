@@ -44,6 +44,8 @@ builder.Services.AddTransient<ISessionService, SessionService>();
 builder.Services.AddTransient<IServiceService, ServiceService>();
 builder.Services.AddTransient<IServiceTypeService, ServiceTypeService>();
 builder.Services.AddTransient<IWorkshopService, WorkshopService>();
+builder.Services.AddTransient<IReportService, ReportService>();
+
 
 builder.Services.AddTransient<BaseAppointmentState>();
 builder.Services.AddTransient<InitialAppointmentState>();

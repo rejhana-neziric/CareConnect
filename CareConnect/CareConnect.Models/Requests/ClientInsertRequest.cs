@@ -8,6 +8,9 @@ namespace CareConnect.Models.Requests
         public bool EmploymentStatus { get; set; }
 
         [JsonIgnore]
+        public DateTime CreatedDate { get; set; } = DateTime.Now;
+
+        [JsonIgnore]
         public DateTime ModifiedDate { get; set; } = DateTime.Now;
 
         public UserInsertRequest User { get; set; }

@@ -64,7 +64,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         borderRadius: BorderRadius.circular(16),
                       ),
                       child: Padding(
-                        padding: const EdgeInsets.all(50.0),
+                        padding: const EdgeInsets.all(35.0),
 
                         child: FormBuilder(
                           key: formKey,
@@ -75,7 +75,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                 'CareConnect',
                                 style: TextStyle(
                                   color: colorScheme.primary,
-                                  fontSize: 70,
+                                  fontSize: 60,
                                   fontWeight: FontWeight.w700,
                                 ),
                               ),
@@ -85,7 +85,7 @@ class _LoginScreenState extends State<LoginScreen> {
                               const Text(
                                 'Welcome Back',
                                 style: TextStyle(
-                                  fontSize: 32,
+                                  fontSize: 30,
                                   fontWeight: FontWeight.bold,
                                 ),
                               ),
