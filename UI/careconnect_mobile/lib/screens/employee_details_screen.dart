@@ -1,7 +1,7 @@
-import 'package:careconnect_mobile/layouts/master_screen.dart';
-import 'package:careconnect_mobile/models/attendance_status.dart';
-import 'package:careconnect_mobile/models/employee.dart';
-import 'package:careconnect_mobile/models/search_result.dart';
+import 'package:careconnect_mobile/core/layouts/master_screen.dart';
+import 'package:careconnect_mobile/models/responses/attendance_status.dart';
+import 'package:careconnect_mobile/models/responses/employee.dart';
+import 'package:careconnect_mobile/models/responses/search_result.dart';
 import 'package:careconnect_mobile/providers/attendance_status_provider.dart';
 import 'package:careconnect_mobile/providers/employee_provider.dart';
 import 'package:flutter/material.dart';

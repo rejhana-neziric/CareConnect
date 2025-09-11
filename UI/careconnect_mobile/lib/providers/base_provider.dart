@@ -1,6 +1,6 @@
 import 'dart:convert';
-import 'package:careconnect_mobile/models/search_result.dart';
-import 'package:careconnect_mobile/providers/auth_provider.dart';
+import 'package:careconnect_mobile/models/auth_credentials.dart';
+import 'package:careconnect_mobile/models/responses/search_result.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/http.dart';
@@ -8,6 +8,9 @@ import 'package:http/http.dart';
 abstract class BaseProvider<T> with ChangeNotifier {
   static String? _baseUrl;
   String _endpoint = "";
+
+  String get baseUrl => _baseUrl ?? "";
+  String get endpoint => _endpoint;
 
   BaseProvider(String endpoint) {
     _endpoint = endpoint;
@@ -35,7 +38,7 @@ abstract class BaseProvider<T> with ChangeNotifier {
 
       var result = SearchResult<T>();
 
-      result.count = data['count'];
+      result.totalCount = data['count'];
 
       for (var item in data['resultList']) {
         result.result.add(fromJson(item));
@@ -96,8 +99,8 @@ abstract class BaseProvider<T> with ChangeNotifier {
   }
 
   Map<String, String> createHeaders() {
-    String username = AuthProvider.username ?? "";
-    String password = AuthProvider.password ?? "";
+    String username = AuthCredentials.username ?? "";
+    String password = AuthCredentials.password ?? "";
 
     String basicAuth =
         "Basic ${base64Encode(utf8.encode('$username:$password'))}";

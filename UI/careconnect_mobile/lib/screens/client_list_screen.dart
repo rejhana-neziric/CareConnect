@@ -1,4 +1,4 @@
-import 'package:careconnect_mobile/layouts/master_screen.dart';
+import 'package:careconnect_mobile/core/layouts/master_screen.dart';
 import 'package:flutter/material.dart';
 
 class ClientListScreen extends StatelessWidget {

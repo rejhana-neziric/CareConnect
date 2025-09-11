@@ -1,7 +1,13 @@
+import 'package:careconnect_mobile/core/theme/app_colors.dart';
+import 'package:careconnect_mobile/core/theme/theme_notifier.dart';
+import 'package:careconnect_mobile/providers/appointment_provider.dart';
 import 'package:careconnect_mobile/providers/attendance_status_provider.dart';
 import 'package:careconnect_mobile/providers/auth_provider.dart';
 import 'package:careconnect_mobile/providers/employee_provider.dart';
+import 'package:careconnect_mobile/providers/service_type_provider.dart';
+import 'package:careconnect_mobile/providers/user_provider.dart';
 import 'package:careconnect_mobile/screens/employee_list_screen.dart';
+import 'package:careconnect_mobile/screens/login_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -15,6 +21,15 @@ void main() {
         ChangeNotifierProvider<AttendanceStatusProvider>(
           create: (_) => AttendanceStatusProvider(),
         ),
+        ChangeNotifierProvider<AuthProvider>(create: (_) => AuthProvider()),
+        ChangeNotifierProvider<UserProvider>(create: (_) => UserProvider()),
+        ChangeNotifierProvider(create: (_) => ThemeNotifier()),
+        ChangeNotifierProvider<AppointmentProvider>(
+          create: (_) => AppointmentProvider(),
+        ),
+        ChangeNotifierProvider<ServiceTypeProvider>(
+          create: (_) => ServiceTypeProvider(),
+        ),
       ],
       child: const MyApp(),
     ),
@@ -27,29 +42,16 @@ class MyApp extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Flutter Demo',
-      theme: ThemeData(
-        // This is the theme of your application.+
-        //
-        // TRY THIS: Try running your application with "flutter run". You'll see
-        // the application has a purple toolbar. Then, without quitting the app,
-        // try changing the seedColor in the colorScheme below to Colors.green
-        // and then invoke "hot reload" (save your changes or press the "hot
-        // reload" button in a Flutter-supported IDE, or press "r" if you used
-        // the command line to start the app).
-        //
-        // Notice that the counter didn't reset back to zero; the application
-        // state is not lost during the reload. To reset the state, use hot
-        // restart instead.
-        //
-        // This works for code too, not just values: Most code changes can be
-        // tested with just a hot reload.
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
-      ),
-      home: Center(
-        child: EmployeeListScreen(),
-      ), //const MyHomePage(title: 'Flutter Demo Home Page'),
+    return Consumer<ThemeNotifier>(
+      builder: (context, themeNotifier, child) {
+        return MaterialApp(
+          title: 'CareConnect Admin',
+          theme: AppTheme.lightTheme,
+          darkTheme: AppTheme.darkTheme,
+          themeMode: themeNotifier.themeMode,
+          home: LoginScreen(),
+        );
+      },
     );
   }
 }

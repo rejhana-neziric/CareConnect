@@ -27,7 +27,8 @@ namespace CareConnect.API.Controllers
         }
 
         [HttpGet("permissions")]
-        [PermissionAuthorize("GetPermission")]
+        //[PermissionAuthorize("GetPermission")]
+        [AllowAnonymous]
         public List<string> GetPermissions(string username)
         {
             return _userService.GetPermissions(username); 

@@ -81,6 +81,26 @@ namespace CareConnect.Services
                 query = query.Where(x => x.ClientsChild.Child.LastName == search.ChildLastName);
             }
 
+            if (search?.ClientId != null)
+            {
+                query = query.Where(x => x.ClientsChild.ClientId == search.ClientId);
+            }
+
+            if (!string.IsNullOrWhiteSpace(search?.ClientUsername))
+            {
+                query = query.Where(x => x.ClientsChild.Client.User.Username == search.ClientUsername);
+            }
+
+
+            if (search?.ServiceTypeId != null)
+            {
+                query = query.Where(x => x.EmployeeAvailability.Service.ServiceTypeId == search.ServiceTypeId);
+            }
+
+            if (!string.IsNullOrWhiteSpace(search?.ServiceNameGTE))
+            {
+                query = query.Where(x => x.EmployeeAvailability.Service.Name.StartsWith(search.ServiceNameGTE));
+            }
 
             if (!string.IsNullOrWhiteSpace(search?.SortBy))
             {
@@ -119,6 +139,7 @@ namespace CareConnect.Services
                     additionalData.IncludeList.Add("EmployeeAvailability.Employee");
                     additionalData.IncludeList.Add("EmployeeAvailability.Employee.User");
                     additionalData.IncludeList.Add("EmployeeAvailability.Service");
+                    additionalData.IncludeList.Add("EmployeeAvailability.Service.ServiceType");
                 }
 
                 if (additionalData.IsAttendanceStatusIncluded.HasValue && additionalData.IsAttendanceStatusIncluded == true)

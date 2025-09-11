@@ -28,5 +28,15 @@ namespace CareConnect.Models.SearchObjects
         public string? ChildFirstName { get; set; } 
 
         public string? ChildLastName { get; set; }
+
+        public int? ClientId { get; set; }
+        
+        public string? ClientUsername { get; set; }
+
+        public int? ServiceTypeId { get; set; }
+
+        public string? ServiceNameGTE { get; set; }
+
+
     }
 }

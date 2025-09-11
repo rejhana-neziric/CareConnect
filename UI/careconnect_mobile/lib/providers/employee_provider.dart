@@ -1,4 +1,4 @@
-import 'package:careconnect_mobile/models/employee.dart';
+import 'package:careconnect_mobile/models/responses/employee.dart';
 import 'package:careconnect_mobile/providers/base_provider.dart';
 
 class EmployeeProvider extends BaseProvider<Employee> {

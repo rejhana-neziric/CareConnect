@@ -1,6 +1,6 @@
-import 'package:careconnect_mobile/layouts/master_screen.dart';
-import 'package:careconnect_mobile/models/employee.dart';
-import 'package:careconnect_mobile/models/search_result.dart';
+import 'package:careconnect_mobile/core/layouts/master_screen.dart';
+import 'package:careconnect_mobile/models/responses/employee.dart';
+import 'package:careconnect_mobile/models/responses/search_result.dart';
 import 'package:careconnect_mobile/providers/employee_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -26,7 +26,7 @@ class _EmployeeListScreenState extends State<EmployeeListScreen> {
   }
 
   Future loadData() async {
-    var tmpData = await _employeeProvider?.get();
+    var tmpData = await _employeeProvider.get();
     setState(() {
       data = tmpData;
     });
@@ -42,19 +42,19 @@ class _EmployeeListScreenState extends State<EmployeeListScreen> {
           child: Column(
             children: [
               _buildEmployeeSearch(),
-              Container(
-                height: 500,
-                child: GridView(
-                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 2,
-                    childAspectRatio: 4 / 3,
-                    crossAxisSpacing: 10,
-                    mainAxisExtent: 30,
-                  ),
-                  scrollDirection: Axis.horizontal,
-                  children: _buildEmployeeCardList(),
-                ),
-              ),
+              // Container(
+              //   height: 500,
+              //   child: GridView(
+              //     gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+              //       crossAxisCount: 2,
+              //       childAspectRatio: 4 / 3,
+              //       crossAxisSpacing: 10,
+              //       mainAxisExtent: 30,
+              //     ),
+              //     scrollDirection: Axis.horizontal,
+              //     children: _buildEmployeeCardList(),
+              //   ),
+              // ),
             ],
           ),
         ),
