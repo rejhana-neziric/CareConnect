@@ -155,6 +155,7 @@ public static class Permissions
         public const string Update = "Permissions.Service.Update";
         public const string Delete = "Permissions.Service.Delete";
         public const string GetStatistics = "Permissions.Service.GetStatistics";
+        public const string GetEmployeesForService = "Permissions.Service.GetEmployeesForService";
     }
     public static class ServiceType
     {

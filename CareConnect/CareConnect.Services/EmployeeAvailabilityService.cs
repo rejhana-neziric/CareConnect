@@ -53,6 +53,16 @@ namespace CareConnect.Services
                 query = query.Where(x => x.Service != null && x.Service.Name.StartsWith(search.ServiceNameGTE));
             }
 
+            if(search?.EmployeeId.HasValue == true)
+            {
+                query = query.Where(x => x.EmployeeId == search.EmployeeId);
+            }
+
+            if (search?.ServiceId.HasValue == true)
+            {
+                query = query.Where(x => x.ServiceId == search.ServiceId);
+            }
+
             return query;
         }
 

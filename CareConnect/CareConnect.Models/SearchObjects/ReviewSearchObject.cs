@@ -25,5 +25,7 @@ namespace CareConnect.Models.SearchObjects
         public string? EmployeeFirstNameGTE { get; set; } = null!;
 
         public string? EmployeeLastNameGTE { get; set; } = null!;
+
+        public int? EmployeeId { get; set; }
     }
 }

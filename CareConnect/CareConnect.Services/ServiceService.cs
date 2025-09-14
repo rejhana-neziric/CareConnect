@@ -4,6 +4,7 @@ using CareConnect.Models.SearchObjects;
 using CareConnect.Services.Database;
 using MapsterMapper;
 using Microsoft.EntityFrameworkCore;
+using System.Xml;
 using static Permissions;
 
 namespace CareConnect.Services
@@ -25,7 +26,15 @@ namespace CareConnect.Services
 
             if (search?.Price.HasValue == true)
             {
-                query = query.Where(x => x.Price == search.Price);
+                if(search.Price.Value > 0)
+                {
+                    query = query.Where(x => x.Price == search.Price);
+                }
+                else
+                {
+                    query = query.Where(x => x.Price == null);
+
+                }
             }
 
             if (search?.MemberPrice.HasValue == true)
@@ -138,6 +147,25 @@ namespace CareConnect.Services
                 AverageMemberPrice = Context.Services.Average(x => x.MemberPrice),
 
             };
+        }
+
+
+        public List<Models.Responses.Employee> GetEmployeesForService(int serviceId)
+        {
+            var service = Context.Services.Find(serviceId);
+
+            if (service == null) return null;
+            
+            var employees = Context.EmployeeAvailabilities.Where(x => x.ServiceId == serviceId)
+                                                          .Include(x => x.Employee)
+                                                                .ThenInclude(x => x.User)
+                                                          .Include(x => x.Employee)
+                                                                .ThenInclude(x => x.Qualification)
+                                                          .Select(x => x.Employee)
+                                                          .Distinct()
+                                                          .ToList() ;  
+
+            return Mapper.Map<List<Models.Responses.Employee>>(employees); 
         }
     }
 }

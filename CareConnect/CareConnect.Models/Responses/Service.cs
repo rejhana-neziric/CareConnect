@@ -16,7 +16,6 @@ namespace CareConnect.Models.Responses
 
         public int ServiceTypeId { get; set; }
 
-
         public ServiceType ServiceType { get; set; }
 
         public bool IsActive { get; set; } 

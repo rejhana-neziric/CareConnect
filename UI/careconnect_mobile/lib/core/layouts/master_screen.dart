@@ -6,7 +6,9 @@ import 'package:careconnect_mobile/screens/employee_list_screen.dart';
 import 'package:careconnect_mobile/screens/home_screen.dart';
 import 'package:careconnect_mobile/screens/login_screen.dart';
 import 'package:careconnect_mobile/screens/my_appointments_screen.dart';
+import 'package:careconnect_mobile/screens/services_list_screen.dart';
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:provider/provider.dart';
 
 class MasterScreen extends StatefulWidget {
@@ -50,6 +52,13 @@ class _MasterScreenState extends State<MasterScreen> {
               title: "My appointments",
               icon: Icons.event,
               screen: const MyAppointmentsScreen(),
+            ),
+
+            _buildDrawerItem(
+              context,
+              title: "Services",
+              icon: FontAwesomeIcons.handHoldingHeart,
+              screen: const ServicesListScreen(),
             ),
             _buildDrawerItem(
               context,

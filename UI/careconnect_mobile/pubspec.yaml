@@ -42,6 +42,7 @@ dependencies:
   form_builder_validators: ^11.2.0
   shared_preferences: ^2.5.3
   font_awesome_flutter: ^10.10.0
+  flutter_rating_bar: ^4.0.1
 
 dev_dependencies:
   flutter_test:

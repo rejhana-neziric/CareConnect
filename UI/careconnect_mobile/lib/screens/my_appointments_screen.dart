@@ -220,52 +220,56 @@ class _MyAppointmentsScreenState extends State<MyAppointmentsScreen> {
     showGenericFilter(
       context: context,
       config: foodFilterConfig,
-      onApply: (filters) {
-        setState(() {
-          appliedFilters = filters;
-
-          final serviceValue = getFirstFilterValue('service type');
-          selectedServiceTypeId =
-              (serviceValue.isNotEmpty && serviceValue != 'all')
-              ? int.tryParse(serviceValue)
-              : null;
-
-          final statusValue = getFirstFilterValue('status');
-          selectedStatus = (statusValue == 'all' || statusValue.isEmpty)
-              ? null
-              : statusValue;
-          selectedStatusKey = statusValue.isNotEmpty ? statusValue : 'all';
-
-          final sortByValue = getFirstFilterValue('sort by');
-          _sortBy = (sortByValue == 'notSorted' || sortByValue.isEmpty)
-              ? null
-              : sortByValue;
-
-          final sortDirectionValue = getFirstFilterValue('sort direction');
-          _sortAscending = sortDirectionValue != 'dsc';
-        });
-
-        loadAppointments();
-      },
-      onClearAll: () {
-        setState(() {
-          appliedFilters = {
-            'status': ['all'],
-            'service type': ['all'],
-            'sort by': ['notSorted'],
-            'sort direction': ['asc'],
-          };
-
-          selectedServiceTypeId = null;
-          selectedStatus = null;
-          selectedStatusKey = 'all';
-          _sortBy = null;
-          _sortAscending = true;
-        });
-
-        loadAppointments();
-      },
+      initialFilters: appliedFilters,
+      onApply: _handleFilterApply,
+      onClearAll: _handleClearAll,
     );
+  }
+
+  void _handleFilterApply(Map<String, List<String>> filters) {
+    setState(() {
+      appliedFilters = filters;
+
+      final serviceValue = getFirstFilterValue('service type');
+      selectedServiceTypeId = (serviceValue.isNotEmpty && serviceValue != 'all')
+          ? int.tryParse(serviceValue)
+          : null;
+
+      final statusValue = getFirstFilterValue('status');
+      selectedStatus = (statusValue == 'all' || statusValue.isEmpty)
+          ? null
+          : statusValue;
+      selectedStatusKey = statusValue.isNotEmpty ? statusValue : 'all';
+
+      final sortByValue = getFirstFilterValue('sort by');
+      _sortBy = (sortByValue == 'notSorted' || sortByValue.isEmpty)
+          ? null
+          : sortByValue;
+
+      final sortDirectionValue = getFirstFilterValue('sort direction');
+      _sortAscending = sortDirectionValue != 'dsc';
+    });
+
+    loadAppointments();
+  }
+
+  void _handleClearAll() {
+    setState(() {
+      appliedFilters = {
+        'status': ['all'],
+        'service type': ['all'],
+        'sort by': ['notSorted'],
+        'sort direction': ['asc'],
+      };
+
+      selectedServiceTypeId = null;
+      selectedStatus = null;
+      selectedStatusKey = 'all';
+      _sortBy = null;
+      _sortAscending = true;
+    });
+
+    loadAppointments();
   }
 
   @override

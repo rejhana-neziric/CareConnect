@@ -14,7 +14,7 @@ Report: GetReportData, GetKPI, GetInsights
 Review: Get, GetById, Insert, Update, Delete, ChangeVisibility, GetAverage
 Role: Get, GetById, Insert, Update, Delete, AssignPermission
 UsersRole: Get, GetById, Insert, Update, Delete
-Service: Get, GetById, Insert, Update, Delete, GetStatistics
+Service: Get, GetById, Insert, Update, Delete, GetStatistics, GetEmployeesForService
 ServiceType: Get, GetById, Insert, Update, Delete
 Session: Get, GetById, Insert, Update, Delete
 User: Login, GetPermission

@@ -8,5 +8,7 @@ namespace CareConnect.Services
     {
         public ServiceStatistics GetStatistics();
 
+        public List<Employee> GetEmployeesForService(int serviceId); 
+
     }
 }

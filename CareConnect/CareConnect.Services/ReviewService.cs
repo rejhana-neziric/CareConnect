@@ -80,6 +80,11 @@ namespace CareConnect.Services
                 query = query.Where(x => x.Employee.User.LastName.StartsWith(search.EmployeeLastNameGTE));
             }
 
+            if (search?.EmployeeId.HasValue == true)
+            {
+                query = query.Where(x => x.Employee.User.UserId == search.EmployeeId);
+            }
+
             if (!string.IsNullOrWhiteSpace(search?.SortBy))
             {
                 query = search?.SortBy switch

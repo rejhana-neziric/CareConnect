@@ -19,5 +19,12 @@ namespace CareConnect.API.Controllers
         {
             return (_service as ServiceService).GetStatistics();
         }
+
+        [HttpGet("{serviceId}/employees")]
+        [PermissionAuthorize("GetEmployeesForService")]
+        public List<Models.Responses.Employee> GetEmployeesForService(int serviceId)
+        { 
+            return (_service as ServiceService).GetEmployeesForService(serviceId);
+        }
     }
 }

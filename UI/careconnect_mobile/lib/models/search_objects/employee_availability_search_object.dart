@@ -13,6 +13,8 @@ class EmployeeAvailabilitySearchObject {
   String? employeeFirstNameGTE;
   String? employeeLastNameGTE;
   String? serviceNameGTE;
+  int? employeeId;
+  int? serviceId;
   int? page;
   String? sortBy;
   bool? sortAscending;
@@ -28,6 +30,8 @@ class EmployeeAvailabilitySearchObject {
     this.employeeFirstNameGTE,
     this.employeeLastNameGTE,
     this.serviceNameGTE,
+    this.employeeId,
+    this.serviceId,
     this.page,
     this.sortBy,
     this.sortAscending,
