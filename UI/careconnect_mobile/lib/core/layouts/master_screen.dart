@@ -7,6 +7,7 @@ import 'package:careconnect_mobile/screens/home_screen.dart';
 import 'package:careconnect_mobile/screens/login_screen.dart';
 import 'package:careconnect_mobile/screens/my_appointments_screen.dart';
 import 'package:careconnect_mobile/screens/services_list_screen.dart';
+import 'package:careconnect_mobile/screens/workshops_list_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:provider/provider.dart';
@@ -53,12 +54,17 @@ class _MasterScreenState extends State<MasterScreen> {
               icon: Icons.event,
               screen: const MyAppointmentsScreen(),
             ),
-
             _buildDrawerItem(
               context,
               title: "Services",
               icon: FontAwesomeIcons.handHoldingHeart,
               screen: const ServicesListScreen(),
+            ),
+            _buildDrawerItem(
+              context,
+              title: "Workshops",
+              icon: FontAwesomeIcons.puzzlePiece,
+              screen: const WorkshopsListScreen(),
             ),
             _buildDrawerItem(
               context,

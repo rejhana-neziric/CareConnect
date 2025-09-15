@@ -9,6 +9,7 @@ import 'package:careconnect_mobile/providers/review_provider.dart';
 import 'package:careconnect_mobile/providers/service_provider.dart';
 import 'package:careconnect_mobile/providers/service_type_provider.dart';
 import 'package:careconnect_mobile/providers/user_provider.dart';
+import 'package:careconnect_mobile/providers/workshop_provider.dart';
 import 'package:careconnect_mobile/screens/login_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -38,6 +39,9 @@ void main() {
         ChangeNotifierProvider<ReviewProvider>(create: (_) => ReviewProvider()),
         ChangeNotifierProvider<EmployeeAvailabilityProvider>(
           create: (_) => EmployeeAvailabilityProvider(),
+        ),
+        ChangeNotifierProvider<WorkshopProvider>(
+          create: (_) => WorkshopProvider(),
         ),
       ],
       child: const MyApp(),
