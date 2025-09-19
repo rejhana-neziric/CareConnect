@@ -181,9 +181,20 @@ class _LoginScreenState extends State<LoginScreen> {
                                       );
 
                                       if (response != null) {
+                                        if (response.status == false) {
+                                          CustomSnackbar.show(
+                                            context,
+                                            message:
+                                                'Your account has been deactivated. Contact admin to reactivate it.',
+                                            type: SnackbarType.error,
+                                          );
+                                          return;
+                                        }
+
                                         getPermissions(response.username);
 
                                         final authUser = AuthUser(
+                                          id: response.userId,
                                           username: response.username,
                                           roles: response.roles,
                                           permissions: permissions ?? [],

@@ -8,6 +8,8 @@ part of 'user_update_request.dart';
 
 UserUpdateRequest _$UserUpdateRequestFromJson(Map<String, dynamic> json) =>
     UserUpdateRequest(
+      firstName: json['firstName'] as String?,
+      lastName: json['lastName'] as String?,
       phoneNumber: json['phoneNumber'] as String?,
       username: json['username'] as String?,
       password: json['password'] as String?,
@@ -19,6 +21,8 @@ UserUpdateRequest _$UserUpdateRequestFromJson(Map<String, dynamic> json) =>
 
 Map<String, dynamic> _$UserUpdateRequestToJson(UserUpdateRequest instance) =>
     <String, dynamic>{
+      'firstName': instance.firstName,
+      'lastName': instance.lastName,
       'phoneNumber': instance.phoneNumber,
       'username': instance.username,
       'password': instance.password,

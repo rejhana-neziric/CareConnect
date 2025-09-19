@@ -55,6 +55,8 @@ class ClientsChildFormProvider
           clientUpdateRequest: ClientUpdateRequest(
             employmentStatus: formData['employmentStatus'],
             user: UserUpdateRequest(
+              firstName: formData['firstName'],
+              lastName: formData['lastName'],
               phoneNumber: formData['phoneNumber'],
               username: formData['username'],
               status: formData['status'],

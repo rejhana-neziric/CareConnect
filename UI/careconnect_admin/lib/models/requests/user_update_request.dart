@@ -4,6 +4,8 @@ part 'user_update_request.g.dart'; // Don't open or edit this
 
 @JsonSerializable()
 class UserUpdateRequest {
+  final String? firstName;
+  final String? lastName;
   final String? phoneNumber;
   final String? username;
   final String? password;
@@ -13,6 +15,8 @@ class UserUpdateRequest {
   final String? address;
 
   UserUpdateRequest({
+    this.firstName,
+    this.lastName,
     this.phoneNumber,
     this.username,
     this.password,

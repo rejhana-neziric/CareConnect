@@ -208,7 +208,7 @@ class _ClientDetailsScreenState extends State<ClientDetailsScreen> {
                             label: 'First Name',
                             required: true,
                             validator: clientsChildFormProvider.validateName,
-                            enabled: !clientsChildFormProvider.isUpdate,
+                            //  enabled: !clientsChildFormProvider.isUpdate,
                           ),
                           CustomDateField(
                             width: 400,
@@ -248,7 +248,7 @@ class _ClientDetailsScreenState extends State<ClientDetailsScreen> {
                             label: 'Last Name',
                             required: true,
                             validator: clientsChildFormProvider.validateName,
-                            enabled: !clientsChildFormProvider.isUpdate,
+                            //   enabled: !clientsChildFormProvider.isUpdate,
                           ),
                           CustomDropdownField<String>(
                             width: 400,

@@ -1,11 +1,14 @@
 import 'package:careconnect_mobile/core/theme/theme_notifier.dart';
 import 'package:careconnect_mobile/models/auth_credentials.dart';
+import 'package:careconnect_mobile/models/responses/client.dart';
+import 'package:careconnect_mobile/models/responses/user.dart';
 import 'package:careconnect_mobile/providers/auth_provider.dart';
 import 'package:careconnect_mobile/screens/client_list_screen.dart';
 import 'package:careconnect_mobile/screens/employee_list_screen.dart';
 import 'package:careconnect_mobile/screens/home_screen.dart';
 import 'package:careconnect_mobile/screens/login_screen.dart';
 import 'package:careconnect_mobile/screens/my_appointments_screen.dart';
+import 'package:careconnect_mobile/screens/profile/profile_screen.dart';
 import 'package:careconnect_mobile/screens/services_list_screen.dart';
 import 'package:careconnect_mobile/screens/workshops_list_screen.dart';
 import 'package:flutter/material.dart';
@@ -28,6 +31,22 @@ class _MasterScreenState extends State<MasterScreen> {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
     final themeNotifier = Provider.of<ThemeNotifier>(context);
+
+    final user = User(
+      userId: 12345,
+      firstName: 'John',
+      lastName: 'Doe',
+      email: 'john.doe@example.com',
+      phoneNumber: '+1234567890',
+      username: 'johndoe',
+      birthDate: DateTime(1990, 5, 15),
+      gender: 'Male',
+      address: '123 Main St, City, State',
+      status: true,
+      roles: ['Admin', 'Manager', 'Developer'],
+    );
+
+    final client = Client(employmentStatus: true, user: user);
 
     return Scaffold(
       appBar: AppBar(
@@ -65,6 +84,13 @@ class _MasterScreenState extends State<MasterScreen> {
               title: "Workshops",
               icon: FontAwesomeIcons.puzzlePiece,
               screen: const WorkshopsListScreen(),
+            ),
+            _buildDrawerItem(
+              context,
+              title: "Profile",
+              icon: Icons.account_circle,
+              // screen: ProfileScreen(client: client),
+              screen: ProfileScreen(),
             ),
             _buildDrawerItem(
               context,

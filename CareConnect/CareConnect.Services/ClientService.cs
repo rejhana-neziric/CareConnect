@@ -114,7 +114,7 @@ namespace CareConnect.Services
         {
             return Context.Clients
                 .Include(c => c.User)
-                .Include(c => c.ClientsChildren)
+   ///             .Include(c => c.ClientsChildren)
                 .First(c => c.ClientId == id);
         }
 

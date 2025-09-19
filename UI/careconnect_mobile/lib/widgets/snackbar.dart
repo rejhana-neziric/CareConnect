@@ -7,13 +7,8 @@ class CustomSnackbar {
     BuildContext context, {
     required String message,
     SnackbarType type = SnackbarType.info,
-    String? actionLabel,
-    VoidCallback? onAction,
-    Color? backgroundColor,
-    IconData? icon,
     Duration duration = const Duration(seconds: 3),
-    double borderRadius = 8.0,
-    double elevation = 4.0,
+    IconData? icon,
   }) {
     Color bgColor;
     IconData defaultIcon;
@@ -21,51 +16,49 @@ class CustomSnackbar {
     switch (type) {
       case SnackbarType.success:
         bgColor = Colors.green.shade600;
-        defaultIcon = Icons.check_circle_outline_outlined;
+        defaultIcon = Icons.check_circle;
         break;
       case SnackbarType.warning:
         bgColor = Colors.orange.shade600;
-        defaultIcon = Icons.warning_amber_outlined;
+        defaultIcon = Icons.warning_amber_rounded;
         break;
       case SnackbarType.error:
         bgColor = Colors.red.shade600;
-        defaultIcon = Icons.error_outline;
+        defaultIcon = Icons.error;
         break;
       case SnackbarType.info:
         bgColor = Colors.blue.shade600;
-        defaultIcon = Icons.info_outline;
+        defaultIcon = Icons.info;
         break;
       case SnackbarType.custom:
-        bgColor = backgroundColor ?? Colors.grey.shade800;
-        defaultIcon = icon ?? Icons.notifications_none;
+        bgColor = Colors.grey.shade800;
+        defaultIcon = icon ?? Icons.notifications;
         break;
     }
 
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        behavior: SnackBarBehavior.floating,
-        backgroundColor: Colors.white, //bgColor,
-        elevation: elevation,
         duration: duration,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(borderRadius),
-        ),
+        behavior: SnackBarBehavior.floating, // full-width on mobile
+        backgroundColor: bgColor,
         content: Row(
           children: [
-            Icon(icon ?? defaultIcon, color: bgColor),
+            Icon(icon ?? defaultIcon, color: Colors.white),
             const SizedBox(width: 12),
             Expanded(
-              child: Text(message, style: TextStyle(color: bgColor)),
+              child: Text(
+                message,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 15,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
             ),
           ],
         ),
-        action: actionLabel != null
-            ? SnackBarAction(
-                label: actionLabel,
-                onPressed: onAction ?? () {},
-                textColor: Colors.white,
-              )
-            : null,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+        margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       ),
     );
   }

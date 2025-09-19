@@ -9,6 +9,9 @@ abstract class BaseProvider<T> with ChangeNotifier {
   static String? _baseUrl;
   String _endpoint = "";
 
+  SearchResult<T> _items = SearchResult<T>();
+  SearchResult<T> get item => _items;
+
   String get baseUrl => _baseUrl ?? "";
   String get endpoint => _endpoint;
 
@@ -49,6 +52,35 @@ abstract class BaseProvider<T> with ChangeNotifier {
       throw new Exception("Unknown error");
     }
     // print("response: ${response.request} ${response.statusCode}, ${response.body}");
+  }
+
+  Future<T> getById(int id, {dynamic filter}) async {
+    var url = "$_baseUrl$_endpoint/$id";
+
+    if (filter != null) {
+      var queryString = getQueryString(filter);
+      url = "$url?$queryString";
+    }
+
+    var uri = Uri.parse(url);
+    var headers = createHeaders();
+
+    var response = await http.get(uri, headers: headers);
+
+    if (isValidResponse(response)) {
+      print("Response body: '${response.body}'");
+      var data = jsonDecode(response.body);
+
+      print('Decoded data: $data');
+
+      T result = fromJson(data);
+
+      notifyListeners();
+
+      return result;
+    } else {
+      throw new Exception("Unknown error");
+    }
   }
 
   Future<T> insert(dynamic request) async {
