@@ -3,6 +3,7 @@ import 'package:careconnect_mobile/core/theme/theme_notifier.dart';
 import 'package:careconnect_mobile/providers/appointment_provider.dart';
 import 'package:careconnect_mobile/providers/attendance_status_provider.dart';
 import 'package:careconnect_mobile/providers/auth_provider.dart';
+import 'package:careconnect_mobile/providers/child_provider.dart';
 import 'package:careconnect_mobile/providers/client_provider.dart';
 import 'package:careconnect_mobile/providers/clients_child_provider.dart';
 import 'package:careconnect_mobile/providers/employee_availability_provider.dart';
@@ -49,6 +50,7 @@ void main() {
           create: (_) => ClientsChildProvider(),
         ),
         ChangeNotifierProvider<ClientProvider>(create: (_) => ClientProvider()),
+        ChangeNotifierProvider<ChildProvider>(create: (_) => ChildProvider()),
       ],
       child: const MyApp(),
     ),

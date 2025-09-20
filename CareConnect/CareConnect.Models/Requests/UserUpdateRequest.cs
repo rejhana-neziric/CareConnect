@@ -23,6 +23,7 @@ namespace CareConnect.Models.Requests
 
         public string? Address { get; set; }
 
+
         [JsonIgnore]
         public DateTime? ModifiedDate { get; set; } = DateTime.Now;
     }

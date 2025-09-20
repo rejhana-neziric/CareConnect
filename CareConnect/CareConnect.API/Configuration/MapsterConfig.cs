@@ -40,8 +40,8 @@ namespace CareConnect.API.Configuration
                 .NewConfig()
                 .PreserveReference(true)
                 .IgnoreNullValues(true)
-                .Ignore(dest => dest.ModifiedDate)
-                .Ignore(dest => dest.BirthDate);
+                .Ignore(dest => dest.ModifiedDate); 
+                //.Ignore(dest => dest.BirthDate);
 
             TypeAdapterConfig<InstructorUpdateRequest, Instructor>
                 .NewConfig()

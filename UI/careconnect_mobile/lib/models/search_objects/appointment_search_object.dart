@@ -18,6 +18,7 @@ class AppointmentSearchObject {
   String? childFirstName;
   String? childLastName;
   int? clientId;
+  int? childId;
   String? clientUsername;
   int? serviceTypeId;
   String? serviceNameGTE;
@@ -41,6 +42,7 @@ class AppointmentSearchObject {
     this.childFirstName,
     this.childLastName,
     this.clientId,
+    this.childId,
     this.clientUsername,
     this.serviceTypeId,
     this.serviceNameGTE,

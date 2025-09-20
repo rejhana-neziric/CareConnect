@@ -21,6 +21,16 @@ class Child {
     required this.diagnoses,
   });
 
+  int get age {
+    final now = DateTime.now();
+    int age = now.year - birthDate.year;
+    if (now.month < birthDate.month ||
+        (now.month == birthDate.month && now.day < birthDate.day)) {
+      age--;
+    }
+    return age;
+  }
+
   factory Child.fromJson(Map<String, dynamic> json) => _$ChildFromJson(json);
 
   Map<String, dynamic> toJson() => _$ChildToJson(this);

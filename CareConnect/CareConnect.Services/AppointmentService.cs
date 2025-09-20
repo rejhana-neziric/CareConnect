@@ -86,6 +86,11 @@ namespace CareConnect.Services
                 query = query.Where(x => x.ClientsChild.ClientId == search.ClientId);
             }
 
+            if (search?.ChildId != null)
+            {
+                query = query.Where(x => x.ClientsChild.ChildId == search.ChildId);
+            }
+
             if (!string.IsNullOrWhiteSpace(search?.ClientUsername))
             {
                 query = query.Where(x => x.ClientsChild.Client.User.Username == search.ClientUsername);

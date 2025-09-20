@@ -32,22 +32,6 @@ class _MasterScreenState extends State<MasterScreen> {
     final colorScheme = theme.colorScheme;
     final themeNotifier = Provider.of<ThemeNotifier>(context);
 
-    final user = User(
-      userId: 12345,
-      firstName: 'John',
-      lastName: 'Doe',
-      email: 'john.doe@example.com',
-      phoneNumber: '+1234567890',
-      username: 'johndoe',
-      birthDate: DateTime(1990, 5, 15),
-      gender: 'Male',
-      address: '123 Main St, City, State',
-      status: true,
-      roles: ['Admin', 'Manager', 'Developer'],
-    );
-
-    final client = Client(employmentStatus: true, user: user);
-
     return Scaffold(
       appBar: AppBar(
         title: Text(
@@ -89,7 +73,6 @@ class _MasterScreenState extends State<MasterScreen> {
               context,
               title: "Profile",
               icon: Icons.account_circle,
-              // screen: ProfileScreen(client: client),
               screen: ProfileScreen(),
             ),
             _buildDrawerItem(

@@ -1,7 +1,12 @@
 import 'package:careconnect_mobile/models/responses/user.dart';
 import 'package:flutter/material.dart';
 
-Widget buildProfileHeader(User? user, ColorScheme colorScheme) {
+Widget buildProfileHeader(
+  BuildContext context,
+  User? user,
+  ColorScheme colorScheme, {
+  bool backArrow = true,
+}) {
   return Container(
     width: double.infinity,
     padding: const EdgeInsets.symmetric(vertical: 40),
@@ -16,6 +21,15 @@ Widget buildProfileHeader(User? user, ColorScheme colorScheme) {
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
+        if (backArrow)
+          Row(
+            children: [
+              IconButton(
+                icon: const Icon(Icons.arrow_back, color: Colors.white),
+                onPressed: () => Navigator.of(context).pop(),
+              ),
+            ],
+          ),
         CircleAvatar(
           radius: 58,
           backgroundColor: Colors.white,

@@ -7,6 +7,8 @@ import 'package:careconnect_mobile/models/responses/user.dart';
 import 'package:careconnect_mobile/providers/auth_provider.dart';
 import 'package:careconnect_mobile/providers/client_provider.dart';
 import 'package:careconnect_mobile/providers/clients_child_provider.dart';
+import 'package:careconnect_mobile/screens/profile/child_details_screen.dart';
+import 'package:careconnect_mobile/screens/profile/edit_child_screen.dart';
 import 'package:careconnect_mobile/screens/profile/edit_profile_screen.dart';
 import 'package:careconnect_mobile/screens/login_screen.dart';
 import 'package:careconnect_mobile/screens/profile/widgets/profile_header.dart';
@@ -118,7 +120,7 @@ class _ProfileScreenState extends State<ProfileScreen>
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              buildProfileHeader(user, colorScheme),
+              buildProfileHeader(context, user, colorScheme, backArrow: false),
               Padding(
                 padding: const EdgeInsets.all(20.0),
                 child: Column(
@@ -246,7 +248,7 @@ class _ProfileScreenState extends State<ProfileScreen>
   }
 
   Widget _buildContactInfoCard(User? user, ColorScheme colorScheme) {
-    return _buildInfoCard('Contact Information', [
+    return _buildInfoCard('Contact Information', icon: Icons.contact_phone, [
       if (user != null && user.phoneNumber != null)
         _buildInfoRow2(
           Icons.phone_outlined,
@@ -430,15 +432,24 @@ class _ProfileScreenState extends State<ProfileScreen>
         },
         separatorBuilder: (context, index) => const Divider(),
       ),
+
+      Center(
+        child: TextButton.icon(
+          onPressed: _addChild,
+          icon: Icon(Icons.add, color: colorScheme.primary),
+          label: Text(
+            "Add Child",
+            style: TextStyle(color: colorScheme.primary),
+          ),
+        ),
+      ),
     ], colorScheme);
   }
 
   Widget _buildChildInfo(Child child, ColorScheme colorScheme) {
-    final age = DateTime.now().year - child.birthDate.year;
-
     return Container(
       width: double.infinity,
-      margin: const EdgeInsets.symmetric(vertical: 10),
+      margin: const EdgeInsets.symmetric(vertical: 5),
       //padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: colorScheme.surfaceContainerLowest,
@@ -468,7 +479,6 @@ class _ProfileScreenState extends State<ProfileScreen>
             ),
           ),
           const SizedBox(width: 16),
-
           // Info
           Expanded(
             child: Column(
@@ -497,49 +507,101 @@ class _ProfileScreenState extends State<ProfileScreen>
 
                 // Age
                 Text(
-                  "Age: $age",
+                  "Age: ${child.age}",
                   style: TextStyle(fontSize: 14, color: Colors.grey[700]),
                 ),
 
                 const SizedBox(height: 8),
 
                 // Diagnoses
-                if (child.diagnoses.isNotEmpty)
-                  Wrap(
-                    spacing: 6,
-                    runSpacing: -6,
-                    children: child.diagnoses
-                        .map(
-                          (d) => Chip(
-                            label: Text(d.name),
-                            backgroundColor: colorScheme.primary.withOpacity(
-                              0.1,
-                            ),
-                            labelStyle: TextStyle(
-                              color: colorScheme.primary,
-                              fontSize: 12,
-                            ),
-                            materialTapTargetSize:
-                                MaterialTapTargetSize.shrinkWrap,
-                          ),
-                        )
-                        .toList(),
-                  )
-                else
-                  Text(
-                    "No diagnoses",
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: Colors.grey[500],
-                      fontStyle: FontStyle.italic,
+                // if (child.diagnoses.isNotEmpty)
+                //   Wrap(
+                //     spacing: 6,
+                //     runSpacing: -6,
+                //     children: child.diagnoses
+                //         .map(
+                //           (d) => Chip(
+                //             label: Text(d.name),
+                //             backgroundColor: colorScheme.primary.withOpacity(
+                //               0.1,
+                //             ),
+                //             labelStyle: TextStyle(
+                //               color: colorScheme.primary,
+                //               fontSize: 12,
+                //             ),
+                //             materialTapTargetSize:
+                //                 MaterialTapTargetSize.shrinkWrap,
+                //           ),
+                //         )
+                //         .toList(),
+                //   )
+                // else
+                //   Text(
+                //     "No diagnoses",
+                //     style: TextStyle(
+                //       fontSize: 12,
+                //       color: Colors.grey[500],
+                //       fontStyle: FontStyle.italic,
+                //     ),
+                //   ),
+                OutlinedButton.icon(
+                  onPressed: () => _viewChildInfo(child),
+                  icon: const Icon(Icons.person, size: 18),
+                  label: const Text('View details'),
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: colorScheme.primary,
+                    side: BorderSide(color: colorScheme.primary),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    padding: const EdgeInsets.symmetric(
+                      vertical: 12,
+                      horizontal: 16,
                     ),
                   ),
+                ),
               ],
             ),
           ),
         ],
       ),
     );
+  }
+
+  void _viewChildInfo(Child child) async {
+    await Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => ChildDetailsScreen(child: child)),
+    );
+
+    await loadChildren();
+    setState(() {});
+  }
+
+  void _addChild() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => EditChildScreen(
+          onChildInserted: (insertedChild) async {
+            await clientsChildProvider.addChildToClient(
+              currenClient!.user!.userId,
+              insertedChild,
+            );
+
+            await _loadClientAndChildren();
+
+            if (mounted) {
+              setState(() {});
+            }
+          },
+        ),
+      ),
+    );
+
+    loadChildren();
+
+    setState(() {});
   }
 
   Future<bool> _deactivateAccount() async {
@@ -646,7 +708,6 @@ class _ProfileScreenState extends State<ProfileScreen>
       children: [
         PrimaryButton(
           label: 'Edit Profile',
-          //icon: Icons.save,
           isLoading: false,
           type: ButtonType.filled,
           onPressed: () {

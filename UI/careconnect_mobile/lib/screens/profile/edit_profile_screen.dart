@@ -4,11 +4,10 @@ import 'package:careconnect_mobile/models/requests/user_update_request.dart';
 import 'package:careconnect_mobile/models/responses/client.dart';
 import 'package:careconnect_mobile/screens/profile/widgets/profile_header.dart';
 import 'package:careconnect_mobile/widgets/confim_dialog.dart';
+import 'package:careconnect_mobile/widgets/custom_text_field.dart';
 import 'package:careconnect_mobile/widgets/primary_button.dart';
 import 'package:careconnect_mobile/widgets/snackbar.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:intl/intl.dart';
 
 class EditProfileScreen extends StatefulWidget {
   final Client client;
@@ -43,14 +42,14 @@ class _EditProfileScreenState extends State<EditProfileScreen>
       TextEditingController();
 
   // Form state
-  DateTime? _selectedBirthDate;
-  String _selectedGender = 'M';
+  // DateTime? _selectedDate;
+  // String _selectedGender = 'M';
   bool _accountStatus = true;
   bool _employmentStatus = true;
   bool _isLoading = false;
 
   // Available options
-  final List<String> _genderOptions = ['M', 'F'];
+  // final List<String> _genderOptions = ['M', 'F'];
 
   @override
   void initState() {
@@ -72,9 +71,8 @@ class _EditProfileScreenState extends State<EditProfileScreen>
     _phoneController = TextEditingController(text: user?.phoneNumber ?? '');
     _usernameController = TextEditingController(text: user?.username ?? '');
     _addressController = TextEditingController(text: user?.address ?? '');
-
-    _selectedBirthDate = user?.birthDate;
-    _selectedGender = user?.gender ?? 'Male';
+    // _selectedDate = user?.birthDate;
+    // _selectedGender = user?.gender ?? 'Male';
     _accountStatus = user?.status ?? true;
     _employmentStatus = widget.client.employmentStatus;
   }
@@ -118,7 +116,7 @@ class _EditProfileScreenState extends State<EditProfileScreen>
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                buildProfileHeader(widget.client.user, colorScheme),
+                buildProfileHeader(context, widget.client.user, colorScheme),
                 Padding(
                   padding: const EdgeInsets.all(20.0),
                   child: Column(
@@ -149,7 +147,7 @@ class _EditProfileScreenState extends State<EditProfileScreen>
       Icons.person,
       colorScheme.surfaceContainerLowest,
       [
-        _buildTextFormField(
+        customTextField(
           controller: _firstNameController,
           label: 'First Name',
           icon: Icons.person_outline,
@@ -164,7 +162,7 @@ class _EditProfileScreenState extends State<EditProfileScreen>
           colorScheme: colorScheme,
         ),
         const SizedBox(height: 16),
-        _buildTextFormField(
+        customTextField(
           controller: _lastNameController,
           label: 'Last Name',
           icon: Icons.person_outline,
@@ -179,7 +177,7 @@ class _EditProfileScreenState extends State<EditProfileScreen>
           colorScheme: colorScheme,
         ),
         const SizedBox(height: 16),
-        _buildTextFormField(
+        customTextField(
           controller: _usernameController,
           label: 'Username',
           icon: Icons.alternate_email,
@@ -198,7 +196,7 @@ class _EditProfileScreenState extends State<EditProfileScreen>
           colorScheme: colorScheme,
         ),
         const SizedBox(height: 16),
-        _buildTextFormField(
+        customTextField(
           controller: _passwordController,
           label: 'New Password',
           icon: Icons.password_outlined,
@@ -218,7 +216,7 @@ class _EditProfileScreenState extends State<EditProfileScreen>
         ),
         if (_passwordController.text.isNotEmpty) ...[
           const SizedBox(height: 16),
-          _buildTextFormField(
+          customTextField(
             controller: _confirmationPasswordController,
             label: 'Confirmation Passwornd',
             icon: Icons.password_outlined,
@@ -235,7 +233,7 @@ class _EditProfileScreenState extends State<EditProfileScreen>
           ),
         ],
         const SizedBox(height: 16),
-        _buildTextFormField(
+        customTextField(
           controller: _addressController,
           label: 'Address',
           icon: Icons.location_on_outlined,
@@ -265,7 +263,7 @@ class _EditProfileScreenState extends State<EditProfileScreen>
       Icons.contact_phone,
       colorScheme.surfaceContainerLowest,
       [
-        _buildTextFormField(
+        customTextField(
           controller: _phoneController,
           label: 'Phone Number',
           icon: Icons.phone_outlined,
@@ -289,7 +287,7 @@ class _EditProfileScreenState extends State<EditProfileScreen>
         ),
         const SizedBox(height: 16),
 
-        _buildTextFormField(
+        customTextField(
           controller: _emailController,
           label: 'Email',
           icon: Icons.email_outlined,
@@ -379,117 +377,6 @@ class _EditProfileScreenState extends State<EditProfileScreen>
     );
   }
 
-  Widget _buildTextFormField({
-    required TextEditingController controller,
-    required String label,
-    required IconData icon,
-    String? Function(String?)? validator,
-    TextInputType? keyboardType,
-    List<TextInputFormatter>? inputFormatters,
-    int maxLines = 1,
-    required ColorScheme colorScheme,
-    String? prefixText,
-  }) {
-    return TextFormField(
-      controller: controller,
-      validator: validator,
-      keyboardType: keyboardType,
-      inputFormatters: inputFormatters,
-      maxLines: maxLines,
-
-      decoration: InputDecoration(
-        labelText: label,
-        prefixIcon: Icon(icon, color: colorScheme.primary),
-        prefixText: prefixText,
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: Colors.grey.shade300),
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: colorScheme.primary),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: colorScheme.primaryContainer, width: 2),
-        ),
-        filled: true,
-        fillColor: colorScheme.surfaceContainerLow,
-        contentPadding: const EdgeInsets.symmetric(
-          horizontal: 16,
-          vertical: 16,
-        ),
-      ),
-    );
-  }
-
-  Widget _buildGenderDropdown(ColorScheme colorScheme) {
-    return DropdownButtonFormField<String>(
-      value: _selectedGender,
-      decoration: InputDecoration(
-        enabled: false,
-        labelText: 'Gender',
-        prefixIcon: Icon(Icons.wc, color: colorScheme.primary),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: Colors.grey.shade300),
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: colorScheme.primary),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: colorScheme.primaryContainer, width: 2),
-        ),
-        filled: true,
-        fillColor: colorScheme.surfaceContainerLow,
-      ),
-      items: _genderOptions.map((gender) {
-        return DropdownMenuItem<String>(value: gender, child: Text(gender));
-      }).toList(),
-      onChanged: (value) {
-        setState(() {
-          _selectedGender = value!;
-        });
-      },
-    );
-  }
-
-  Widget _buildDatePicker(ColorScheme colorScheme) {
-    return InkWell(
-      onTap: () => _selectBirthDate(),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-        decoration: BoxDecoration(
-          border: Border.all(color: colorScheme.primary),
-          borderRadius: BorderRadius.circular(12),
-          color: colorScheme.surfaceContainerLow,
-        ),
-        child: Row(
-          children: [
-            Icon(Icons.calendar_today, color: colorScheme.primary),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Text(
-                _selectedBirthDate != null
-                    ? 'Birth Date: ${DateFormat('d. MM. yyyy.').format(_selectedBirthDate!)}'
-                    : 'Select Birth Date',
-                style: TextStyle(
-                  fontSize: 16,
-                  color: _selectedBirthDate != null
-                      ? colorScheme.onSurface
-                      : Colors.grey.shade600,
-                ),
-              ),
-            ),
-            Icon(Icons.arrow_drop_down, color: Colors.grey.shade600),
-          ],
-        ),
-      ),
-    );
-  }
-
   Widget _buildSwitchTile(
     String title,
     String subtitle,
@@ -500,7 +387,7 @@ class _EditProfileScreenState extends State<EditProfileScreen>
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: colorScheme.surfaceContainerLow, //Colors.grey.shade50,
+        color: colorScheme.surfaceContainerLow,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(color: Colors.grey.shade200),
       ),
@@ -554,35 +441,6 @@ class _EditProfileScreenState extends State<EditProfileScreen>
         ),
       ],
     );
-  }
-
-  Future<void> _selectBirthDate() async {
-    final DateTime? picked = await showDatePicker(
-      context: context,
-      initialDate:
-          _selectedBirthDate ??
-          DateTime.now().subtract(const Duration(days: 365 * 25)),
-      firstDate: DateTime(1900),
-      lastDate: DateTime.now(),
-      builder: (context, child) {
-        return Theme(
-          data: Theme.of(context).copyWith(
-            colorScheme: const ColorScheme.light(
-              primary: Colors.deepPurple,
-              onPrimary: Colors.white,
-              onSurface: Colors.black,
-            ),
-          ),
-          child: child!,
-        );
-      },
-    );
-
-    if (picked != null && picked != _selectedBirthDate) {
-      setState(() {
-        _selectedBirthDate = picked;
-      });
-    }
   }
 
   Future<void> _saveProfile() async {
