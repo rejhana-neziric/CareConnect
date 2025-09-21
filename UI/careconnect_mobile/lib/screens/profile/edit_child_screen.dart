@@ -3,11 +3,13 @@ import 'package:careconnect_mobile/models/requests/child_insert_request.dart';
 import 'package:careconnect_mobile/models/requests/child_update_request.dart';
 import 'package:careconnect_mobile/models/responses/child.dart';
 import 'package:careconnect_mobile/widgets/confim_dialog.dart';
-import 'package:careconnect_mobile/widgets/custom_date_field.dart';
 import 'package:careconnect_mobile/widgets/custom_text_field.dart';
 import 'package:careconnect_mobile/widgets/primary_button.dart';
 import 'package:careconnect_mobile/widgets/snackbar.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_form_builder/flutter_form_builder.dart';
+import 'package:form_builder_validators/form_builder_validators.dart';
+import 'package:intl/intl.dart';
 
 class EditChildScreen extends StatefulWidget {
   final Child? child;
@@ -26,16 +28,11 @@ class EditChildScreen extends StatefulWidget {
 }
 
 class _EditChildScreenState extends State<EditChildScreen> {
-  final _formKey = GlobalKey<FormState>();
-  final _firstNameController = TextEditingController();
-  final _lastNameController = TextEditingController();
-
-  DateTime _selectedDate = DateTime.now();
-  String _selectedGender = 'M';
+  final _formKey = GlobalKey<FormBuilderState>();
 
   late bool isEditing;
 
-  final Map<String, String> _genderOptions = {'M': 'Male', 'F': 'Female'};
+  Map<String, dynamic> _initialValue = {};
 
   @override
   void initState() {
@@ -44,17 +41,17 @@ class _EditChildScreenState extends State<EditChildScreen> {
     isEditing = widget.child == null ? false : true;
 
     if (isEditing && widget.child != null) {
-      _firstNameController.text = widget.child!.firstName;
-      _lastNameController.text = widget.child!.lastName;
-      _selectedDate = widget.child!.birthDate;
-      _selectedGender = widget.child!.gender;
+      _initialValue = {
+        'firstName': widget.child!.firstName,
+        'lastName': widget.child!.lastName,
+        'birthDate': widget.child!.birthDate,
+        'gender': widget.child!.gender,
+      };
     }
   }
 
   @override
   void dispose() {
-    _firstNameController.dispose();
-    _lastNameController.dispose();
     super.dispose();
   }
 
@@ -75,8 +72,9 @@ class _EditChildScreenState extends State<EditChildScreen> {
         ),
         centerTitle: true,
       ),
-      body: Form(
+      body: FormBuilder(
         key: _formKey,
+        initialValue: _initialValue,
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(20),
           child: Column(
@@ -112,100 +110,88 @@ class _EditChildScreenState extends State<EditChildScreen> {
               ),
             ),
             const SizedBox(height: 24),
-            customTextField(
-              controller: _firstNameController,
+
+            CustomTextField(
+              name: 'firstName',
               label: 'First Name',
-              icon: Icons.person_outline_rounded,
-              validator: (value) {
-                if (value == null || value.trim().isEmpty) {
-                  return 'This fiels is required.';
-                }
-                if (value.length < 2) {
-                  return 'Name must be at least 2 characters.';
-                }
-                if (value.length > 50) {
-                  return 'Name must not exceed 50 characters.';
-                }
-                return null;
-              },
-              colorScheme: colorScheme,
+              icon: Icons.person_outline,
+              validators: [
+                FormBuilderValidators.required(
+                  errorText: 'First name is required',
+                ),
+                FormBuilderValidators.minLength(
+                  2,
+                  errorText: 'Name must be at least 2 characters.',
+                ),
+                FormBuilderValidators.maxLength(
+                  50,
+                  errorText: 'Name must not exceed 50 characters.',
+                ),
+              ],
             ),
             const SizedBox(height: 20),
-            customTextField(
-              controller: _lastNameController,
+
+            CustomTextField(
+              name: 'lastName',
               label: 'Last Name',
-              icon: Icons.person_outline_rounded,
-              validator: (value) {
-                if (value == null || value.trim().isEmpty) {
-                  return 'This fiels is required.';
-                }
-                if (value.length < 2) {
-                  return 'Name must be at least 2 characters.';
-                }
-                if (value.length > 50) {
-                  return 'Name must not exceed 50 characters.';
-                }
-                return null;
-              },
-              colorScheme: colorScheme,
+              icon: Icons.person_outline,
+              validators: [
+                FormBuilderValidators.required(
+                  errorText: 'First name is required',
+                ),
+                FormBuilderValidators.minLength(
+                  2,
+                  errorText: 'Name must be at least 2 characters.',
+                ),
+                FormBuilderValidators.maxLength(
+                  50,
+                  errorText: 'Name must not exceed 50 characters.',
+                ),
+              ],
             ),
             const SizedBox(height: 20),
-            CustomDateField(
-              label: "Birth Date",
-              initialDate: _selectedDate,
-              onDateSelected: (date) {
-                setState(() {
-                  if (date != null) _selectedDate = date;
-                });
-              },
+
+            FormBuilderDateTimePicker(
+              name: 'birthDate',
+              decoration: InputDecoration(
+                labelText: 'Birth Date',
+                prefixIcon: const Icon(Icons.calendar_today_outlined),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+              inputType: InputType.date,
               validator: (date) {
                 if (date == null) {
                   return "Birth date is required";
                 }
                 return null;
               },
+              format: DateFormat('dd. MM. yyyy'),
             ),
+
             const SizedBox(height: 20),
-            if (!isEditing) _buildGenderDropdown(colorScheme),
+
+            if (!isEditing)
+              FormBuilderDropdown<String>(
+                name: 'gender',
+                decoration: InputDecoration(
+                  labelText: 'Gender',
+                  prefixIcon: const Icon(Icons.person_outline),
+                  prefixIconColor: colorScheme.primary,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                items: [
+                  DropdownMenuItem(value: 'M', child: Text('Male')),
+                  DropdownMenuItem(value: 'F', child: Text('Female')),
+                ],
+                validator: FormBuilderValidators.required(),
+              ),
           ],
         ),
       ),
-    );
-  }
-
-  Widget _buildGenderDropdown(ColorScheme colorScheme) {
-    return DropdownButtonFormField<String>(
-      value: _selectedGender,
-      decoration: InputDecoration(
-        enabled: false,
-        labelText: 'Gender',
-        prefixIcon: Icon(Icons.wc, color: colorScheme.primary),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: Colors.grey.shade300),
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: colorScheme.primary),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: colorScheme.primaryContainer, width: 2),
-        ),
-        filled: true,
-        fillColor: colorScheme.surfaceContainerLow,
-      ),
-      items: _genderOptions.entries.map((entry) {
-        return DropdownMenuItem<String>(
-          value: entry.key,
-          child: Text(entry.value),
-        );
-      }).toList(),
-      onChanged: (value) {
-        setState(() {
-          _selectedGender = value!;
-        });
-      },
     );
   }
 
@@ -233,7 +219,9 @@ class _EditChildScreenState extends State<EditChildScreen> {
   }
 
   Future<void> _save() async {
-    if (!_formKey.currentState!.validate()) {
+    final formState = _formKey.currentState;
+
+    if (formState == null || !formState.saveAndValidate()) {
       debugPrint('Form is not valid or state is null');
       return;
     }
@@ -256,17 +244,23 @@ class _EditChildScreenState extends State<EditChildScreen> {
       setState(() {});
     }
     try {
+      final formData = _formKey.currentState?.value;
+
+      if (formData == null) {
+        return;
+      }
+
       final request = isEditing
           ? ChildUpdateRequest(
-              firstName: _firstNameController.text,
-              lastName: _lastNameController.text,
-              birthDate: _selectedDate,
+              firstName: formData['firstName'],
+              lastName: formData['lastName'],
+              birthDate: formData['birthDate'],
             )
           : ChildInsertRequest(
-              firstName: _firstNameController.text,
-              lastName: _lastNameController.text,
-              birthDate: _selectedDate,
-              gender: _selectedGender,
+              firstName: formData['firstName'],
+              lastName: formData['lastName'],
+              birthDate: formData['birthDate'],
+              gender: formData['gender'],
             );
 
       if (isEditing) {

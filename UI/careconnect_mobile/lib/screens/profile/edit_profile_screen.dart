@@ -8,6 +8,8 @@ import 'package:careconnect_mobile/widgets/custom_text_field.dart';
 import 'package:careconnect_mobile/widgets/primary_button.dart';
 import 'package:careconnect_mobile/widgets/snackbar.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_form_builder/flutter_form_builder.dart';
+import 'package:form_builder_validators/form_builder_validators.dart';
 
 class EditProfileScreen extends StatefulWidget {
   final Client client;
@@ -25,56 +27,38 @@ class EditProfileScreen extends StatefulWidget {
 
 class _EditProfileScreenState extends State<EditProfileScreen>
     with SingleTickerProviderStateMixin {
-  final _formKey = GlobalKey<FormState>();
+  final _formKey = GlobalKey<FormBuilderState>();
+
   final _scrollController = ScrollController();
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
 
-  // Form controllers
-  late TextEditingController _firstNameController;
-  late TextEditingController _lastNameController;
-  late TextEditingController _emailController;
-  late TextEditingController _phoneController;
-  late TextEditingController _usernameController;
-  late TextEditingController _addressController;
-  final TextEditingController _passwordController = TextEditingController();
-  final TextEditingController _confirmationPasswordController =
-      TextEditingController();
-
-  // Form state
-  // DateTime? _selectedDate;
-  // String _selectedGender = 'M';
   bool _accountStatus = true;
   bool _employmentStatus = true;
   bool _isLoading = false;
 
-  // Available options
-  // final List<String> _genderOptions = ['M', 'F'];
+  Map<String, dynamic> _initialValue = {};
 
   @override
   void initState() {
     super.initState();
     _initializeControllers();
     _setupAnimation();
-
-    _passwordController.addListener(() {
-      setState(() {});
-    });
   }
 
   void _initializeControllers() {
     final user = widget.client.user;
 
-    _firstNameController = TextEditingController(text: user?.firstName ?? '');
-    _lastNameController = TextEditingController(text: user?.lastName ?? '');
-    _emailController = TextEditingController(text: user?.email ?? '');
-    _phoneController = TextEditingController(text: user?.phoneNumber ?? '');
-    _usernameController = TextEditingController(text: user?.username ?? '');
-    _addressController = TextEditingController(text: user?.address ?? '');
-    // _selectedDate = user?.birthDate;
-    // _selectedGender = user?.gender ?? 'Male';
-    _accountStatus = user?.status ?? true;
-    _employmentStatus = widget.client.employmentStatus;
+    _initialValue = {
+      'firstName': user?.firstName,
+      'lastName': user?.lastName,
+      'email': user?.email,
+      'phoneNumber': user?.phoneNumber,
+      'username': user?.username,
+      'address': user?.address,
+      'status': user?.status,
+      'employmentStatus': widget.client.employmentStatus,
+    };
   }
 
   void _setupAnimation() {
@@ -90,13 +74,6 @@ class _EditProfileScreenState extends State<EditProfileScreen>
 
   @override
   void dispose() {
-    _firstNameController.dispose();
-    _lastNameController.dispose();
-    _emailController.dispose();
-    _phoneController.dispose();
-    _usernameController.dispose();
-    _addressController.dispose();
-    _animationController.dispose();
     _scrollController.dispose();
     super.dispose();
   }
@@ -111,8 +88,9 @@ class _EditProfileScreenState extends State<EditProfileScreen>
       body: FadeTransition(
         opacity: _fadeAnimation,
         child: SingleChildScrollView(
-          child: Form(
+          child: FormBuilder(
             key: _formKey,
+            initialValue: _initialValue,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -147,110 +125,117 @@ class _EditProfileScreenState extends State<EditProfileScreen>
       Icons.person,
       colorScheme.surfaceContainerLowest,
       [
-        customTextField(
-          controller: _firstNameController,
+        CustomTextField(
+          name: 'firstName',
           label: 'First Name',
           icon: Icons.person_outline,
-          validator: (value) {
-            if (value == null || value.trim().isEmpty) {
-              return 'This fiels is required.';
-            }
-            if (value.length < 2) return 'Name must be at least 2 characters.';
-            if (value.length > 50) return 'Name must not exceed 50 characters.';
-            return null;
-          },
-          colorScheme: colorScheme,
+          validators: [
+            FormBuilderValidators.required(errorText: 'First name is required'),
+            FormBuilderValidators.minLength(
+              2,
+              errorText: 'Name must be at least 2 characters.',
+            ),
+            FormBuilderValidators.maxLength(
+              50,
+              errorText: 'Name must not exceed 50 characters.',
+            ),
+          ],
         ),
         const SizedBox(height: 16),
-        customTextField(
-          controller: _lastNameController,
+
+        CustomTextField(
+          name: 'lastName',
           label: 'Last Name',
           icon: Icons.person_outline,
-          validator: (value) {
-            if (value == null || value.trim().isEmpty) {
-              return 'This fiels is required.';
-            }
-            if (value.length < 2) return 'Name must be at least 2 characters.';
-            if (value.length > 50) return 'Name must not exceed 50 characters.';
-            return null;
-          },
-          colorScheme: colorScheme,
+          validators: [
+            FormBuilderValidators.required(errorText: 'Last name is required'),
+            FormBuilderValidators.minLength(
+              2,
+              errorText: 'Name must be at least 2 characters.',
+            ),
+            FormBuilderValidators.maxLength(
+              50,
+              errorText: 'Name must not exceed 50 characters.',
+            ),
+          ],
         ),
         const SizedBox(height: 16),
-        customTextField(
-          controller: _usernameController,
+
+        CustomTextField(
+          name: 'username',
           label: 'Username',
           icon: Icons.alternate_email,
-          validator: (value) {
-            if (value == null || value.trim().isEmpty) {
-              return 'Username is required.';
-            }
-            if (value.length < 4) {
-              return 'Username must be at least 4 characters.';
-            }
-            if (value.length > 20) {
-              return 'Username must not exceed 20 characters.';
-            }
-            return null;
-          },
-          colorScheme: colorScheme,
+          validators: [
+            FormBuilderValidators.required(errorText: 'Username is required'),
+            FormBuilderValidators.minLength(
+              4,
+              errorText: 'Username must be at least 4 characters.',
+            ),
+            FormBuilderValidators.maxLength(
+              20,
+              errorText: 'Username must not exceed 20 characters.',
+            ),
+          ],
         ),
         const SizedBox(height: 16),
-        customTextField(
-          controller: _passwordController,
+
+        CustomTextField(
+          name: 'password',
           label: 'New Password',
           icon: Icons.password_outlined,
-          validator: (value) {
-            if (value == null || value.isEmpty) {
-              return null;
-            }
-            if (value.length < 8) {
-              return 'Password must be at least 8 characters.';
-            }
-            if (value.length > 32) {
-              return 'Password must not exceed 32 characters.';
-            }
-            return null;
-          },
-          colorScheme: colorScheme,
-        ),
-        if (_passwordController.text.isNotEmpty) ...[
-          const SizedBox(height: 16),
-          customTextField(
-            controller: _confirmationPasswordController,
-            label: 'Confirmation Passwornd',
-            icon: Icons.password_outlined,
-            validator: (value) {
-              if (_passwordController.text.isEmpty) {
-                return 'Confirmation password is required.';
+          validators: [
+            (value) {
+              if (value != null && value.isNotEmpty && value.length < 8) {
+                return 'Password must be at least 8 characters long.';
               }
-              if (value != _passwordController.text) {
-                return 'Passwords do not match.';
+              if (value != null && value.isNotEmpty && value.length > 32) {
+                return 'Password must not exceed 32 characters.';
+              }
+              return null; // valid if empty or long enough
+            },
+          ],
+        ),
+
+        if (_formKey.currentState?.fields['password']?.value?.isNotEmpty ??
+            false) ...[
+          const SizedBox(height: 16),
+          CustomTextField(
+            name: 'confirmPassword',
+            label: 'Confirmation Password',
+            icon: Icons.password_outlined,
+            validators: [
+              FormBuilderValidators.required(
+                errorText: 'Confirmation password is required.',
+              ),
+              (value) {
+                final password =
+                    _formKey.currentState?.fields['password']?.value ?? '';
+                if (value != password) {
+                  return 'Passwords do not match.';
+                }
+                return null;
+              },
+            ],
+          ),
+        ],
+
+        const SizedBox(height: 16),
+
+        CustomTextField(
+          name: 'address',
+          label: 'Address',
+          icon: Icons.location_on_outlined,
+          validators: [
+            (value) {
+              if (value != null && value.isNotEmpty && value.length < 5) {
+                return 'Address must be at least 5 characters.';
+              }
+              if (value != null && value.isNotEmpty && value.length > 100) {
+                return 'Address must not exceed 100 characters.';
               }
               return null;
             },
-            colorScheme: colorScheme,
-          ),
-        ],
-        const SizedBox(height: 16),
-        customTextField(
-          controller: _addressController,
-          label: 'Address',
-          icon: Icons.location_on_outlined,
-          maxLines: 2,
-          colorScheme: colorScheme,
-          validator: (value) {
-            if (value != null && value.trim().isNotEmpty) {
-              if (value.length < 5) {
-                return 'Address must be at least 5 characters.';
-              }
-              if (value.length > 100) {
-                return 'Address must not exceed 100 characters.';
-              }
-            }
-
-            return null;
-          },
+          ],
         ),
       ],
       colorScheme,
@@ -263,44 +248,43 @@ class _EditProfileScreenState extends State<EditProfileScreen>
       Icons.contact_phone,
       colorScheme.surfaceContainerLowest,
       [
-        customTextField(
-          controller: _phoneController,
+        CustomTextField(
+          name: 'phoneNumber',
           label: 'Phone Number',
           icon: Icons.phone_outlined,
-          keyboardType: TextInputType.phone,
-          colorScheme: colorScheme,
-          validator: (value) {
-            if (value != null && value.trim().isNotEmpty) {
-              final digitsOnly = value.trim();
+          validators: [
+            (value) {
+              if (value != null && value.isNotEmpty) {
+                final digitsOnly = value.trim();
 
-              if (!RegExp(r'^\d+$').hasMatch(digitsOnly)) {
-                return 'Phone number must contain digits only.';
-              }
+                if (!RegExp(r'^\d+$').hasMatch(digitsOnly)) {
+                  return 'Phone number must contain digits only.';
+                }
 
-              if (digitsOnly.length < 8 || digitsOnly.length > 9) {
-                return 'Phone number must be 8 or 9 digits long.';
+                if (digitsOnly.length < 8 || digitsOnly.length > 9) {
+                  return 'Phone number must be 8 or 9 digits long.';
+                }
               }
-            }
-            return null;
-          },
+              return null;
+            },
+          ],
           prefixText: '+387 ',
         ),
         const SizedBox(height: 16),
 
-        customTextField(
-          controller: _emailController,
+        CustomTextField(
+          name: 'email',
           label: 'Email',
           icon: Icons.email_outlined,
-          keyboardType: TextInputType.emailAddress,
-          validator: (value) {
-            if (value != null && value.isNotEmpty) {
-              final emailRegex = RegExp(r'^[^@]+@[^@]+\.[^@]+');
-              if (!emailRegex.hasMatch(value)) return 'Invalid email.';
-            }
-
-            return null;
-          },
-          colorScheme: colorScheme,
+          validators: [
+            (value) {
+              if (value != null && value.isNotEmpty) {
+                final emailRegex = RegExp(r'^[^@]+@[^@]+\.[^@]+');
+                if (!emailRegex.hasMatch(value)) return 'Invalid email.';
+              }
+              return null;
+            },
+          ],
         ),
       ],
       colorScheme,
@@ -444,7 +428,9 @@ class _EditProfileScreenState extends State<EditProfileScreen>
   }
 
   Future<void> _saveProfile() async {
-    if (!_formKey.currentState!.validate()) {
+    final formState = _formKey.currentState;
+
+    if (formState == null || !formState.saveAndValidate()) {
       debugPrint('Form is not valid or state is null');
       return;
     }
@@ -467,26 +453,32 @@ class _EditProfileScreenState extends State<EditProfileScreen>
       });
     }
     try {
+      final formData = _formKey.currentState?.value;
+
+      if (formData == null) {
+        return;
+      }
+
       final updatedClient = ClientUpdateRequest(
         employmentStatus: _employmentStatus,
         user: UserUpdateRequest(
-          firstName: _firstNameController.text,
-          lastName: _lastNameController.text,
-          email: _emailController.text.isEmpty ? null : _emailController.text,
-          phoneNumber: _phoneController.text.isEmpty
+          firstName: formData['firstName'],
+          lastName: formData['lastName'],
+          email: formData['email']?.isEmpty == true ? null : formData['email'],
+          phoneNumber: formData['phoneNumber']?.isEmpty == true
               ? null
-              : _phoneController.text,
-          username: _usernameController.text,
-          address: _addressController.text.isEmpty
+              : formData['phoneNumber'],
+          username: formData['username'],
+          address: formData['address']?.isEmpty == true
               ? null
-              : _addressController.text,
+              : formData['address'],
           status: _accountStatus,
-          password: _passwordController.text.isEmpty
+          password: formData['password']?.isEmpty == true
               ? null
-              : _passwordController.text,
-          confirmationPassword: _confirmationPasswordController.text.isEmpty
+              : formData['password'],
+          confirmationPassword: formData['confirmPassword']?.isEmpty == true
               ? null
-              : _confirmationPasswordController.text,
+              : formData['confirmPassword'],
         ),
       );
 

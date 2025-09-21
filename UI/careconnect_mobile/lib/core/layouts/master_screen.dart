@@ -1,7 +1,5 @@
 import 'package:careconnect_mobile/core/theme/theme_notifier.dart';
 import 'package:careconnect_mobile/models/auth_credentials.dart';
-import 'package:careconnect_mobile/models/responses/client.dart';
-import 'package:careconnect_mobile/models/responses/user.dart';
 import 'package:careconnect_mobile/providers/auth_provider.dart';
 import 'package:careconnect_mobile/screens/client_list_screen.dart';
 import 'package:careconnect_mobile/screens/employee_list_screen.dart';

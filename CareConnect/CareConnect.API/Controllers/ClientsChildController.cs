@@ -3,6 +3,7 @@ using CareConnect.Models.Requests;
 using CareConnect.Models.Responses;
 using CareConnect.Models.SearchObjects;
 using CareConnect.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace CareConnect.API.Controllers
@@ -34,6 +35,12 @@ namespace CareConnect.API.Controllers
         public List<Appointment> GetAppointment(int clientId, int childId)
         {
             return (_service as ClientsChildService).GetAppointment(clientId, childId);
+        }
+
+        [AllowAnonymous]
+        public override ClientsChild Insert(ClientsChildInsertRequest request)
+        {
+            return base.Insert(request);
         }
     }
 }

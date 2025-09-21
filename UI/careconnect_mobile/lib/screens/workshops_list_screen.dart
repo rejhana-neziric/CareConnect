@@ -53,7 +53,7 @@ class _WorkshopsListScreenState extends State<WorkshopsListScreen> {
       price: selectedPriceToFilter,
       sortBy: _sortBy,
       sortAscending: _sortAscending,
-      status: 'Closed',
+      status: 'Scheduled',
       workshopType: selectedWorkshopType,
     );
 

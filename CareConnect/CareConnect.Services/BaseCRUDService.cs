@@ -25,10 +25,14 @@ namespace CareConnect.Services
             Context.Add(entity);
             Context.SaveChanges();
 
+            AfterInsert(entity); 
+
             return Mapper.Map<TModel>(entity);
         }
 
         public virtual void BeforeInsert(TInsert request, TDbEntity entity) { }
+
+        public virtual void AfterInsert(TDbEntity entity) { }
 
         public virtual TModel Update(int id, TUpdate request)
         {

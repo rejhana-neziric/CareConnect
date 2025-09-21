@@ -126,6 +126,38 @@ namespace CareConnect.Services
             base.AddInclude(additionalData, ref query);
         }
 
+      
+
+        public override void AfterInsert(Database.ClientsChild entity)
+        {
+            var client = Context.Clients.Local.FirstOrDefault(x => x.ClientId == entity.ClientId) ?? Context.Clients.Find(entity.ClientId);
+
+            if (client == null) return;
+
+            // change later
+            var roleId = Context.Roles.Where(x => x.Name == "Superadmin").Select(x => x.RoleId).FirstOrDefault();
+
+            if (roleId == 0) return;
+
+            var alreadyExists = Context.UsersRoles.Any(x => x.UserId == entity.ClientId && x.RoleId == roleId);
+
+
+            if(!alreadyExists) 
+            {
+                var request = new UsersRoleInsertRequest()
+                {
+                    RoleId = roleId,
+                    UserId = entity.ClientId,
+                };
+
+                var dbEntity = Mapper.Map<Database.UsersRole>(request);
+
+                Context.Add(dbEntity);
+            }
+           
+            base.AfterInsert(entity);
+        }
+
         public List<Models.Responses.Child> GetChildren(int clientId)
         {
             var client = Context.Clients.Include(c => c.ClientsChildren)
@@ -245,11 +277,45 @@ namespace CareConnect.Services
                 };  
 
                 Context.ClientsChildren.Add(clientsChild);
+                AfterInsert(clientsChild);
                 Context.SaveChanges();  
 
                 transaction.Commit();
 
-                return Mapper.Map<Models.Responses.ClientsChild>(clientsChild);
+                var saved = Context.ClientsChildren
+                            .Include(cc => cc.Client)
+                            .Include(cc => cc.Child)
+                            .FirstOrDefault(cc => cc.ClientId == clientsChild.ClientId && cc.ChildId == clientsChild.ChildId);
+
+
+                return new Models.Responses.ClientsChild
+                {
+                    Child = new Models.Responses.Child 
+                    { 
+                        ChildId = saved.ChildId, 
+                        FirstName = saved.Child.FirstName, 
+                        LastName = saved.Child.LastName,
+                        BirthDate = saved.Child.BirthDate, 
+                        Gender = saved.Child.Gender},
+                    Client = new Models.Responses.Client
+                    { 
+                        EmploymentStatus = saved.Client.EmploymentStatus, 
+                        User = new Models.Responses.User 
+                        { 
+                            UserId = saved.ClientId, 
+                            FirstName = saved.Client.User.FirstName, 
+                            LastName = saved.Client.User.LastName, 
+                            Email = saved.Client.User.Email, 
+                            Address = saved.Client.User.Address, 
+                            BirthDate = saved.Client.User.BirthDate, 
+                            PhoneNumber = saved.Client.User.PhoneNumber, 
+                            Username = saved.Client.User.Username,
+                            Status = saved.Client.User.Status, 
+                            Gender = saved.Client.User.Gender 
+                        } 
+                    }   
+                };
+
 
             }
             catch (Exception ex)

@@ -33,6 +33,39 @@ class AppColors {
     0xFFEDEDEE,
   ); // Light text for dark theme
   static const Color textSecondaryDark = Color(0xFFB0A6B8);
+
+  // Primary palette (using new palette values)
+  // static const Color lightGray = Color(0xFFC6B4D8); // replaced
+  // static const Color softLavender = Color(0xFFCEE0E6); // replaced
+  // static const Color dustyRose = Color(0xFFF0EAE0); // replaced
+  // static const Color mauveGray = Color(0xFFF5C0BF); // replaced
+  // static const Color deepMauve = Color(0xFFEAD4D4); // replaced
+
+  // Basic colors
+  // static const Color white = Color(0xFFFFFFFF);
+  // static const Color black = Color(0xFF000000);
+  // static const Color error = Colors.redAccent;
+  // static const Color darkGray = Color(0xFF2F3432);
+
+  // Dark theme surfaces
+  // static const Color darkBackground = Color(0xFF1E1E1E);
+  // static const Color surfaceDark = Color(0xFF2C2C2C);
+
+  // Accent colors (darkened variants for dark theme)
+  // static const Color accentSoftLavender = Color(0xFF9E8AB7); // darker c6b4d8
+  // static const Color accentDustyRose = Color(0xFF9FBAC0); // darker cee0e6
+  // static const Color accentMauveGray = Color(0xFFB1A695); // darker f0eae0
+  // static const Color accentDeepMauve = Color(0xFFB27C7B); // darker f5c0bf
+
+  // Text colors
+  // static const Color textPrimaryLight = Color(
+  //   0xFF2E2E2E,
+  // ); // dark gray for light bg
+  // static const Color textSecondaryLight = Color(0xFF5C5C5C); // medium gray
+  // static const Color textPrimaryDark = Color(
+  //   0xFFF5F5F5,
+  // ); // almost white for dark bg
+  // static const Color textSecondaryDark = Color(0xFFBEBEBE); // softer gray
 }
 
 class AppSurfaces {
@@ -170,10 +203,12 @@ class AppTheme {
       selectedColor: AppColors.dustyRose,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
     ),
-
     dialogTheme: DialogThemeData(
       backgroundColor: AppColors.white, // your custom color
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+    ),
+    datePickerTheme: DatePickerThemeData(
+      backgroundColor: AppSurfaces.lightSurfaceContainerLowest,
     ),
   );
 
@@ -226,6 +261,10 @@ class AppTheme {
     dialogTheme: DialogThemeData(
       backgroundColor: AppColors.darkGray,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+    ),
+
+    datePickerTheme: DatePickerThemeData(
+      backgroundColor: AppSurfaces.darkSurfaceContainerLowest,
     ),
   );
 }

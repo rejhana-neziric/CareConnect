@@ -93,7 +93,7 @@ class _ProfileScreenState extends State<ProfileScreen>
       isLoading = true;
     });
 
-    final result = await clientsChildProvider.getChildren(1067);
+    final result = await clientsChildProvider.getChildren(currentUser!.id);
 
     setState(() {
       children = result;
@@ -253,7 +253,9 @@ class _ProfileScreenState extends State<ProfileScreen>
         _buildInfoRow2(
           Icons.phone_outlined,
           'Phone number',
-          user.phoneNumber ?? 'Not specified',
+          user.phoneNumber != null
+              ? '+387 ${user.phoneNumber}'
+              : 'Not specified',
           null,
           colorScheme,
         ),
