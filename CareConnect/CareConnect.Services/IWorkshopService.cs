@@ -15,6 +15,8 @@ namespace CareConnect.Services
 
         public List<string> AllowedActions(int id);
 
-        public WorkshopStatistics GetStatistics(); 
+        public WorkshopStatistics GetStatistics();
+
+        public EnrollmentResponse EnrollInFreeWorkshop(int workshopId, int clientId, int? childId); 
     }
 }

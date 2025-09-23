@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:careconnect_mobile/models/responses/enrollment_response.dart';
 import 'package:careconnect_mobile/models/responses/search_result.dart';
 import 'package:careconnect_mobile/models/responses/workshop.dart';
 import 'package:careconnect_mobile/models/responses/workshop_statistics.dart';
@@ -82,5 +83,38 @@ class WorkshopProvider extends BaseProvider<Workshop> {
 
     notifyListeners();
     return result;
+  }
+
+  Future<EnrollmentResponse> enrollInFreeWorkshop({
+    required int workshopId,
+    required int clientId,
+    int? childId,
+  }) async {
+    var uri = Uri.parse('$baseUrl$endpoint/enroll-free/$workshopId/$clientId');
+    if (childId != null) {
+      uri = uri.replace(queryParameters: {'childId': childId.toString()});
+    }
+
+    var headers = createHeaders();
+    final response = await http.post(uri, headers: headers);
+
+    final data = parseResponse(response);
+
+    return EnrollmentResponse.fromJson(data);
+  }
+
+  dynamic parseResponse(http.Response response) {
+    if (response.statusCode >= 200 && response.statusCode < 300) {
+      return jsonDecode(response.body);
+    } else if (response.statusCode == 401) {
+      throw Exception("Unauthorized");
+    } else {
+      try {
+        final data = jsonDecode(response.body);
+        return data;
+      } catch (_) {
+        throw Exception("Unexpected error: ${response.body}");
+      }
+    }
   }
 }

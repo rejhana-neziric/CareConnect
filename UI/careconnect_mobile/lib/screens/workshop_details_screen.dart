@@ -1,6 +1,15 @@
+import 'package:careconnect_mobile/core/theme/app_colors.dart';
+import 'package:careconnect_mobile/models/auth_user.dart';
+import 'package:careconnect_mobile/models/responses/child.dart';
 import 'package:careconnect_mobile/models/responses/workshop.dart';
+import 'package:careconnect_mobile/providers/auth_provider.dart';
+import 'package:careconnect_mobile/providers/clients_child_provider.dart';
+import 'package:careconnect_mobile/providers/workshop_provider.dart';
+import 'package:careconnect_mobile/widgets/confim_dialog.dart';
+import 'package:careconnect_mobile/widgets/snackbar.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
 
 class WorkshopDetailsScreen extends StatefulWidget {
   final Workshop workshop;
@@ -11,10 +20,28 @@ class WorkshopDetailsScreen extends StatefulWidget {
 }
 
 class _WorkshopDetailsScreenState extends State<WorkshopDetailsScreen> {
+  late WorkshopProvider workshopProvider;
+  late ClientsChildProvider clientsChildProvider;
+
+  AuthUser? currentUser;
+
+  @override
+  void initState() {
+    super.initState();
+
+    final auth = Provider.of<AuthProvider>(context, listen: false);
+
+    currentUser = auth.user;
+
+    workshopProvider = context.read<WorkshopProvider>();
+    clientsChildProvider = context.read<ClientsChildProvider>();
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
+
     return Scaffold(
       backgroundColor: colorScheme.surfaceContainerLow,
       appBar: AppBar(
@@ -150,7 +177,7 @@ class _WorkshopDetailsScreenState extends State<WorkshopDetailsScreen> {
                   ),
                 ),
                 Text(
-                  price != null ? '\$${price.toStringAsFixed(2)}' : 'N/A',
+                  price != null ? '\$${price.toStringAsFixed(2)}' : 'Free',
                   style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
@@ -278,10 +305,9 @@ class _WorkshopDetailsScreenState extends State<WorkshopDetailsScreen> {
   }
 
   Widget _buildBottomBar(ColorScheme colorScheme) {
-    if (widget.workshop.maxParticipants == null ||
-        (widget.workshop.participants != null &&
-            widget.workshop.participants! >=
-                widget.workshop.maxParticipants!)) {
+    if (widget.workshop.maxParticipants != null &&
+        widget.workshop.participants != null &&
+        widget.workshop.participants! >= widget.workshop.maxParticipants!) {
       return SizedBox.shrink();
     }
 
@@ -319,7 +345,137 @@ class _WorkshopDetailsScreenState extends State<WorkshopDetailsScreen> {
     );
   }
 
-  void _enroll() {
+  void _enroll() async {
     //todo
+    if (currentUser == null) return;
+
+    List<Child> children = [];
+
+    if (widget.workshop.workshopType == "Children") {
+      children = await clientsChildProvider.getChildren(currentUser!.id);
+    }
+
+    int? selectedChildId;
+
+    if (children.isNotEmpty && children.length > 1) {
+      selectedChildId = await _showChildSelectionDialog(context, children);
+
+      if (selectedChildId == null) return; // User canceled
+    } else if (children.length == 1) {
+      selectedChildId = children.first.childId;
+    }
+
+    final shouldProceed = await CustomConfirmDialog.show(
+      context,
+      iconBackgroundColor: AppColors.accentDeepMauve,
+      icon: Icons.info,
+      title: 'Confirm',
+      content: 'Are you sure you want to enroll in this workshop?',
+      confirmText: 'Enroll',
+      cancelText: 'Cancel',
+    );
+
+    if (shouldProceed != true) return;
+
+    if (widget.workshop.price == null) {
+      final result = await workshopProvider.enrollInFreeWorkshop(
+        workshopId: widget.workshop.workshopId,
+        clientId: currentUser!.id,
+        childId: widget.workshop.workshopType == "Parents"
+            ? null
+            : selectedChildId,
+      );
+
+      if (result.success) {
+        CustomSnackbar.show(
+          context,
+          message: result.message,
+          type: SnackbarType.success,
+        );
+        Navigator.pop(context);
+      } else {
+        CustomSnackbar.show(
+          context,
+          message: result.message,
+          type: SnackbarType.info,
+        );
+      }
+    }
+  }
+
+  Future<int?> _showChildSelectionDialog(
+    BuildContext context,
+    List<Child> children,
+  ) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
+    return showModalBottomSheet<int>(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) {
+        return Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 40,
+                height: 4,
+                margin: const EdgeInsets.only(bottom: 12),
+                decoration: BoxDecoration(
+                  color: colorScheme.surfaceContainerLowest,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              Text(
+                "Select child you want to enroll",
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: colorScheme.onSurface,
+                ),
+              ),
+              const SizedBox(height: 16),
+              Flexible(
+                child: ListView.separated(
+                  shrinkWrap: true,
+                  itemCount: children.length,
+                  separatorBuilder: (_, __) => const Divider(),
+                  itemBuilder: (context, index) {
+                    final child = children[index];
+                    return ListTile(
+                      leading: CircleAvatar(
+                        backgroundColor: colorScheme.secondary,
+                        child: Text(
+                          child.firstName[0],
+                          style: TextStyle(color: colorScheme.primary),
+                        ),
+                      ),
+                      title: Text('${child.firstName} ${child.lastName}'),
+                      onTap: () => Navigator.pop(context, child.childId),
+                    );
+                  },
+                ),
+              ),
+              const SizedBox(height: 12),
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: Text(
+                  "Cancel",
+                  style: TextStyle(
+                    color: colorScheme.onSurface,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
   }
 }

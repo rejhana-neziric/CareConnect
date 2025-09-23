@@ -34,4 +34,6 @@ public partial class Workshop
     public virtual ICollection<Participant> ParticipantsNavigation { get; set; } = new List<Participant>();
 
     public virtual ICollection<Session> Sessions { get; set; } = new List<Session>();
+
+    public ICollection<Enrollment> Enrollments { get; set; } = new List<Enrollment>();
 }

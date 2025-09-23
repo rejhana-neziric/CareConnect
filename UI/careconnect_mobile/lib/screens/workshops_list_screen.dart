@@ -141,119 +141,135 @@ class _WorkshopsListScreenState extends State<WorkshopsListScreen> {
   }
 
   Widget _buildWorkshopCard(Workshop workshop, ColorScheme colorScheme) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(16),
-      margin: const EdgeInsets.symmetric(vertical: 8),
-      decoration: BoxDecoration(
-        color: colorScheme.surfaceContainerLowest,
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Expanded(
-                      child: Text(
-                        workshop.name,
-                        style: const TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16,
-                        ),
-                        maxLines: 2,
-                      ),
-                    ),
+    return InkWell(
+      borderRadius: BorderRadius.circular(12),
+      splashColor: colorScheme.primary.withOpacity(0.1),
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => WorkshopDetailsScreen(workshop: workshop),
+          ),
+        );
 
-                    Container(
-                      padding: EdgeInsets.symmetric(
-                        horizontal: 10,
-                        vertical: 5,
+        loadWorkshops();
+      },
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(16),
+        margin: const EdgeInsets.symmetric(vertical: 8),
+        decoration: BoxDecoration(
+          color: colorScheme.surfaceContainerLowest,
+          borderRadius: BorderRadius.circular(16),
+        ),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          workshop.name,
+                          style: const TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16,
+                          ),
+                          maxLines: 2,
+                        ),
                       ),
-                      decoration: BoxDecoration(
-                        color: workshop.workshopType == "Parents"
-                            ? Color(0xFFFFE0D6)
-                            : Color(0xFFD0E8FF),
-                        border: null,
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      child: Text(
-                        workshop.workshopType == "Parents"
-                            ? "Parents"
-                            : "Children",
-                        style: TextStyle(
+
+                      Container(
+                        padding: EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 5,
+                        ),
+                        decoration: BoxDecoration(
                           color: workshop.workshopType == "Parents"
-                              ? Color.fromARGB(255, 80, 80, 80)
-                              : Color.fromARGB(255, 80, 80, 80),
-                          fontSize: 11,
+                              ? Color(0xFFFFE0D6)
+                              : Color(0xFFD0E8FF),
+                          border: null,
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: Text(
+                          workshop.workshopType == "Parents"
+                              ? "Parents"
+                              : "Children",
+                          style: TextStyle(
+                            color: workshop.workshopType == "Parents"
+                                ? Color.fromARGB(255, 80, 80, 80)
+                                : Color.fromARGB(255, 80, 80, 80),
+                            fontSize: 11,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+
+                  const SizedBox(height: 18),
+
+                  if (workshop.price != null)
+                    Container(
+                      decoration: BoxDecoration(
+                        color: colorScheme.primaryContainer,
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.all(4.0),
+                        child: Text(
+                          "Price: ${workshop.price}",
+                          style: TextStyle(fontWeight: FontWeight.w500),
                         ),
                       ),
                     ),
-                  ],
-                ),
 
-                const SizedBox(height: 18),
-
-                if (workshop.price != null)
-                  Container(
-                    decoration: BoxDecoration(
-                      color: colorScheme.primaryContainer,
-                      borderRadius: BorderRadius.circular(4),
-                    ),
-                    child: Padding(
-                      padding: const EdgeInsets.all(4.0),
-                      child: Text(
-                        "Price: ${workshop.price}",
-                        style: TextStyle(fontWeight: FontWeight.w500),
+                  if (workshop.price == null)
+                    Container(
+                      decoration: BoxDecoration(
+                        color: colorScheme.primaryContainer,
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.all(4.0),
+                        child: Text(
+                          "Price: FREE",
+                          style: TextStyle(fontWeight: FontWeight.w500),
+                        ),
                       ),
                     ),
-                  ),
-
-                if (workshop.price == null)
-                  Container(
-                    decoration: BoxDecoration(
-                      color: colorScheme.primaryContainer,
-                      borderRadius: BorderRadius.circular(4),
-                    ),
-                    child: Padding(
-                      padding: const EdgeInsets.all(4.0),
-                      child: Text(
-                        "Price: FREE",
-                        style: TextStyle(fontWeight: FontWeight.w500),
-                      ),
-                    ),
-                  ),
-              ],
+                ],
+              ),
             ),
-          ),
 
-          SizedBox(
-            height: 100,
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: [
-                IconButton(
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) =>
-                            WorkshopDetailsScreen(workshop: workshop),
-                      ),
-                    );
-                  },
-                  icon: const Icon(Icons.chevron_right, color: Colors.grey),
-                  tooltip: "Open filters",
-                ),
-              ],
+            SizedBox(
+              height: 100,
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  IconButton(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) =>
+                              WorkshopDetailsScreen(workshop: workshop),
+                        ),
+                      );
+
+                      loadWorkshops();
+                    },
+                    icon: const Icon(Icons.chevron_right, color: Colors.grey),
+                    tooltip: "Open filters",
+                  ),
+                ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

@@ -15,6 +15,8 @@ using CareConnect.Services.AppointmentStateMachine;
 using CareConnect.Services.WorkshopStateMachine;
 using Microsoft.Extensions.Logging;
 using CareConnect.Models.Responses;
+using CareConnect.Models.Enums;
+using static Permissions;
 
 namespace CareConnect.Services
 {
@@ -214,7 +216,74 @@ namespace CareConnect.Services
                 Upcoming = Context.Workshops.Where(x => x.Status == "Published").Count(),
                 AverageParticipants = (int)Context.Workshops.Average(x => x.Participants),
 
-        };
+            };
+        }
+
+        public EnrollmentResponse EnrollInFreeWorkshop(int workshopId, int clientId, int? childId)
+        {
+            var client = Context.Clients.FirstOrDefault(x => x.User.UserId == clientId);
+            if (client == null)
+                return new EnrollmentResponse { Success = false, Message = "Client not found." };
+
+            var workshop = Context.Workshops.Find(workshopId);
+            if (workshop == null)
+                return new EnrollmentResponse { Success = false, Message = "Workshop not found." };
+
+            if (workshop.Price > 0)
+                return new EnrollmentResponse { Success = false, Message = "Workshop is not free." };
+
+            if (workshop.MaxParticipants != null &&
+                workshop.Participants != null &&
+                workshop.Participants >= workshop.MaxParticipants)
+                return new EnrollmentResponse { Success = false, Message = "Workshop is full." };
+
+            if (childId != null)
+            {
+                var child = Context.Children.Find(childId);
+                if (child == null)
+                    return new EnrollmentResponse { Success = false, Message = "Child not found." };
+
+                var clientsChild = Context.ClientsChildren
+                    .FirstOrDefault(x => x.ClientId == clientId && x.ChildId == childId);
+
+                if (clientsChild == null)
+                    return new EnrollmentResponse { Success = false, Message = "Selected child does not belong to this client." };
+
+                if (workshop.WorkshopType == "Parents")
+                    return new EnrollmentResponse { Success = false, Message = "This workshop is for parents only." };
+            }
+
+            var alreadyExist = Context.Enrollments
+                .FirstOrDefault(x => x.ClientId == client.ClientId && x.ChildId == childId && x.WorkshopId == workshop.WorkshopId);
+
+            if (alreadyExist != null)
+                return new EnrollmentResponse { Success = false, Message = "You are already enrolled in this workshop." };
+
+            var enrollment = new Database.Enrollment
+            {
+                ClientId = client.ClientId,
+                ChildId = childId,
+                WorkshopId = workshop.WorkshopId,
+                Status = EnrollmentStatus.Paid,
+                CreatedAt = DateTime.Now,
+                CompletedAt = DateTime.Now
+            };
+
+            Context.Enrollments.Add(enrollment);
+
+            Context.Participants.Add(new Database.Participant
+            {
+                UserId = client.ClientId,
+                ChildId = childId,
+                WorkshopId = workshop.WorkshopId,
+                AttendanceStatusId = 1,
+                RegistrationDate = DateTime.Now,
+                ModifiedDate = DateTime.Now,
+            });
+
+            Context.SaveChanges();
+
+            return new EnrollmentResponse { Success = true, Message = "Enrollment successful." };
         }
     }
 }

@@ -4,6 +4,7 @@ using CareConnect.Services.Database;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace CareConnect.Services.Migrations
 {
     [DbContext(typeof(CareConnectContext))]
-    partial class CareConnectContextModelSnapshot : ModelSnapshot
+    [Migration("20250922175621_AddedEnrollment3")]
+    partial class AddedEnrollment3
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -468,11 +471,13 @@ namespace CareConnect.Services.Migrations
 
             modelBuilder.Entity("CareConnect.Services.Database.Participant", b =>
                 {
-                    b.Property<int>("ParticipantId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
+                    b.Property<int>("UserId")
+                        .HasColumnType("int")
+                        .HasColumnName("UserID");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ParticipantId"));
+                    b.Property<int>("WorkshopId")
+                        .HasColumnType("int")
+                        .HasColumnName("WorkshopID");
 
                     b.Property<int>("AttendanceStatusId")
                         .HasColumnType("int")
@@ -489,21 +494,11 @@ namespace CareConnect.Services.Migrations
                     b.Property<DateTime>("RegistrationDate")
                         .HasColumnType("datetime");
 
-                    b.Property<int>("UserId")
-                        .HasColumnType("int")
-                        .HasColumnName("UserID");
-
-                    b.Property<int>("WorkshopId")
-                        .HasColumnType("int")
-                        .HasColumnName("WorkshopID");
-
-                    b.HasKey("ParticipantId");
+                    b.HasKey("UserId", "WorkshopId");
 
                     b.HasIndex("AttendanceStatusId");
 
                     b.HasIndex("ChildId");
-
-                    b.HasIndex("UserId");
 
                     b.HasIndex("WorkshopId");
 

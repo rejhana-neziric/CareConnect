@@ -4,6 +4,7 @@ using CareConnect.Services.Database;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace CareConnect.Services.Migrations
 {
     [DbContext(typeof(CareConnectContext))]
-    partial class CareConnectContextModelSnapshot : ModelSnapshot
+    [Migration("20250922165709_AddedEnrollment")]
+    partial class AddedEnrollment
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -354,49 +357,6 @@ namespace CareConnect.Services.Migrations
                     b.ToTable("EmployeePayHistory", (string)null);
                 });
 
-            modelBuilder.Entity("CareConnect.Services.Database.Enrollment", b =>
-                {
-                    b.Property<int>("EnrollmentId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("EnrollmentId"));
-
-                    b.Property<long>("Amount")
-                        .HasColumnType("bigint");
-
-                    b.Property<int?>("ChildId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("ClientId")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime?>("CompletedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int>("Status")
-                        .HasColumnType("int");
-
-                    b.Property<string>("StripePaymentIntentId")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("WorkshopId")
-                        .HasColumnType("int");
-
-                    b.HasKey("EnrollmentId");
-
-                    b.HasIndex("ChildId");
-
-                    b.HasIndex("ClientId");
-
-                    b.HasIndex("WorkshopId");
-
-                    b.ToTable("Enrollments");
-                });
-
             modelBuilder.Entity("CareConnect.Services.Database.Instructor", b =>
                 {
                     b.Property<int>("InstructorId")
@@ -468,11 +428,13 @@ namespace CareConnect.Services.Migrations
 
             modelBuilder.Entity("CareConnect.Services.Database.Participant", b =>
                 {
-                    b.Property<int>("ParticipantId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
+                    b.Property<int>("UserId")
+                        .HasColumnType("int")
+                        .HasColumnName("UserID");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ParticipantId"));
+                    b.Property<int>("WorkshopId")
+                        .HasColumnType("int")
+                        .HasColumnName("WorkshopID");
 
                     b.Property<int>("AttendanceStatusId")
                         .HasColumnType("int")
@@ -489,21 +451,11 @@ namespace CareConnect.Services.Migrations
                     b.Property<DateTime>("RegistrationDate")
                         .HasColumnType("datetime");
 
-                    b.Property<int>("UserId")
-                        .HasColumnType("int")
-                        .HasColumnName("UserID");
-
-                    b.Property<int>("WorkshopId")
-                        .HasColumnType("int")
-                        .HasColumnName("WorkshopID");
-
-                    b.HasKey("ParticipantId");
+                    b.HasKey("UserId", "WorkshopId");
 
                     b.HasIndex("AttendanceStatusId");
 
                     b.HasIndex("ChildId");
-
-                    b.HasIndex("UserId");
 
                     b.HasIndex("WorkshopId");
 
@@ -1148,32 +1100,6 @@ namespace CareConnect.Services.Migrations
                     b.Navigation("Employee");
                 });
 
-            modelBuilder.Entity("CareConnect.Services.Database.Enrollment", b =>
-                {
-                    b.HasOne("CareConnect.Services.Database.Child", "Child")
-                        .WithMany("Enrollments")
-                        .HasForeignKey("ChildId")
-                        .OnDelete(DeleteBehavior.Restrict);
-
-                    b.HasOne("CareConnect.Services.Database.Client", "Client")
-                        .WithMany("Enrollments")
-                        .HasForeignKey("ClientId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("CareConnect.Services.Database.Workshop", "Workshop")
-                        .WithMany("Enrollments")
-                        .HasForeignKey("WorkshopId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Child");
-
-                    b.Navigation("Client");
-
-                    b.Navigation("Workshop");
-                });
-
             modelBuilder.Entity("CareConnect.Services.Database.Member", b =>
                 {
                     b.HasOne("CareConnect.Services.Database.Client", "Client")
@@ -1347,15 +1273,11 @@ namespace CareConnect.Services.Migrations
                     b.Navigation("ChildrenDiagnoses");
 
                     b.Navigation("ClientsChildren");
-
-                    b.Navigation("Enrollments");
                 });
 
             modelBuilder.Entity("CareConnect.Services.Database.Client", b =>
                 {
                     b.Navigation("ClientsChildren");
-
-                    b.Navigation("Enrollments");
 
                     b.Navigation("Members");
                 });
@@ -1438,8 +1360,6 @@ namespace CareConnect.Services.Migrations
 
             modelBuilder.Entity("CareConnect.Services.Database.Workshop", b =>
                 {
-                    b.Navigation("Enrollments");
-
                     b.Navigation("ParticipantsNavigation");
 
                     b.Navigation("Sessions");

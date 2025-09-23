@@ -190,5 +190,6 @@ public static class Permissions
         public const string Close = "Permissions.Workshop.Close";
         public const string AllowedActions = "Permissions.Workshop.AllowedActions";
         public const string GetStatistics = "Permissions.Workshop.GetStatistics";
+        public const string EnrollFreeWorkshop = "Permissions.Workshop.EnrollFreeWorkshop";
     }
 }

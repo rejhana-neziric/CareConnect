@@ -1,8 +1,10 @@
 using CareConnect.API.Filters;
+using CareConnect.Models.Enums;
 using CareConnect.Models.Requests;
 using CareConnect.Models.Responses;
 using CareConnect.Models.SearchObjects;
 using CareConnect.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace CareConnect.API.Controllers
@@ -46,6 +48,17 @@ namespace CareConnect.API.Controllers
         public WorkshopStatistics GetStatistics()
         {
             return (_service as WorkshopService).GetStatistics();
+        }
+
+        [HttpPost("enroll-free/{workshopId}/{clientId}")]
+        [PermissionAuthorize("EnrollFreeWorkshop")]
+        public ActionResult<EnrollmentResponse> EnrollFreeWorkshop(int workshopId, int clientId, [FromQuery] int? childId)
+        {
+            var result = (_service as WorkshopService)!.EnrollInFreeWorkshop(workshopId, clientId, childId);
+            if (!result.Success)
+                return BadRequest(result);
+
+            return Ok(result);
         }
     }
 }

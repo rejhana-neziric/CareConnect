@@ -36,6 +36,8 @@ public partial class CareConnectContext : DbContext
 
     public virtual DbSet<EmployeePayHistory> EmployeePayHistories { get; set; }
 
+    public virtual DbSet<Enrollment> Enrollments { get; set; } 
+
     public virtual DbSet<Instructor> Instructors { get; set; }
 
     public virtual DbSet<Member> Members { get; set; }
@@ -280,6 +282,23 @@ public partial class CareConnectContext : DbContext
                 .HasConstraintName("FK_EmployeePayHistory_Users");
         });
 
+        modelBuilder.Entity<Enrollment>()
+            .HasOne(e => e.Client)
+            .WithMany(c => c.Enrollments)
+            .HasForeignKey(e => e.ClientId);
+
+        modelBuilder.Entity<Enrollment>()
+            .HasOne(e => e.Child)
+            .WithMany(c => c.Enrollments)
+            .HasForeignKey(e => e.ChildId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<Enrollment>()
+            .HasOne(e => e.Workshop)
+            .WithMany(w => w.Enrollments)
+            .HasForeignKey(e => e.WorkshopId);
+
+
         modelBuilder.Entity<Instructor>(entity =>
         {
             entity.HasKey(e => e.InstructorId).HasName("PK__Instruct__9D010B7B6EBA19E2");
@@ -315,7 +334,9 @@ public partial class CareConnectContext : DbContext
 
         modelBuilder.Entity<Participant>(entity =>
         {
-            entity.HasKey(e => new { e.UserId, e.WorkshopId });
+            entity.HasKey(e => e.ParticipantId);
+
+            entity.Property(e => e.ParticipantId).ValueGeneratedOnAdd(); 
 
             entity.Property(e => e.UserId).HasColumnName("UserID");
             entity.Property(e => e.WorkshopId).HasColumnName("WorkshopID");

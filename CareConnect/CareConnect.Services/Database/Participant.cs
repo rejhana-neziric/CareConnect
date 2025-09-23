@@ -5,6 +5,8 @@ namespace CareConnect.Services.Database;
 
 public partial class Participant
 {
+    public int ParticipantId { get; set; }
+
     public int UserId { get; set; }
 
     public int WorkshopId { get; set; }

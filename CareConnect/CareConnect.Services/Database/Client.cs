@@ -18,4 +18,6 @@ public partial class Client
     public virtual ICollection<ClientsChild> ClientsChildren { get; set; } = new List<ClientsChild>();
 
     public virtual ICollection<Member> Members { get; set; } = new List<Member>();
+
+    public ICollection<Enrollment> Enrollments { get; set; } = new List<Enrollment>();
 }
