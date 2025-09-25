@@ -18,11 +18,14 @@ class Appointment {
   final String? note;
   final String? stateMachine;
   final DateTime modifiedDate;
+
   final AttendanceStatus? attendanceStatus;
   final EmployeeAvailability? employeeAvailability;
+
   final int clientId;
   final int childId;
-  final ClientsChild clientsChild;
+
+  final ClientsChild? clientsChild;
 
   Appointment({
     required this.appointmentId,
@@ -38,7 +41,7 @@ class Appointment {
     this.employeeAvailability,
     required this.clientId,
     required this.childId,
-    required this.clientsChild,
+    this.clientsChild,
   });
 
   factory Appointment.fromJson(Map<String, dynamic> json) =>

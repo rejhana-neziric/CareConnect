@@ -1,4 +1,5 @@
 ﻿using CareConnect.API.Filters;
+using CareConnect.Models.Enums;
 using CareConnect.Models.Requests;
 using CareConnect.Models.Responses;
 using CareConnect.Models.SearchObjects;
@@ -54,6 +55,13 @@ namespace CareConnect.API.Controllers
         public List<string> AllowedActions(int id)
         {
             return (_service as IAppointmentService)!.AllowedActions(id);
+        }
+
+        [HttpGet("appointment-types")]
+        [PermissionAuthorize("GetAppointmentTypes")]
+        public List<string> GetAppointmentTypes()
+        {
+            return Enum.GetNames(typeof(AppointmentType)).ToList();
         }
     }
 }

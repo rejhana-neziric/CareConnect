@@ -15,6 +15,7 @@ public static class Permissions
         public const string Complete = "Permissions.Appointment.Complete";
         public const string Reschedule = "Permissions.Appointment.Reschedule";
         public const string AllowedActions = "Permissions.Appointment.AllowedActions";
+        public const string GetAppointmentTypes = "Permissions.Appointment.GetAppointmentTypes";
     }
     public static class Child
     {

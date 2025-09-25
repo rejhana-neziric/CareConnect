@@ -24,9 +24,9 @@ namespace CareConnect.API.Controllers
 
         [HttpGet("{employeeId}/availability")]
         [PermissionAuthorize("GetEmployeeAvailability")]
-        public List<EmployeeAvailability> GetEmployeeAvailability(int employeeId)
+        public List<EmployeeAvailability> GetEmployeeAvailability(int employeeId, [FromQuery]  DateTime? date = null)
         {
-            return (_service as EmployeeService).GetEmployeeAvailability(employeeId);
+            return (_service as EmployeeService).GetEmployeeAvailability(employeeId, date);
         }
 
         [HttpPost("{employeeId}/availability")]

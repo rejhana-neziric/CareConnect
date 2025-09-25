@@ -208,24 +208,73 @@ namespace CareConnect.Services
             };
         }
 
-        public List<Models.Responses.EmployeeAvailability> GetEmployeeAvailability(int employeeId)
+        //public List<Models.Responses.EmployeeAvailability> GetEmployeeAvailability(int employeeId)
+        //{
+        //    var employee = Context.Employees.Find(employeeId);
+
+        //    if (employee == null) return null; 
+
+        //    var response = Context.EmployeeAvailabilities.Where(x => x.EmployeeId == employeeId).Include(x => x.Service).ToList();
+
+        //    if (response.Any() == false) return null; 
+
+        //    List<Models.Responses.EmployeeAvailability> list = new List<Models.Responses.EmployeeAvailability>();   
+
+        //    foreach (var availability in response)
+        //    {
+        //        list.Add(Mapper.Map<Models.Responses.EmployeeAvailability>(availability));  
+        //    }
+
+        //    return list;    
+        //}
+
+        public List<Models.Responses.EmployeeAvailability> GetEmployeeAvailability(int employeeId, DateTime? date = null)
         {
             var employee = Context.Employees.Find(employeeId);
 
-            if (employee == null) return null; 
+            if (employee == null) return null;
 
-            var response = Context.EmployeeAvailabilities.Where(x => x.EmployeeId == employeeId).Include(x => x.Service).ToList();
+            var response  = new List<Database.EmployeeAvailability>();
 
-            if (response.Any() == false) return null; 
+            var query = Context.EmployeeAvailabilities.Where(x => x.EmployeeId == employeeId); 
 
-            List<Models.Responses.EmployeeAvailability> list = new List<Models.Responses.EmployeeAvailability>();   
+            if (date.HasValue)
+            {
+                var dayName = date!.Value.DayOfWeek.ToString();
+                query = query.Where(x => x.DayOfWeek == dayName); 
+            } 
+
+            response = query.Include(x => x.Service).ThenInclude(x => x.ServiceType).ToList();
+
+            if (response.Any() == false) return null;
+
+            List<Models.Responses.EmployeeAvailability> list = new List<Models.Responses.EmployeeAvailability>();
 
             foreach (var availability in response)
             {
-                list.Add(Mapper.Map<Models.Responses.EmployeeAvailability>(availability));  
+
+                var mapped = Mapper.Map<Models.Responses.EmployeeAvailability>(availability);
+
+                if (date.HasValue)
+                {
+                    // only check bookings if a date is provided
+                    bool isBooked = Context.Appointments.Any(a =>
+                        a.EmployeeAvailabilityId == availability.EmployeeAvailabilityId &&
+                        a.Date.Date == date.Value.Date
+                    );
+
+                    mapped.IsBooked = isBooked; // add this property in your DTO
+                }
+                else
+                {
+                    // no date -> return all, but maybe set default to false
+                    mapped.IsBooked = false;
+                }
+
+                list.Add(mapped);
             }
 
-            return list;    
+            return list;
         }
 
         public Models.Responses.Employee CreateEmployeeAvailability(int employeeId, List<EmployeeAvailabilityInsertRequest> availability)

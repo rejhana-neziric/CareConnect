@@ -6,6 +6,8 @@ using CareConnect.Models.SearchObjects;
 using CareConnect.Services.AppointmentStateMachine;
 using Azure.Core;
 using Microsoft.Extensions.Logging;
+using CareConnect.Models.Enums;
+using CareConnect.Models.Responses;
 
 namespace CareConnect.Services
 {
@@ -236,5 +238,8 @@ namespace CareConnect.Services
                 return state.AllowedActions(entity);
             }
         }
+
+
+ 
     }
 }

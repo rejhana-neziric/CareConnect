@@ -1,8 +1,12 @@
+import 'dart:convert';
+
+import 'package:careconnect_mobile/models/requests/appointment_insert_request.dart';
 import 'package:careconnect_mobile/models/responses/appointment.dart';
 import 'package:careconnect_mobile/models/responses/search_result.dart';
 import 'package:careconnect_mobile/models/search_objects/appointment_additional_data.dart';
 import 'package:careconnect_mobile/models/search_objects/appointment_search_object.dart';
 import 'package:careconnect_mobile/providers/base_provider.dart';
+import 'package:http/http.dart' as http;
 
 class AppointmentProvider extends BaseProvider<Appointment> {
   AppointmentProvider() : super("Appointment");
@@ -76,5 +80,53 @@ class AppointmentProvider extends BaseProvider<Appointment> {
 
     notifyListeners();
     return result;
+  }
+
+  Future<List<String>> getAppoinmentTypes() async {
+    var url = "$baseUrl$endpoint/appointment-types";
+
+    var uri = Uri.parse(url);
+    var headers = createHeaders();
+
+    var response = await http.get(uri, headers: headers);
+
+    if (isValidResponse(response)) {
+      var data = jsonDecode(response.body);
+
+      List<String> result = [];
+
+      for (var item in data) {
+        result.add(item.toString());
+      }
+
+      return result;
+    } else {
+      throw new Exception("Unknown error");
+    }
+  }
+
+  Future<Appointment?> scheduleAppointment(
+    AppointmentInsertRequest request,
+  ) async {
+    var url = "$baseUrl$endpoint";
+    var uri = Uri.parse(url);
+    var headers = createHeaders();
+
+    var response = await http.post(
+      uri,
+      headers: headers,
+      body: jsonEncode(request.toJson()),
+    );
+
+    if (isValidResponse(response)) {
+      if (response.body.isNotEmpty && response.statusCode == 200) {
+        var data = jsonDecode(response.body);
+        return Appointment.fromJson(data);
+      } else {
+        return null;
+      }
+    } else {
+      throw Exception("Failed to schedule appointment");
+    }
   }
 }

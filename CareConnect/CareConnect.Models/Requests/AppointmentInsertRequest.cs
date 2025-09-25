@@ -1,4 +1,5 @@
-﻿using System;
+﻿using CareConnect.Models.Responses;
+using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Text.Json.Serialization;
@@ -7,10 +8,11 @@ namespace CareConnect.Models.Requests
 {
     public class AppointmentInsertRequest
     {
-
-        public int UserId { get; set; }
-
         public int EmployeeAvailabilityId { get; set; }
+
+        public int ClientId { get; set; }
+
+        public int ChildId { get; set; }
 
         public string AppointmentType { get; set; } = null!;
 

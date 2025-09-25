@@ -1,5 +1,6 @@
 ﻿using CareConnect.Models.Exceptions;
 using CareConnect.Models.Requests;
+using CareConnect.Models.Responses;
 using CareConnect.Services.Database;
 using MapsterMapper;
 using Microsoft.Extensions.DependencyInjection; 
@@ -51,7 +52,7 @@ namespace CareConnect.Services.AppointmentStateMachine
             throw new UserException("Method not allowed.");
         }
 
-        public virtual List<string> AllowedActions(Appointment entity)
+        public virtual List<string> AllowedActions(Database.Appointment entity)
         {
             throw new UserException("Method not allowed.");
         }

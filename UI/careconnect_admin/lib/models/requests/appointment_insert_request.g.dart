@@ -9,7 +9,8 @@ part of 'appointment_insert_request.dart';
 AppointmentInsertRequest _$AppointmentInsertRequestFromJson(
   Map<String, dynamic> json,
 ) => AppointmentInsertRequest(
-  userId: (json['userId'] as num).toInt(),
+  clientId: (json['clientId'] as num).toInt(),
+  childId: (json['childId'] as num).toInt(),
   employeeAvailabilityId: (json['employeeAvailabilityId'] as num).toInt(),
   appointmentType: json['appointmentType'] as String,
   attendanceStatusId: (json['attendanceStatusId'] as num).toInt(),
@@ -21,7 +22,8 @@ AppointmentInsertRequest _$AppointmentInsertRequestFromJson(
 Map<String, dynamic> _$AppointmentInsertRequestToJson(
   AppointmentInsertRequest instance,
 ) => <String, dynamic>{
-  'userId': instance.userId,
+  'clientId': instance.clientId,
+  'childId': instance.childId,
   'employeeAvailabilityId': instance.employeeAvailabilityId,
   'appointmentType': instance.appointmentType,
   'attendanceStatusId': instance.attendanceStatusId,

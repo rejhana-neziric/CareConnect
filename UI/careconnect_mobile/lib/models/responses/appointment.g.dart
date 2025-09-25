@@ -28,9 +28,9 @@ Appointment _$AppointmentFromJson(Map<String, dynamic> json) => Appointment(
         ),
   clientId: (json['clientId'] as num).toInt(),
   childId: (json['childId'] as num).toInt(),
-  clientsChild: ClientsChild.fromJson(
-    json['clientsChild'] as Map<String, dynamic>,
-  ),
+  clientsChild: json['clientsChild'] == null
+      ? null
+      : ClientsChild.fromJson(json['clientsChild'] as Map<String, dynamic>),
 );
 
 Map<String, dynamic> _$AppointmentToJson(Appointment instance) =>
@@ -48,5 +48,5 @@ Map<String, dynamic> _$AppointmentToJson(Appointment instance) =>
       'employeeAvailability': instance.employeeAvailability?.toJson(),
       'clientId': instance.clientId,
       'childId': instance.childId,
-      'clientsChild': instance.clientsChild.toJson(),
+      'clientsChild': instance.clientsChild?.toJson(),
     };

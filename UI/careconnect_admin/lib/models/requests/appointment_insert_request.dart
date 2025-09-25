@@ -4,7 +4,8 @@ part 'appointment_insert_request.g.dart';
 
 @JsonSerializable()
 class AppointmentInsertRequest {
-  int userId;
+  int clientId;
+  int childId;
   int employeeAvailabilityId;
   String appointmentType;
   int attendanceStatusId;
@@ -13,7 +14,8 @@ class AppointmentInsertRequest {
   String? note;
 
   AppointmentInsertRequest({
-    required this.userId,
+    required this.clientId,
+    required this.childId,
     required this.employeeAvailabilityId,
     required this.appointmentType,
     required this.attendanceStatusId,

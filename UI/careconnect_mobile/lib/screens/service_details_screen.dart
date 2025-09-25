@@ -1,6 +1,9 @@
+import 'package:careconnect_mobile/models/auth_user.dart';
 import 'package:careconnect_mobile/models/responses/employee.dart';
 import 'package:careconnect_mobile/models/responses/service.dart';
+import 'package:careconnect_mobile/providers/auth_provider.dart';
 import 'package:careconnect_mobile/providers/service_provider.dart';
+import 'package:careconnect_mobile/screens/scheduling_appointment/appointment_scheduling_screen.dart';
 import 'package:careconnect_mobile/screens/employee_profile_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -21,9 +24,15 @@ class _ServiceDetailsScreenState extends State<ServiceDetailsScreen>
 
   List<Employee>? employees;
 
+  AuthUser? currentUser;
+
   @override
   void initState() {
     super.initState();
+
+    final auth = Provider.of<AuthProvider>(context, listen: false);
+
+    currentUser = auth.user;
 
     serviceProvider = context.read<ServiceProvider>();
 
@@ -314,25 +323,39 @@ class _ServiceDetailsScreenState extends State<ServiceDetailsScreen>
   }
 
   void _scheduleAppointment(Employee employee) {
-    HapticFeedback.lightImpact();
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (context) => _buildAppointmentBottomSheet(employee),
+    // HapticFeedback.lightImpact();
+    // showModalBottomSheet(
+    //   context: context,
+    //   isScrollControlled: true,
+    //   backgroundColor: Colors.transparent,
+    //   builder: (context) => _buildAppointmentBottomSheet(employee),
+    // );
+
+    if (currentUser == null) return;
+
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => AppointmentSchedulingScreen(
+          clientId: currentUser!.id,
+          childId: 1,
+          employee: employee,
+          service: widget.service,
+        ),
+      ),
     );
   }
 
-  Widget _buildAppointmentBottomSheet(Employee employee) {
-    return Container(
-      height: MediaQuery.of(context).size.height * 0.7,
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(25)),
-      ),
-      child: Placeholder(),
-    );
-  }
+  // Widget _buildAppointmentBottomSheet(Employee employee) {
+  //   return Container(
+  //     height: MediaQuery.of(context).size.height * 0.7,
+  //     decoration: const BoxDecoration(
+  //       color: Colors.white,
+  //       borderRadius: BorderRadius.vertical(top: Radius.circular(25)),
+  //     ),
+  //     child: Placeholder(),
+  //   );
+  // }
 
   void _viewProfile(Employee employee) {
     Navigator.push(

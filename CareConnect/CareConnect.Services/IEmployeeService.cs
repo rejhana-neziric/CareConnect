@@ -8,13 +8,10 @@ namespace CareConnect.Services
     {
         public EmployeeStatistics GetStatistics();
 
-        public List<Models.Responses.EmployeeAvailability> GetEmployeeAvailability(int employeeId);
+        public List<Models.Responses.EmployeeAvailability> GetEmployeeAvailability(int employeeId, DateTime? date = null); 
 
         public Employee CreateEmployeeAvailability(int employeeId, List<EmployeeAvailabilityInsertRequest> availability);
 
-
         public Employee UpdateEmployeeAvailability(int employeeId, EmployeeAvailabilityChanges availability);
-
-
     }
 }

@@ -14,6 +14,8 @@ namespace CareConnect.Models.Responses
 
         public string EndTime { get; set; } = null!;
 
+        public bool IsBooked { get; set; }
+
         public DateTime ModifiedDate { get; set; }
 
         public virtual Employee Employee { get; set; } = null!;
