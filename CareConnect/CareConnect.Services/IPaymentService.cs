@@ -6,5 +6,8 @@ namespace CareConnect.Services
 {
     public interface IPaymentService : ICRUDService<Payment, PaymentSearchObject, PaymentAdditionalData, PaymentInsertRequest, PaymentUpdateRequest>
     {
+        public Task<PaymentIntentResponse> CreatePaymentIntentAsync(PaymentIntentRequest request);
+
+        public Task<bool> VerifyPaymentAsync(string paymentIntentId);
     }
 }

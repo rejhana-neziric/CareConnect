@@ -1,12 +1,18 @@
 import 'dart:convert';
 
 import 'package:careconnect_mobile/models/requests/appointment_insert_request.dart';
+import 'package:careconnect_mobile/models/requests/payment_intent_request.dart';
 import 'package:careconnect_mobile/models/responses/appointment.dart';
+import 'package:careconnect_mobile/models/responses/client.dart';
 import 'package:careconnect_mobile/models/responses/search_result.dart';
 import 'package:careconnect_mobile/models/search_objects/appointment_additional_data.dart';
 import 'package:careconnect_mobile/models/search_objects/appointment_search_object.dart';
 import 'package:careconnect_mobile/providers/base_provider.dart';
+import 'package:careconnect_mobile/providers/payment_provider.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_stripe/flutter_stripe.dart';
 import 'package:http/http.dart' as http;
+import 'package:provider/provider.dart';
 
 class AppointmentProvider extends BaseProvider<Appointment> {
   AppointmentProvider() : super("Appointment");
@@ -39,6 +45,8 @@ class AppointmentProvider extends BaseProvider<Appointment> {
     int? serviceTypeId,
     String? clientUsername,
     String? serviceNameGTE,
+    int? employeeAvailabilityId,
+    DateTime? date,
     // String? userFirstNameGTE;
     // String? userLastNameGTE;
     int page = 0,
@@ -63,6 +71,8 @@ class AppointmentProvider extends BaseProvider<Appointment> {
       clientUsername: clientUsername,
       serviceTypeId: serviceTypeId,
       serviceNameGTE: serviceNameGTE,
+      employeeAvailabilityId: employeeAvailabilityId,
+      date: date,
       page: page,
       sortBy: sortBy,
       sortAscending: sortAscending,
@@ -105,28 +115,96 @@ class AppointmentProvider extends BaseProvider<Appointment> {
     }
   }
 
-  Future<Appointment?> scheduleAppointment(
-    AppointmentInsertRequest request,
-  ) async {
-    var url = "$baseUrl$endpoint";
-    var uri = Uri.parse(url);
-    var headers = createHeaders();
+  Future<bool> processPayment({
+    required BuildContext context,
+    required double amount,
+    required Client client,
+    required AppointmentInsertRequest appointment,
+  }) async {
+    try {
+      final paymentProvider = context.read<PaymentProvider>();
 
-    var response = await http.post(
-      uri,
-      headers: headers,
-      body: jsonEncode(request.toJson()),
-    );
+      final request = PaymentIntentRequest(
+        clientId: appointment.clientId,
+        childId: appointment.childId,
+        itemId: null,
+        itemType: "Appointment",
+        appointment: appointment,
+      );
 
-    if (isValidResponse(response)) {
-      if (response.body.isNotEmpty && response.statusCode == 200) {
-        var data = jsonDecode(response.body);
-        return Appointment.fromJson(data);
-      } else {
-        return null;
+      // Create payment intent
+      final paymentIntentResponse = await paymentProvider.createPaymentIntent(
+        requests: request,
+      );
+
+      // Initialize payment sheet
+      await Stripe.instance.initPaymentSheet(
+        paymentSheetParameters: SetupPaymentSheetParameters(
+          paymentIntentClientSecret: paymentIntentResponse.clientSecret,
+          merchantDisplayName: 'CareConnect',
+          style: ThemeMode.system,
+          billingDetails: BillingDetails(
+            name: '${client.user?.firstName} ${client.user?.lastName}',
+            email: client.user?.email,
+          ),
+        ),
+      );
+
+      await Stripe.instance.presentPaymentSheet();
+
+      // Verify payment
+      final isPaymentVerified = await paymentProvider.verifyPayment(
+        paymentIntentResponse.paymentIntentId,
+      );
+
+      if (!isPaymentVerified) {
+        throw Exception('Payment verification failed');
       }
-    } else {
-      throw Exception("Failed to schedule appointment");
+
+      final headers = createHeaders();
+
+      appointment.paymentIntentId = paymentIntentResponse.paymentIntentId;
+
+      final response = await http.post(
+        Uri.parse('$baseUrl$endpoint'),
+        headers: headers,
+        body: json.encode(appointment),
+      );
+
+      final bookingSuccess = response.statusCode == 200;
+
+      if (!bookingSuccess) {
+        throw Exception('Scheduling failed after payment.');
+      }
+
+      return true;
+    } on StripeException {
+      return false;
+    } catch (e) {
+      Navigator.of(context).pop();
+
+      return false;
+    }
+  }
+
+  Future<bool> enrollInFreeItem({
+    required BuildContext context,
+    required AppointmentInsertRequest appointment,
+  }) async {
+    try {
+      final headers = createHeaders();
+
+      appointment.paymentIntentId = null;
+
+      final response = await http.post(
+        Uri.parse('$baseUrl$endpoint'),
+        headers: headers,
+        body: json.encode(appointment),
+      );
+
+      return response.statusCode == 200;
+    } catch (e) {
+      return false;
     }
   }
 }

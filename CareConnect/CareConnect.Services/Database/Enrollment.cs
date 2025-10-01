@@ -21,6 +21,8 @@ namespace CareConnect.Services.Database
 
         public long Amount { get; set; }
 
+        public Models.Enums.PaymentStatus PaymentStatus { get; set; }
+
         public string? StripePaymentIntentId { get; set; }
 
         public DateTime CreatedAt { get; set; }

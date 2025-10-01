@@ -6,6 +6,7 @@ using CareConnect.Models.SearchObjects;
 using CareConnect.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace CareConnect.API.Controllers
 {
@@ -47,18 +48,41 @@ namespace CareConnect.API.Controllers
         [PermissionAuthorize("GetStatistics")]
         public WorkshopStatistics GetStatistics()
         {
-            return (_service as WorkshopService).GetStatistics();
+            return (_service as IWorkshopService)!.GetStatistics();
         }
 
-        [HttpPost("enroll-free/{workshopId}/{clientId}")]
-        [PermissionAuthorize("EnrollFreeWorkshop")]
-        public ActionResult<EnrollmentResponse> EnrollFreeWorkshop(int workshopId, int clientId, [FromQuery] int? childId)
+        [HttpPost("enroll")]
+        [PermissionAuthorize("Enroll")]
+        public async Task<IActionResult> Enroll([FromBody] EnrollmentRequest request)
         {
-            var result = (_service as WorkshopService)!.EnrollInFreeWorkshop(workshopId, clientId, childId);
-            if (!result.Success)
-                return BadRequest(result);
+            try
+            {
+                bool success = false;
 
-            return Ok(result);
+                success = await (_service as IWorkshopService)!.EnrollInWorkshopAsync(request.ClientId, request.ChildId, request.WorkshopId, request.PaymentIntentId);
+
+                if (success)
+                {
+                    return Ok(new { message = "Successfully enrolled/booked" });
+                }
+                else
+                {
+                    return BadRequest(new { error = "Failed to enroll/book. Item may be full, already booked, or payment not verified." });
+                }
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { error = "Internal server error" });
+            }
+        }
+
+        [HttpGet("{workshopId}/status")]
+        [PermissionAuthorize("GetWorkshopEnrollmentStatus")]
+        public async Task<IActionResult> GetWorkshopEnrollmentStatus([FromQuery] int clientId, [FromRoute] int workshopId, [FromQuery] int? childId = null)
+        {
+
+            var isEnrolled = await (_service as IWorkshopService)!.IsEnrolledInWorkshopAsync(clientId, childId, workshopId);
+            return Ok(new { isEnrolled });
         }
     }
 }

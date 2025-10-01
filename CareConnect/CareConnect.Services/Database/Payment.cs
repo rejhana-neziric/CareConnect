@@ -7,21 +7,29 @@ public partial class Payment
 {
     public int PaymentId { get; set; }
 
+    public string PaymentIntentId { get; set; } = null!;
+
     public int UserId { get; set; }
+
+    public int? ChildId { get; set; }
+
+    public string ItemType { get; set; } = null!;
+
+    public int? WorkshopId { get; set; }
 
     public decimal Amount { get; set; }
 
-    public DateTime PaymentDate { get; set; }
+    public string Currency { get; set; } = null!;
 
-    public int PaymentStatusId { get; set; }
+    public DateTime CreatedAt { get; set; }
 
-    public int PaymentPurposeId { get; set; }
+    public DateTime? CompletedAt { get; set; }
 
-    public DateTime ModifiedDate { get; set; }
+    public string Status { get; set; } = null!;
 
-    public virtual PaymentPurpose PaymentPurpose { get; set; } = null!;
+    public int? EmployeeAvailabilityId { get; set; }
 
-    public virtual PaymentStatus PaymentStatus { get; set; } = null!;
+    public DateTime? AppointmentDate { get; set; }
 
     public virtual User User { get; set; } = null!;
 }

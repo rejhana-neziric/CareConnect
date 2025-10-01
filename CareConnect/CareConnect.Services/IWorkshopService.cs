@@ -17,6 +17,8 @@ namespace CareConnect.Services
 
         public WorkshopStatistics GetStatistics();
 
-        public EnrollmentResponse EnrollInFreeWorkshop(int workshopId, int clientId, int? childId); 
+        public Task<bool> EnrollInWorkshopAsync(int clientId, int? childId, int workshopId, string? paymentIntentId = null);
+
+        public Task<bool> IsEnrolledInWorkshopAsync(int client, int? childId, int workshopId);
     }
 }

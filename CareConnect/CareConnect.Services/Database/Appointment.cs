@@ -27,6 +27,8 @@ public partial class Appointment
 
     public string? StateMachine { get; set; }
 
+    public string? PaymentIntentId { get; set; }
+
     public virtual AttendanceStatus AttendanceStatus { get; set; } = null!;
 
     public virtual EmployeeAvailability EmployeeAvailability { get; set; } = null!;

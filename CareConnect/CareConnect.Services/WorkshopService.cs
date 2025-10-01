@@ -17,6 +17,7 @@ using Microsoft.Extensions.Logging;
 using CareConnect.Models.Responses;
 using CareConnect.Models.Enums;
 using static Permissions;
+using Stripe;
 
 namespace CareConnect.Services
 {
@@ -26,11 +27,19 @@ namespace CareConnect.Services
 
         ILogger<WorkshopService> _logger;
 
+        private readonly IPaymentService _paymentService;
 
-        public WorkshopService(CareConnectContext context, IMapper mapper, BaseWorkshopState baseWorkshopState, ILogger<WorkshopService> logger) : base(context, mapper) 
+        public WorkshopService(
+            CareConnectContext context, 
+            IMapper mapper, 
+            BaseWorkshopState baseWorkshopState, 
+            ILogger<WorkshopService> logger, 
+            IPaymentService paymentService) 
+            : base(context, mapper) 
         {
             BaseWorkshopState = baseWorkshopState;
             _logger = logger;
+            _paymentService = paymentService;
         }
 
         public override IQueryable<Database.Workshop> AddFilter(WorkshopSearchObject search, IQueryable<Database.Workshop> query)
@@ -219,71 +228,88 @@ namespace CareConnect.Services
             };
         }
 
-        public EnrollmentResponse EnrollInFreeWorkshop(int workshopId, int clientId, int? childId)
+        public async Task<bool> EnrollInWorkshopAsync(int clientId, int? childId, int workshopId, string? paymentIntentId = null)
         {
-            var client = Context.Clients.FirstOrDefault(x => x.User.UserId == clientId);
-            if (client == null)
-                return new EnrollmentResponse { Success = false, Message = "Client not found." };
+            var workshop = await Context.Workshops.FindAsync(workshopId);
 
-            var workshop = Context.Workshops.Find(workshopId);
-            if (workshop == null)
-                return new EnrollmentResponse { Success = false, Message = "Workshop not found." };
+            if (workshop == null) return false;
 
-            if (workshop.Price > 0)
-                return new EnrollmentResponse { Success = false, Message = "Workshop is not free." };
+            var client = await Context.Clients.FirstOrDefaultAsync(x => x.ClientId == clientId);
 
-            if (workshop.MaxParticipants != null &&
-                workshop.Participants != null &&
-                workshop.Participants >= workshop.MaxParticipants)
-                return new EnrollmentResponse { Success = false, Message = "Workshop is full." };
+            if (client == null) return false;
 
             if (childId != null)
             {
                 var child = Context.Children.Find(childId);
-                if (child == null)
-                    return new EnrollmentResponse { Success = false, Message = "Child not found." };
+
+                if (child == null) return false; 
 
                 var clientsChild = Context.ClientsChildren
                     .FirstOrDefault(x => x.ClientId == clientId && x.ChildId == childId);
 
-                if (clientsChild == null)
-                    return new EnrollmentResponse { Success = false, Message = "Selected child does not belong to this client." };
+                if (clientsChild == null) return false;
 
-                if (workshop.WorkshopType == "Parents")
-                    return new EnrollmentResponse { Success = false, Message = "This workshop is for parents only." };
+                if (workshop.WorkshopType == "Parents") return false; 
             }
 
-            var alreadyExist = Context.Enrollments
-                .FirstOrDefault(x => x.ClientId == client.ClientId && x.ChildId == childId && x.WorkshopId == workshop.WorkshopId);
+            // Check if already enrolled
+            var existingParticipant = await Context.Participants
+                .AnyAsync(x => x.WorkshopId == workshopId && x.UserId == clientId && (childId == null || x.ChildId == childId));
 
-            if (alreadyExist != null)
-                return new EnrollmentResponse { Success = false, Message = "You are already enrolled in this workshop." };
+            if (existingParticipant) return false;
 
-            var enrollment = new Database.Enrollment
+            // For paid workshops, verify payment
+            if (workshop.Price != null)
             {
-                ClientId = client.ClientId,
-                ChildId = childId,
-                WorkshopId = workshop.WorkshopId,
-                Status = EnrollmentStatus.Paid,
-                CreatedAt = DateTime.Now,
-                CompletedAt = DateTime.Now
-            };
+                if (string.IsNullOrEmpty(paymentIntentId))
+                    return false;
 
-            Context.Enrollments.Add(enrollment);
+                var isPaymentVerified = await _paymentService.VerifyPaymentAsync(paymentIntentId);
+                if (!isPaymentVerified)
+                    return false;
 
-            Context.Participants.Add(new Database.Participant
+                var paymentRecord = await Context.Payments
+                .FirstOrDefaultAsync(pr => pr.PaymentIntentId == paymentIntentId);
+
+                if (paymentRecord == null) return false; 
+
+                // Update payment status
+                paymentRecord.Status = Models.Enums.PaymentStatus.Completed.ToString();
+                paymentRecord.CompletedAt = DateTime.Now;
+            }
+
+            // Check capacity
+            var currentParticipants = await Context.Participants
+                .CountAsync(wp => wp.WorkshopId == workshopId);
+
+            if (currentParticipants >= workshop.MaxParticipants)
+                return false;
+
+            // Enroll 
+            var participant = new Database.Participant
             {
-                UserId = client.ClientId,
+                UserId = clientId,
                 ChildId = childId,
                 WorkshopId = workshop.WorkshopId,
                 AttendanceStatusId = 1,
                 RegistrationDate = DateTime.Now,
                 ModifiedDate = DateTime.Now,
-            });
+                PaymentIntentId = paymentIntentId
+            };
 
-            Context.SaveChanges();
+            Context.Participants.Add(participant);
+            await Context.SaveChangesAsync();
 
-            return new EnrollmentResponse { Success = true, Message = "Enrollment successful." };
+            _logger.LogInformation("User {clientId} enrolled in workshop {WorkshopId}", clientId, workshopId);
+            return true;
+        }
+
+        public async Task<bool> IsEnrolledInWorkshopAsync(int client, int? childId, int workshopId)
+        {
+            return await Context.Participants.AnyAsync(x => x.WorkshopId == workshopId 
+                                                         && x.UserId == client 
+                                                         && (childId == null 
+                                                         || x.ChildId == childId));
         }
     }
 }

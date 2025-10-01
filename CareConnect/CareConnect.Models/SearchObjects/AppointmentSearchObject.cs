@@ -13,6 +13,8 @@ namespace CareConnect.Models.SearchObjects
 
         public DateTime? DateLTE { get; set; }
 
+        public DateTime? Date { get; set; }
+
         public string? AttendanceStatusName { get; set; }
 
         public string? EmployeeFirstName { get; set; }
@@ -39,6 +41,7 @@ namespace CareConnect.Models.SearchObjects
 
         public string? ServiceNameGTE { get; set; }
 
+        public int? EmployeeAvailabilityId { get; set; }
 
     }
 }

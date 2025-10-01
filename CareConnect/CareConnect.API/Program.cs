@@ -7,6 +7,7 @@ using CareConnect.Services;
 using CareConnect.Services.AppointmentStateMachine;
 using CareConnect.Services.Database;
 using CareConnect.Services.WorkshopStateMachine;
+using DotNetEnv;
 using Mapster;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
@@ -14,14 +15,26 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 using Serilog;
+using Stripe;
 using System.Reflection;
 using System.Text.Json.Serialization;
 
+var envFilePath = Path.Combine(Directory.GetParent(Directory.GetCurrentDirectory())!.FullName, ".env");
+Env.Load(envFilePath);
+
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
+builder.Configuration
+       .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
+       .AddEnvironmentVariables();
+
+// Stripe key
+var stripeSettings = builder.Configuration.GetSection("Stripe");
+StripeConfiguration.ApiKey = stripeSettings["SecretKey"];
 
 MapsterConfig.RegisterMappings();
+
+// Add services to the container.
 
 builder.Services.AddTransient<IUserService, UserService>(); 
 builder.Services.AddTransient<IEmployeeService, EmployeeService>();
@@ -37,7 +50,7 @@ builder.Services.AddTransient<IInstructorService, InstructorService>();
 builder.Services.AddTransient<IMemberService, MemberService>();
 builder.Services.AddTransient<IParticipantService, ParticipantService>();
 builder.Services.AddTransient<IPaymentService, PaymentService>();
-builder.Services.AddTransient<IReviewService, ReviewService>();
+builder.Services.AddTransient<IReviewService, CareConnect.Services.ReviewService>();
 builder.Services.AddTransient<IRoleService, RoleService>();
 builder.Services.AddTransient<IUsersRoleService, UsersRoleService>();
 builder.Services.AddTransient<ISessionService, SessionService>();
@@ -45,7 +58,6 @@ builder.Services.AddTransient<IServiceService, ServiceService>();
 builder.Services.AddTransient<IServiceTypeService, ServiceTypeService>();
 builder.Services.AddTransient<IWorkshopService, WorkshopService>();
 builder.Services.AddTransient<IReportService, ReportService>();
-
 
 builder.Services.AddTransient<BaseAppointmentState>();
 builder.Services.AddTransient<InitialAppointmentState>();

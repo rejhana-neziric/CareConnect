@@ -3,9 +3,12 @@ import 'package:careconnect_mobile/models/auth_user.dart';
 import 'package:careconnect_mobile/models/responses/child.dart';
 import 'package:careconnect_mobile/models/responses/workshop.dart';
 import 'package:careconnect_mobile/providers/auth_provider.dart';
+import 'package:careconnect_mobile/providers/client_provider.dart';
 import 'package:careconnect_mobile/providers/clients_child_provider.dart';
+import 'package:careconnect_mobile/providers/payment_provider.dart';
 import 'package:careconnect_mobile/providers/workshop_provider.dart';
 import 'package:careconnect_mobile/widgets/confim_dialog.dart';
+import 'package:careconnect_mobile/widgets/primary_button.dart';
 import 'package:careconnect_mobile/widgets/snackbar.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
@@ -22,8 +25,16 @@ class WorkshopDetailsScreen extends StatefulWidget {
 class _WorkshopDetailsScreenState extends State<WorkshopDetailsScreen> {
   late WorkshopProvider workshopProvider;
   late ClientsChildProvider clientsChildProvider;
+  late PaymentProvider paymentProvider;
+  late ClientProvider clientProvider;
 
   AuthUser? currentUser;
+
+  List<Child> children = [];
+  int? selectedChildId;
+
+  bool _isEnrolled = false;
+  bool _isLoading = false;
 
   @override
   void initState() {
@@ -35,6 +46,33 @@ class _WorkshopDetailsScreenState extends State<WorkshopDetailsScreen> {
 
     workshopProvider = context.read<WorkshopProvider>();
     clientsChildProvider = context.read<ClientsChildProvider>();
+    paymentProvider = context.read<PaymentProvider>();
+    clientProvider = context.read<ClientProvider>();
+
+    // check if client is already enrolled
+    if (widget.workshop.workshopType == "Parents") {
+      _checkEnrollmentStatus();
+    }
+  }
+
+  Future<void> _checkEnrollmentStatus() async {
+    if (currentUser == null) return;
+
+    try {
+      final isEnrolled = await workshopProvider.isEnrolledInWorkshop(
+        workshopId: widget.workshop.workshopId,
+        clientId: currentUser!.id,
+        childId: null,
+      );
+      setState(() {
+        _isEnrolled = isEnrolled;
+        _isLoading = false;
+      });
+    } catch (e) {
+      setState(() {
+        _isLoading = false;
+      });
+    }
   }
 
   @override
@@ -68,7 +106,10 @@ class _WorkshopDetailsScreenState extends State<WorkshopDetailsScreen> {
         ),
       ),
 
-      bottomNavigationBar: _buildBottomBar(colorScheme),
+      bottomNavigationBar: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: _buildBottomBar(colorScheme),
+      ),
     );
   }
 
@@ -311,42 +352,30 @@ class _WorkshopDetailsScreenState extends State<WorkshopDetailsScreen> {
       return SizedBox.shrink();
     }
 
-    return Container(
-      padding: const EdgeInsets.all(24),
-      decoration: BoxDecoration(color: colorScheme.surfaceContainerLowest),
-      child: SafeArea(
-        child: ElevatedButton(
-          onPressed: _enroll,
-          style: ElevatedButton.styleFrom(
-            backgroundColor: colorScheme.primaryContainer,
-            foregroundColor: colorScheme.onSurface,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16),
-            ),
-            padding: const EdgeInsets.symmetric(vertical: 16),
-            elevation: 0,
-          ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Icon(Icons.calendar_today, size: 20),
-              const SizedBox(width: 8),
-              Text(
-                'Enroll now',
-                style: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
+    if (_isLoading) {
+      return Center(child: CircularProgressIndicator());
+    } else if (_isEnrolled) {
+      return PrimaryButton(
+        label: 'You are already enrolled',
+        onPressed: () {
+          CustomSnackbar.show(
+            context,
+            message: 'You have already enrolled to this workshop.',
+            type: SnackbarType.info,
+          );
+        },
+      );
+    } else {
+      return PrimaryButton(
+        label: widget.workshop.price == null
+            ? 'Enroll for Free'
+            : 'Pay & Enroll (\$${widget.workshop.price.toString()})',
+        onPressed: _handleEnrollment,
+      );
+    }
   }
 
-  void _enroll() async {
-    //todo
+  Future<void> _handleEnrollment() async {
     if (currentUser == null) return;
 
     List<Child> children = [];
@@ -360,9 +389,23 @@ class _WorkshopDetailsScreenState extends State<WorkshopDetailsScreen> {
     if (children.isNotEmpty && children.length > 1) {
       selectedChildId = await _showChildSelectionDialog(context, children);
 
-      if (selectedChildId == null) return; // User canceled
+      if (selectedChildId == null) return;
     } else if (children.length == 1) {
       selectedChildId = children.first.childId;
+    }
+
+    final isChildEnrolled = await workshopProvider.isEnrolledInWorkshop(
+      workshopId: widget.workshop.workshopId,
+      clientId: currentUser!.id,
+      childId: selectedChildId,
+    );
+
+    if (isChildEnrolled) {
+      return CustomSnackbar.show(
+        context,
+        message: 'Your child is already enrolled to this workshop.',
+        type: SnackbarType.info,
+      );
     }
 
     final shouldProceed = await CustomConfirmDialog.show(
@@ -377,29 +420,61 @@ class _WorkshopDetailsScreenState extends State<WorkshopDetailsScreen> {
 
     if (shouldProceed != true) return;
 
-    if (widget.workshop.price == null) {
-      final result = await workshopProvider.enrollInFreeWorkshop(
-        workshopId: widget.workshop.workshopId,
-        clientId: currentUser!.id,
-        childId: widget.workshop.workshopType == "Parents"
-            ? null
-            : selectedChildId,
-      );
+    bool result;
 
-      if (result.success) {
-        CustomSnackbar.show(
-          context,
-          message: result.message,
-          type: SnackbarType.success,
+    try {
+      if (widget.workshop.price == null) {
+        result = await workshopProvider.enrollInFreeItem(
+          context: context,
+          workshopId: widget.workshop.workshopId,
+          clientId: currentUser!.id,
+          childId: selectedChildId,
         );
-        Navigator.pop(context);
       } else {
+        final client = await clientProvider.getById(currentUser!.id);
+
+        result = await workshopProvider.processPayment(
+          context: context,
+          workshopId: widget.workshop.workshopId,
+          clientId: currentUser!.id,
+          childId: selectedChildId,
+          amount: widget.workshop.price!,
+          client: client,
+        );
+      }
+
+      if (result == true) {
+        if (!mounted) return;
+
+        Navigator.pop(context);
+
+        Future.microtask(() {
+          if (mounted) {
+            CustomSnackbar.show(
+              context,
+              message: 'Successfully enrolled in workshop!',
+              type: SnackbarType.success,
+            );
+          }
+        });
+      } else {
+        if (!mounted) return;
         CustomSnackbar.show(
           context,
-          message: result.message,
+          message:
+              'Failed to enroll. Workshop may be full or you have already enrolled.',
           type: SnackbarType.info,
         );
       }
+    } catch (e) {
+      if (!mounted) return;
+      Navigator.of(context).pop();
+
+      CustomSnackbar.show(
+        context,
+        message: 'Something went wrong. Please try again.',
+        type: SnackbarType.info,
+      );
     }
   }
 

@@ -6,7 +6,6 @@ namespace CareConnect.Services
 {
     public interface IAppointmentService : ICRUDService<Appointment, AppointmentSearchObject, AppointmentAdditionalData, AppointmentInsertRequest, AppointmentUpdateRequest>
     {
-
         public Appointment Cancel(int id);
 
         public Appointment Confirm(int id);
@@ -17,6 +16,6 @@ namespace CareConnect.Services
 
         public Appointment Reschedule(int id, AppointmentRescheduleRequest request);
 
-        public List<string> AllowedActions(int id); 
+        public List<string> AllowedActions(int id);
     }
 }

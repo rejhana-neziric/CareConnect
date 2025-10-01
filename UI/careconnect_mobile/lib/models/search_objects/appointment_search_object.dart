@@ -22,6 +22,8 @@ class AppointmentSearchObject {
   String? clientUsername;
   int? serviceTypeId;
   String? serviceNameGTE;
+  int? employeeAvailabilityId;
+  DateTime? date;
   AppointmentAdditionalData? additionalData;
   int? page;
   String? sortBy;
@@ -46,6 +48,8 @@ class AppointmentSearchObject {
     this.clientUsername,
     this.serviceTypeId,
     this.serviceNameGTE,
+    this.employeeAvailabilityId,
+    this.date,
     this.additionalData,
     this.page,
     this.sortAscending,

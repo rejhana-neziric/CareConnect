@@ -19,6 +19,8 @@ public partial class Participant
 
     public DateTime ModifiedDate { get; set; }
 
+    public string? PaymentIntentId { get; set; }
+
     public virtual AttendanceStatus AttendanceStatus { get; set; } = null!;
 
     public virtual User User { get; set; } = null!;

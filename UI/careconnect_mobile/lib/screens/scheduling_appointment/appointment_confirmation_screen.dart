@@ -1,10 +1,13 @@
 import 'package:careconnect_mobile/core/theme/app_colors.dart';
+import 'package:careconnect_mobile/models/auth_user.dart';
 import 'package:careconnect_mobile/models/requests/appointment_insert_request.dart';
 import 'package:careconnect_mobile/models/responses/child.dart';
 import 'package:careconnect_mobile/models/responses/employee.dart';
 import 'package:careconnect_mobile/models/responses/employee_availability.dart';
 import 'package:careconnect_mobile/models/time_slot.dart';
 import 'package:careconnect_mobile/providers/appointment_provider.dart';
+import 'package:careconnect_mobile/providers/auth_provider.dart';
+import 'package:careconnect_mobile/providers/client_provider.dart';
 import 'package:careconnect_mobile/providers/clients_child_provider.dart';
 import 'package:careconnect_mobile/screens/scheduling_appointment/appointment_success_screen.dart';
 import 'package:careconnect_mobile/widgets/confim_dialog.dart';
@@ -44,19 +47,27 @@ class _AppointmentConfirmationScreenState
 
   bool _isSubmitting = false;
 
+  AuthUser? currentUser;
+
   List<Child> children = [];
 
   int? selectedChildId;
 
   late AppointmentProvider appointmentProvider;
   late ClientsChildProvider clientsChildProvider;
+  late ClientProvider clientProvider;
 
   @override
   void initState() {
     super.initState();
 
+    final auth = Provider.of<AuthProvider>(context, listen: false);
+
+    currentUser = auth.user;
+
     appointmentProvider = context.read<AppointmentProvider>();
     clientsChildProvider = context.read<ClientsChildProvider>();
+    clientProvider = context.read<ClientProvider>();
 
     loadAppoinmentTypes();
     loadChildren();
@@ -438,6 +449,8 @@ class _AppointmentConfirmationScreenState
       _isSubmitting = true;
     });
 
+    if (widget.availability.service == null) return;
+
     if (selectedAppointmentType == null || selectedChildId == null) {
       return CustomSnackbar.show(
         context,
@@ -458,6 +471,8 @@ class _AppointmentConfirmationScreenState
 
     if (shouldProceed != true) return;
 
+    bool result;
+
     try {
       final request = AppointmentInsertRequest(
         clientId: widget.clientId,
@@ -468,34 +483,55 @@ class _AppointmentConfirmationScreenState
         date: widget.selectedDate,
       );
 
-      final response = await appointmentProvider.scheduleAppointment(request);
+      if (widget.availability.service!.price == null) {
+        result = await appointmentProvider.enrollInFreeItem(
+          context: context,
+          appointment: request,
+        );
+      } else {
+        final client = await clientProvider.getById(currentUser!.id);
 
-      if (response == null) {
+        result = await appointmentProvider.processPayment(
+          context: context,
+          amount: widget.availability.service!.price!,
+          client: client,
+          appointment: request,
+        );
+      }
+
+      if (result == true) {
+        if (!mounted) return;
+
+        Navigator.pop(context);
+
+        Future.microtask(() async {
+          if (mounted) {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (_) => AppointmentSuccessScreen(appointment: request),
+              ),
+            );
+          }
+        });
+      } else {
+        if (!mounted) return;
         CustomSnackbar.show(
           context,
           message:
-              'Sorry, we couldn\'t schedule your appointment. Please try again or contact support.',
-          type: SnackbarType.error,
-        );
-      } else {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (_) => AppointmentSuccessScreen(appointment: response),
-          ),
+              'Failed to enroll. Workshop may be full or you have already enrolled.',
+          type: SnackbarType.info,
         );
       }
     } catch (e) {
+      if (!mounted) return;
+      Navigator.of(context).pop();
+
       CustomSnackbar.show(
         context,
-        message:
-            'Sorry, we couldn\'t schedule your appointment. Please try again or contact support.',
-        type: SnackbarType.error,
+        message: 'Something went wrong. Please try again.',
+        type: SnackbarType.info,
       );
-    } finally {
-      setState(() {
-        _isSubmitting = false;
-      });
     }
   }
 

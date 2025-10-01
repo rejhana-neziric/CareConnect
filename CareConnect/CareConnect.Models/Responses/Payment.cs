@@ -10,6 +10,8 @@ namespace CareConnect.Models.Responses
 
         public DateTime ModifiedDate { get; set; }
 
+        public string Status { get; set; }
+
         public virtual PaymentPurpose PaymentPurpose { get; set; } = null!;
 
         public virtual PaymentStatus PaymentStatus { get; set; } = null!;

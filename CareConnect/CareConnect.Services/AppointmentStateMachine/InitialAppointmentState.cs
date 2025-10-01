@@ -7,6 +7,8 @@ using CareConnect.Services.Database;
 using EasyNetQ;
 using MapsterMapper;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
+using Stripe;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -18,46 +20,64 @@ namespace CareConnect.Services.AppointmentStateMachine
     public class InitialAppointmentState : BaseAppointmentState
     {
 
-        public InitialAppointmentState(CareConnectContext context, IMapper mapper, IServiceProvider serviceProvider) : base(context, mapper, serviceProvider)
-        {
+        private readonly IPaymentService _paymentService;
 
+        private readonly ILogger<InitialAppointmentState> _logger;
+
+        public InitialAppointmentState(
+            CareConnectContext context, 
+            IMapper mapper, 
+            IServiceProvider serviceProvider, 
+            IPaymentService paymentService, 
+            ILogger<InitialAppointmentState> logger) 
+            : base(context, mapper, serviceProvider)
+        {
+            _paymentService = paymentService;
+            _logger = logger;
         }
 
         public override Models.Responses.Appointment Insert(AppointmentInsertRequest request)
         {
-
-            var service = _context.EmployeeAvailabilities.Where(x => x.EmployeeAvailabilityId == request.EmployeeAvailabilityId)
-                                                         .Include(x => x.Service)
-                                                         .Select(x => x.Service)
-                                                         .FirstOrDefault();
+           var service = _context.EmployeeAvailabilities
+                           .Where(x => x.EmployeeAvailabilityId == request.EmployeeAvailabilityId)
+                           .Include(x => x.Service)
+                           .Select(x => x.Service)
+                           .FirstOrDefault();
 
             if (service == null)
                 throw new UserException("Service not found.");
 
-            //if (service.Price > 0)
-            //    return new BookingResponse { Success = false, Message = "Service is not free." };
+            var response = BookAppointmentAsync(request).GetAwaiter().GetResult();
 
-            return BookFreeAppointment(request); 
+            if (response)
+            {
+                var set = _context.Set<Database.Appointment>();
 
-            //var set = _context.Set<Database.Appointment>();
+                var entity = _mapper.Map<Database.Appointment>(request);
 
-            //var entity = _mapper.Map<Database.Appointment>(request);
+                entity.StateMachine = "Scheduled";
 
-            //entity.StateMachine = "Scheduled";
+                set.Add(entity);
 
-            //set.Add(entity);
+                _context.SaveChanges(); 
 
-            //_context.SaveChanges();
+                var scheduledAppointment = _context.Appointments
+                    .Include(a => a.EmployeeAvailability)
+                        .ThenInclude(ea => ea.Service)
+                    .Include(a => a.EmployeeAvailability.Employee)
+                    .Include(a => a.ClientsChild)
+                        .ThenInclude(cc => cc.Child)
+                    .Include(a => a.ClientsChild.Client)
+                        .ThenInclude(c => c.User)
+                    .FirstOrDefault(a => a.AppointmentId == entity.AppointmentId);
 
-            //var bus = RabbitHutch.CreateBus("host=localhost;username=admin;password=admin");
+                if (scheduledAppointment == null)
+                    throw new UserException("Failed to schedule appointment.");
 
-            //var scheduledAppointment = _mapper.Map<Models.Responses.Appointment>(entity);
+                return _mapper.Map<Models.Responses.Appointment>(scheduledAppointment);
+            }
 
-            //AppointmentScheduled mesagge = new AppointmentScheduled() {  Appointment = scheduledAppointment }; 
-
-            //bus.PubSub.Publish(mesagge); 
-
-            //return scheduledAppointment;
+            throw new UserException("Unable to book appointment. Validation failed."); 
         }
 
         public override List<string> AllowedActions(Database.Appointment entity)
@@ -65,59 +85,58 @@ namespace CareConnect.Services.AppointmentStateMachine
             return new List<string>() { nameof(Insert) };
         }
 
-
-        private Models.Responses.Appointment BookFreeAppointment(AppointmentInsertRequest request)
+        public async Task<bool> BookAppointmentAsync(AppointmentInsertRequest request)
         {
-            var client = _context.Clients.FirstOrDefault(x => x.User.UserId == request.ClientId);
+            var client = await _context.Clients
+                .FirstOrDefaultAsync(x => x.User.UserId == request.ClientId);
 
-            if (client == null)
-                throw new UserException("Client not found.");
+            if (client == null) return false;
+
+            var child = await _context.Children
+                .FirstOrDefaultAsync(x => x.ChildId == request.ChildId);
+
+            if (child == null) return false;
+
+            var clientsChild = await _context.ClientsChildren
+                .FirstOrDefaultAsync(x => x.ClientId == request.ClientId && x.ChildId == request.ChildId);
+
+            if (clientsChild == null) return false;
+
+            var availability = await _context.EmployeeAvailabilities
+                .Include(x => x.Service)
+                .FirstOrDefaultAsync(x => x.EmployeeAvailabilityId == request.EmployeeAvailabilityId);
+
+            if (availability == null) return false;
+
+            var alreadyExist = await _context.Appointments
+                .FirstOrDefaultAsync(x => x.ClientId == client.ClientId
+                                       && x.ChildId == child.ChildId
+                                       && x.EmployeeAvailabilityId == request.EmployeeAvailabilityId
+                                       && x.Date == request.Date);
+
+            if (alreadyExist != null) return false;
+
+            if (availability?.Service?.Price != null)
+            {
+                if (string.IsNullOrEmpty(request.PaymentIntentId))
+                    return false;
+
+                var isPaymentVerified = await _paymentService.VerifyPaymentAsync(request.PaymentIntentId);
+                if (!isPaymentVerified)
+                    return false;
 
 
-            var child = _context.Children.FirstOrDefault(x => x.ChildId == request.ChildId);
+                var paymentRecord = await _context.Payments
+                .FirstOrDefaultAsync(pr => pr.PaymentIntentId == request.PaymentIntentId);
 
-            if (child == null)
-                throw new UserException("Child not found.");  
+                if (paymentRecord == null) return false;
 
-            var clientsChild = _context.ClientsChildren.FirstOrDefault(x => x.ClientId == request.ClientId && x.ChildId == request.ChildId);
+                // Update payment status
+                paymentRecord.Status = Models.Enums.PaymentStatus.Completed.ToString();
+                paymentRecord.CompletedAt = DateTime.Now;
+            }
 
-            if (clientsChild == null)
-                throw new UserException("Selected child does not belong to this client."); 
-
-            var availability = _context.EmployeeAvailabilities.FirstOrDefault(x => x.EmployeeAvailabilityId == request.EmployeeAvailabilityId);
-
-            if (availability == null)
-                throw new UserException("Availability not found.");  
-
-            var alreadyExist = _context.Appointments
-                .FirstOrDefault(x => x.ClientId == client.ClientId
-                                  && x.ChildId == child.ChildId 
-                                  && x.EmployeeAvailabilityId == request.EmployeeAvailabilityId 
-                                  && x.Date == request.Date);
-
-            if (alreadyExist != null)
-                throw new UserException("You already scheduled this service on the same date and time."); 
-
-            var set = _context.Set<Database.Appointment>();
-
-            var entity = _mapper.Map<Database.Appointment>(request);
-
-            entity.StateMachine = "Scheduled";
-
-            set.Add(entity);
-
-            _context.SaveChanges();
-
-            var scheduledAppointment = _context.Appointments.Include(a => a.EmployeeAvailability)
-                                                                .ThenInclude(ea => ea.Service)
-                                                            .Include(a => a.EmployeeAvailability.Employee)
-                                                            .Include(a => a.ClientsChild)
-                                                                .ThenInclude(cc => cc.Child)
-                                                            .Include(a => a.ClientsChild.Client)
-                                                                .ThenInclude(c => c.User)
-                                                            .FirstOrDefault(a => a.AppointmentId == entity.AppointmentId);
-
-            return _mapper.Map<Models.Responses.Appointment>(scheduledAppointment);
-        }
+            return true;
+        }  
     }
 }

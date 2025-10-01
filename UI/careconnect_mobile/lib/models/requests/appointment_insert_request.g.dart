@@ -17,6 +17,7 @@ AppointmentInsertRequest _$AppointmentInsertRequestFromJson(
   date: DateTime.parse(json['date'] as String),
   description: json['description'] as String?,
   note: json['note'] as String?,
+  paymentIntentId: json['paymentIntentId'] as String?,
 );
 
 Map<String, dynamic> _$AppointmentInsertRequestToJson(
@@ -30,4 +31,5 @@ Map<String, dynamic> _$AppointmentInsertRequestToJson(
   'date': instance.date.toIso8601String(),
   'description': instance.description,
   'note': instance.note,
+  'paymentIntentId': instance.paymentIntentId,
 };

@@ -346,17 +346,6 @@ class _ServiceDetailsScreenState extends State<ServiceDetailsScreen>
     );
   }
 
-  // Widget _buildAppointmentBottomSheet(Employee employee) {
-  //   return Container(
-  //     height: MediaQuery.of(context).size.height * 0.7,
-  //     decoration: const BoxDecoration(
-  //       color: Colors.white,
-  //       borderRadius: BorderRadius.vertical(top: Radius.circular(25)),
-  //     ),
-  //     child: Placeholder(),
-  //   );
-  // }
-
   void _viewProfile(Employee employee) {
     Navigator.push(
       context,

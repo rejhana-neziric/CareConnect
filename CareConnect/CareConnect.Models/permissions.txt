@@ -9,7 +9,7 @@ EmployeePayHistory: Get, GetById, Insert, Update, Delete
 Instructor: Get, GetById, Insert, Update, Delete
 Member: Get, GetById, Insert, Update, Delete
 Participant: Get, GetById, Insert, Update, Delete
-Payment: Get, GetById, Insert, Update, Delete
+Payment: Get, GetById, Insert, Update, Delete, CreatePaymentIntent, VerifyPayment
 Report: GetReportData, GetKPI, GetInsights
 Review: Get, GetById, Insert, Update, Delete, ChangeVisibility, GetAverage
 Role: Get, GetById, Insert, Update, Delete, AssignPermission
@@ -18,4 +18,4 @@ Service: Get, GetById, Insert, Update, Delete, GetStatistics, GetEmployeesForSer
 ServiceType: Get, GetById, Insert, Update, Delete
 Session: Get, GetById, Insert, Update, Delete
 User: Login, GetPermission
-Workshop: Get, GetById, Insert, Update, Delete, Publish, Cancel, Close, AllowedActions, GetStatistics, EnrollFreeWorkshop
+Workshop: Get, GetById, Insert, Update, Delete, Publish, Cancel, Close, AllowedActions, GetStatistics, Enroll, GetWorkshopEnrollmentStatus

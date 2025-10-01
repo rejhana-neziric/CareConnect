@@ -30,6 +30,8 @@ AppointmentSearchObject _$AppointmentSearchObjectFromJson(
   clientUsername: json['clientUsername'] as String?,
   serviceTypeId: (json['serviceTypeId'] as num?)?.toInt(),
   serviceNameGTE: json['serviceNameGTE'] as String?,
+  employeeAvailabilityId: (json['employeeAvailabilityId'] as num?)?.toInt(),
+  date: json['date'] == null ? null : DateTime.parse(json['date'] as String),
   additionalData: json['additionalData'] == null
       ? null
       : AppointmentAdditionalData.fromJson(
@@ -61,6 +63,8 @@ Map<String, dynamic> _$AppointmentSearchObjectToJson(
   'clientUsername': instance.clientUsername,
   'serviceTypeId': instance.serviceTypeId,
   'serviceNameGTE': instance.serviceNameGTE,
+  'employeeAvailabilityId': instance.employeeAvailabilityId,
+  'date': instance.date?.toIso8601String(),
   'additionalData': instance.additionalData?.toJson(),
   'page': instance.page,
   'sortBy': instance.sortBy,

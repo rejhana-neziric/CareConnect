@@ -1,11 +1,11 @@
-import 'package:careconnect_mobile/models/responses/appointment.dart';
+import 'package:careconnect_mobile/models/requests/appointment_insert_request.dart';
 import 'package:careconnect_mobile/screens/employee_list_screen.dart';
 import 'package:careconnect_mobile/widgets/primary_button.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 class AppointmentSuccessScreen extends StatelessWidget {
-  final Appointment appointment;
+  final AppointmentInsertRequest appointment;
 
   const AppointmentSuccessScreen({super.key, required this.appointment});
 

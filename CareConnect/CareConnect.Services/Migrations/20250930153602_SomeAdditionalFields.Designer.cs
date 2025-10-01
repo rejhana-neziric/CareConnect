@@ -4,6 +4,7 @@ using CareConnect.Services.Database;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace CareConnect.Services.Migrations
 {
     [DbContext(typeof(CareConnectContext))]
-    partial class CareConnectContextModelSnapshot : ModelSnapshot
+    [Migration("20250930153602_SomeAdditionalFields")]
+    partial class SomeAdditionalFields
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -554,6 +557,9 @@ namespace CareConnect.Services.Migrations
                     b.Property<int?>("EmployeeAvailabilityId")
                         .HasColumnType("int");
 
+                    b.Property<int>("ItemId")
+                        .HasColumnType("int");
+
                     b.Property<string>("ItemType")
                         .IsRequired()
                         .HasMaxLength(100)
@@ -578,9 +584,6 @@ namespace CareConnect.Services.Migrations
                     b.Property<int>("UserId")
                         .HasColumnType("int")
                         .HasColumnName("UserID");
-
-                    b.Property<int?>("WorkshopId")
-                        .HasColumnType("int");
 
                     b.HasKey("PaymentId")
                         .HasName("PK__Payments__9B556A581C157F0D");

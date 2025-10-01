@@ -12,6 +12,7 @@ class AppointmentInsertRequest {
   DateTime date;
   String? description;
   String? note;
+  String? paymentIntentId;
 
   AppointmentInsertRequest({
     required this.clientId,
@@ -22,6 +23,7 @@ class AppointmentInsertRequest {
     required this.date,
     this.description,
     this.note,
+    this.paymentIntentId,
   });
 
   factory AppointmentInsertRequest.fromJson(Map<String, dynamic> json) =>

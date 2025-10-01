@@ -367,29 +367,22 @@ public partial class CareConnectContext : DbContext
             entity.HasKey(e => e.PaymentId).HasName("PK__Payments__9B556A581C157F0D");
 
             entity.Property(e => e.PaymentId).HasColumnName("PaymentID");
+            entity.Property(e => e.PaymentIntentId).IsRequired().HasMaxLength(255);
+            entity.Property(e => e.ItemType).IsRequired().HasMaxLength(100); 
+            entity.Property(e => e.WorkshopId).IsRequired(false);
             entity.Property(e => e.Amount).HasColumnType("decimal(18, 2)");
-            entity.Property(e => e.ModifiedDate)
-                .HasDefaultValueSql("(getdate())")
-                .HasColumnType("datetime");
-            entity.Property(e => e.PaymentDate).HasColumnType("datetime");
-            entity.Property(e => e.PaymentPurposeId).HasColumnName("PaymentPurposeID");
-            entity.Property(e => e.PaymentStatusId).HasColumnName("PaymentStatusID");
+            entity.Property(e => e.Currency).IsRequired().HasMaxLength(10);
+            entity.Property(e => e.Status).IsRequired().HasMaxLength(50);
+            entity.Property(e => e.CreatedAt).HasColumnType("datetime").HasDefaultValueSql("(getdate())"); 
+            entity.Property(e => e.CompletedAt).HasColumnType("datetime");
             entity.Property(e => e.UserId).HasColumnName("UserID");
-
-            entity.HasOne(d => d.PaymentPurpose).WithMany(p => p.Payments)
-                .HasForeignKey(d => d.PaymentPurposeId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK_Payments_PaymentPurposes");
-
-            entity.HasOne(d => d.PaymentStatus).WithMany(p => p.Payments)
-                .HasForeignKey(d => d.PaymentStatusId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK_Payments_PaymentStatus");
 
             entity.HasOne(d => d.User).WithMany(p => p.Payments)
                 .HasForeignKey(d => d.UserId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_Payments_Users");
+
+            entity.Property(e => e.ChildId).HasColumnName("ChildID");
         });
 
         modelBuilder.Entity<PaymentPurpose>(entity =>

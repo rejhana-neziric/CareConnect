@@ -24,6 +24,8 @@ namespace CareConnect.Models.Requests
 
         public string? Note { get; set; }
 
+        public string? PaymentIntentId { get; set; } = null; // null for free items
+
         [JsonIgnore]
         public DateTime ModifiedDate { get; set; } = DateTime.Now;
     }

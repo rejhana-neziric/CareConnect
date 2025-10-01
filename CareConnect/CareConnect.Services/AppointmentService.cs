@@ -8,6 +8,8 @@ using Azure.Core;
 using Microsoft.Extensions.Logging;
 using CareConnect.Models.Enums;
 using CareConnect.Models.Responses;
+using static Permissions;
+using Stripe.Forwarding;
 
 namespace CareConnect.Services
 {
@@ -98,7 +100,6 @@ namespace CareConnect.Services
                 query = query.Where(x => x.ClientsChild.Client.User.Username == search.ClientUsername);
             }
 
-
             if (search?.ServiceTypeId != null)
             {
                 query = query.Where(x => x.EmployeeAvailability.Service.ServiceTypeId == search.ServiceTypeId);
@@ -107,6 +108,16 @@ namespace CareConnect.Services
             if (!string.IsNullOrWhiteSpace(search?.ServiceNameGTE))
             {
                 query = query.Where(x => x.EmployeeAvailability.Service.Name.StartsWith(search.ServiceNameGTE));
+            }
+
+            if (search?.EmployeeAvailabilityId != null)
+            {
+                query = query.Where(x => x.EmployeeAvailabilityId == search.EmployeeAvailabilityId);
+            }
+
+            if (search?.Date.HasValue == true)
+            {
+                query = query.Where(x => x.Date == search.Date);
             }
 
             if (!string.IsNullOrWhiteSpace(search?.SortBy))
@@ -238,8 +249,5 @@ namespace CareConnect.Services
                 return state.AllowedActions(entity);
             }
         }
-
-
- 
     }
 }

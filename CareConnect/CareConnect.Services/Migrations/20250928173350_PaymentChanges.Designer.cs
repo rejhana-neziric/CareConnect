@@ -4,6 +4,7 @@ using CareConnect.Services.Database;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace CareConnect.Services.Migrations
 {
     [DbContext(typeof(CareConnectContext))]
-    partial class CareConnectContextModelSnapshot : ModelSnapshot
+    [Migration("20250928173350_PaymentChanges")]
+    partial class PaymentChanges
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -64,9 +67,6 @@ namespace CareConnect.Services.Migrations
                     b.Property<string>("Note")
                         .HasColumnType("text")
                         .HasColumnName("NOTE");
-
-                    b.Property<string>("PaymentIntentId")
-                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("StateMachine")
                         .HasMaxLength(50)
@@ -531,9 +531,6 @@ namespace CareConnect.Services.Migrations
                     b.Property<decimal>("Amount")
                         .HasColumnType("decimal(18, 2)");
 
-                    b.Property<DateTime?>("AppointmentDate")
-                        .HasColumnType("datetime2");
-
                     b.Property<int?>("ChildId")
                         .HasColumnType("int")
                         .HasColumnName("ChildID");
@@ -551,7 +548,7 @@ namespace CareConnect.Services.Migrations
                         .HasMaxLength(10)
                         .HasColumnType("nvarchar(10)");
 
-                    b.Property<int?>("EmployeeAvailabilityId")
+                    b.Property<int>("ItemId")
                         .HasColumnType("int");
 
                     b.Property<string>("ItemType")
@@ -578,9 +575,6 @@ namespace CareConnect.Services.Migrations
                     b.Property<int>("UserId")
                         .HasColumnType("int")
                         .HasColumnName("UserID");
-
-                    b.Property<int?>("WorkshopId")
-                        .HasColumnType("int");
 
                     b.HasKey("PaymentId")
                         .HasName("PK__Payments__9B556A581C157F0D");

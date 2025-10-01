@@ -114,6 +114,8 @@ public static class Permissions
         public const string Insert = "Permissions.Payment.Insert";
         public const string Update = "Permissions.Payment.Update";
         public const string Delete = "Permissions.Payment.Delete";
+        public const string CreatePaymentIntent = "Permissions.Payment.CreatePaymentIntent";
+        public const string VerifyPayment = "Permissions.Payment.VerifyPayment";
     }
     public static class Report
     {
@@ -191,6 +193,7 @@ public static class Permissions
         public const string Close = "Permissions.Workshop.Close";
         public const string AllowedActions = "Permissions.Workshop.AllowedActions";
         public const string GetStatistics = "Permissions.Workshop.GetStatistics";
-        public const string EnrollFreeWorkshop = "Permissions.Workshop.EnrollFreeWorkshop";
+        public const string Enroll = "Permissions.Workshop.Enroll";
+        public const string GetWorkshopEnrollmentStatus = "Permissions.Workshop.GetWorkshopEnrollmentStatus";
     }
 }
