@@ -18,5 +18,8 @@ namespace CareConnect.Models.SearchObjects
         public DateTime? RegistrationDateGTE { get; set; }
 
         public DateTime? RegistrationDateLTE { get; set; }
+
+        public int? UserId { get; set; }
+
     }
 }

@@ -8,6 +8,7 @@ import 'package:careconnect_mobile/providers/client_provider.dart';
 import 'package:careconnect_mobile/providers/clients_child_provider.dart';
 import 'package:careconnect_mobile/providers/employee_availability_provider.dart';
 import 'package:careconnect_mobile/providers/employee_provider.dart';
+import 'package:careconnect_mobile/providers/participant_provider.dart';
 import 'package:careconnect_mobile/providers/payment_provider.dart';
 import 'package:careconnect_mobile/providers/review_provider.dart';
 import 'package:careconnect_mobile/providers/service_provider.dart';
@@ -35,9 +36,9 @@ void main() async {
   // Stripe.publishableKey = publishableKey;
   // await Stripe.instance.applySettings();
 
-  // Stripe.publishableKey =
-  //     "pk_test_51SABLc14TOVbfgZv13UIddZmcSEhIjCJMWaWfwAt9SYhkQOF9ov3IRDyd15JX3b8cSrH1Su2bF9Ig1fnLbf0S7Pu00zObqQxuC";
-  // await Stripe.instance.applySettings();
+  Stripe.publishableKey =
+      "pk_test_51SABLc14TOVbfgZv13UIddZmcSEhIjCJMWaWfwAt9SYhkQOF9ov3IRDyd15JX3b8cSrH1Su2bF9Ig1fnLbf0S7Pu00zObqQxuC";
+  await Stripe.instance.applySettings();
 
   runApp(
     MultiProvider(
@@ -74,6 +75,9 @@ void main() async {
         ChangeNotifierProvider<ChildProvider>(create: (_) => ChildProvider()),
         ChangeNotifierProvider<PaymentProvider>(
           create: (_) => PaymentProvider(),
+        ),
+        ChangeNotifierProvider<ParticipantProvider>(
+          create: (_) => ParticipantProvider(),
         ),
       ],
       child: const MyApp(),

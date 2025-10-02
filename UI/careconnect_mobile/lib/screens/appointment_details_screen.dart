@@ -115,6 +115,15 @@ class _AppointmentDetailsScreenState extends State<AppointmentDetailsScreen> {
               color: colorScheme.onSurface,
             ),
           ),
+          const SizedBox(height: 8),
+          Text(
+            '${widget.appointment.clientsChild?.child.firstName} ${widget.appointment.clientsChild?.child.lastName}',
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              color: colorScheme.onSurface,
+            ),
+          ),
         ],
       ),
     );
@@ -175,43 +184,75 @@ class _AppointmentDetailsScreenState extends State<AppointmentDetailsScreen> {
   }
 
   Widget _buildActionButtons(BuildContext context) {
-    // final theme = Theme.of(context);
-    // final colorScheme = theme.colorScheme;
+    final status = appointmentStatusFromString(
+      widget.appointment.stateMachine!,
+    );
+
+    final actions = status.allowedActions;
+
+    if (actions.isEmpty) return SizedBox.shrink();
 
     return Column(
       children: [
         Row(
-          children: [
-            Expanded(
-              child: OutlinedButton.icon(
-                onPressed: () => _rescheduleAppointment(context),
-                icon: const Icon(Icons.schedule),
-                label: const Text('Reschedule'),
-                style: OutlinedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
+          children: actions.map((action) {
+            IconData icon;
+            Color? foreground;
+            VoidCallback onPressed;
+
+            switch (action) {
+              case 'Confirm':
+                icon = Icons.check_circle;
+                foreground = Colors.green;
+                onPressed = () => {}; //_confirmAppointment(context);
+                break;
+              case 'Cancel':
+                icon = Icons.cancel;
+                foreground = Colors.red;
+                onPressed = () => {}; //_cancelAppointment(context);
+                break;
+              case 'Start':
+                icon = Icons.play_arrow;
+                foreground = Colors.blue;
+                onPressed = () => {}; //_startAppointment(context);
+                break;
+              case 'Reschedule':
+                icon = Icons.schedule;
+                foreground = null;
+                onPressed = () => {}; //_rescheduleAppointment(context);
+                break;
+              case 'Complete':
+                icon = Icons.done_all;
+                foreground = Colors.green;
+                onPressed = () => {}; //_completeAppointment(context);
+                break;
+              default:
+                icon = Icons.help_outline;
+                foreground = null;
+                onPressed = () {};
+            }
+
+            return Expanded(
+              child: Padding(
+                padding: const EdgeInsets.only(right: 12),
+                child: OutlinedButton.icon(
+                  onPressed: onPressed,
+                  icon: Icon(icon),
+                  label: Text(action),
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: foreground,
+                    side: foreground != null
+                        ? BorderSide(color: foreground.withOpacity(0.5))
+                        : null,
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
                   ),
                 ),
               ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: OutlinedButton.icon(
-                onPressed: () => _cancelAppointment(context),
-                icon: const Icon(Icons.cancel),
-                label: const Text('Cancel'),
-                style: OutlinedButton.styleFrom(
-                  foregroundColor: Colors.red[600],
-                  side: BorderSide(color: Colors.red[300]!),
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                ),
-              ),
-            ),
-          ],
+            );
+          }).toList(),
         ),
       ],
     );

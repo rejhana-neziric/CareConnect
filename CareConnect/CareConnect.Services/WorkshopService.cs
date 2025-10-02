@@ -102,6 +102,12 @@ namespace CareConnect.Services
                 query = query.Where(x => x.WorkshopType == search.WorkshopType);
             }
 
+            if (search?.ParticipantId.HasValue == true)
+            {
+                query = query.Where(w => w.ParticipantsNavigation.Any(p => p.UserId == search.ParticipantId));
+
+            }
+
             if (!string.IsNullOrWhiteSpace(search?.SortBy))
             {
                 query = search?.SortBy switch

@@ -61,6 +61,11 @@ namespace CareConnect.Services
                 query = query.Where(x => x.RegistrationDate <= search.RegistrationDateLTE);
             }
 
+            if (search?.UserId.HasValue == true)
+            {
+                query = query.Where(x => x.UserId == search.UserId);
+            }
+
             if (!string.IsNullOrWhiteSpace(search?.SortBy))
             {
                 query = query.Include(x => x.AttendanceStatus); 
@@ -97,6 +102,11 @@ namespace CareConnect.Services
                 if (additionalData.IsAttendanceStatusIncluded.HasValue && additionalData.IsAttendanceStatusIncluded == true)
                 {
                     additionalData.IncludeList.Add("AttendanceStatus");
+                }
+
+                if (additionalData.IsChildIncluded.HasValue && additionalData.IsChildIncluded == true)
+                {
+                    additionalData.IncludeList.Add("Child");
                 }
             }
 

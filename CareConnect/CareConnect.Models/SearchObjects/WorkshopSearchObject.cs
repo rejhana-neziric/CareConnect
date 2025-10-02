@@ -28,5 +28,8 @@ namespace CareConnect.Models.SearchObjects
         public int? Participants { get; set; }
 
         public string? WorkshopType { get; set; }
+
+        public int? ParticipantId { get; set; }
+
     }
 }

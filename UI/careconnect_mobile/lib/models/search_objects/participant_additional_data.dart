@@ -7,11 +7,13 @@ class ParticipantAdditionalData {
   bool? isUserIncluded;
   bool? isWorkshopIncluded;
   bool? isAttendanceStatusIncluded;
+  bool? isChildIncluded;
 
   ParticipantAdditionalData({
     this.isUserIncluded,
     this.isWorkshopIncluded,
     this.isAttendanceStatusIncluded,
+    this.isChildIncluded,
   });
 
   factory ParticipantAdditionalData.fromJson(Map<String, dynamic> json) =>

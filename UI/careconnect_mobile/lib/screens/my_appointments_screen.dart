@@ -277,50 +277,66 @@ class _MyAppointmentsScreenState extends State<MyAppointmentsScreen> {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
 
-    return Padding(
-      padding: const EdgeInsets.all(8.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Row(
-              children: [
-                // Search bar
-                Expanded(
-                  child: TextField(
-                    controller: _searchController,
-                    decoration: InputDecoration(
-                      hintText: "Search by service name...",
-                      prefixIcon: const Icon(Icons.search),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      isDense: true,
-                    ),
-                    onChanged: (value) {
-                      setState(() {
-                        serviceName = value;
-                      });
-                      loadAppointments();
-                    },
-                  ),
-                ),
-                const SizedBox(width: 8),
-
-                // Filter button
-                IconButton(
-                  onPressed: _showFilters,
-                  icon: const Icon(Icons.tune),
-                  tooltip: "Open filters",
-                ),
-              ],
-            ),
+    return Scaffold(
+      backgroundColor: colorScheme.surfaceContainerLow,
+      appBar: AppBar(
+        elevation: 0,
+        backgroundColor: colorScheme.surfaceContainerLow,
+        foregroundColor: colorScheme.onSurface,
+        title: Text(
+          'Appointments',
+          style: TextStyle(
+            fontWeight: FontWeight.w600,
+            fontSize: 18,
+            color: colorScheme.onSurface,
           ),
-
-          Expanded(child: _buildMyAppointments(colorScheme)),
-        ],
+        ),
       ),
+      body:
+          //  SingleChildScrollView(
+          //   child:
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Row(
+                  children: [
+                    // Search bar
+                    Expanded(
+                      child: TextField(
+                        controller: _searchController,
+                        decoration: InputDecoration(
+                          hintText: "Search by service name...",
+                          prefixIcon: const Icon(Icons.search),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          isDense: true,
+                        ),
+                        onChanged: (value) {
+                          setState(() {
+                            serviceName = value;
+                          });
+                          loadAppointments();
+                        },
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+
+                    // Filter button
+                    IconButton(
+                      onPressed: _showFilters,
+                      icon: const Icon(Icons.tune),
+                      tooltip: "Open filters",
+                    ),
+                  ],
+                ),
+              ),
+              Expanded(child: _buildMyAppointments(colorScheme)),
+            ],
+          ),
+      //),
     );
   }
 
@@ -382,7 +398,10 @@ class _MyAppointmentsScreenState extends State<MyAppointmentsScreen> {
                   style: const TextStyle(color: Colors.grey),
                 ),
                 const SizedBox(height: 12),
-                Text(appointment.employeeAvailability?.service?.name ?? ''),
+                Text(
+                  appointment.employeeAvailability?.service?.name ?? '',
+                  style: TextStyle(color: colorScheme.primary),
+                ),
                 const SizedBox(height: 12),
                 Row(
                   children: [
@@ -428,14 +447,6 @@ class _MyAppointmentsScreenState extends State<MyAppointmentsScreen> {
               children: [
                 IconButton(
                   onPressed: () {
-                    // Navigator.pushReplacement(
-                    //   context,
-                    //   MaterialPageRoute(
-                    //     builder: (context) =>
-                    //         AppoinmentDetailsScreen(appointment: appointment),
-                    //   ),
-                    // );
-
                     Navigator.push(
                       context,
                       MaterialPageRoute(
@@ -445,7 +456,6 @@ class _MyAppointmentsScreenState extends State<MyAppointmentsScreen> {
                     );
                   },
                   icon: const Icon(Icons.chevron_right, color: Colors.grey),
-                  tooltip: "Open filters",
                 ),
 
                 if (appointment.stateMachine != null)

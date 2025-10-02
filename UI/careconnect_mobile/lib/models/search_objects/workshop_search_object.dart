@@ -16,6 +16,7 @@ class WorkshopSearchObject {
   final int? maxParticipants;
   final int? participants;
   final String? workshopType;
+  final int? participantId;
   int? page;
   String? sortBy;
   bool? sortAscending;
@@ -35,6 +36,7 @@ class WorkshopSearchObject {
     this.maxParticipants,
     this.participants,
     this.workshopType,
+    this.participantId,
 
     this.page,
     this.sortBy,

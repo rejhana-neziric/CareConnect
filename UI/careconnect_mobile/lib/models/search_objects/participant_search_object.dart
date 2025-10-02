@@ -14,6 +14,7 @@ class ParticipantSearchObject {
   DateTime? registrationDateGTE;
   DateTime? registrationDateLTE;
   ParticipantAdditionalData? additionalData;
+  int? userId;
   int? page;
   String? sortBy;
   bool? sortAscending;
@@ -30,6 +31,7 @@ class ParticipantSearchObject {
     this.registrationDateGTE,
     this.registrationDateLTE,
     this.additionalData,
+    this.userId,
     this.page,
     this.sortBy,
     this.sortAscending,

@@ -12,6 +12,7 @@ ParticipantAdditionalData _$ParticipantAdditionalDataFromJson(
   isUserIncluded: json['isUserIncluded'] as bool?,
   isWorkshopIncluded: json['isWorkshopIncluded'] as bool?,
   isAttendanceStatusIncluded: json['isAttendanceStatusIncluded'] as bool?,
+  isChildIncluded: json['isChildIncluded'] as bool?,
 );
 
 Map<String, dynamic> _$ParticipantAdditionalDataToJson(
@@ -20,4 +21,5 @@ Map<String, dynamic> _$ParticipantAdditionalDataToJson(
   'isUserIncluded': instance.isUserIncluded,
   'isWorkshopIncluded': instance.isWorkshopIncluded,
   'isAttendanceStatusIncluded': instance.isAttendanceStatusIncluded,
+  'isChildIncluded': instance.isChildIncluded,
 };

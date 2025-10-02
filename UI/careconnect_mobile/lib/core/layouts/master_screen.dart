@@ -5,7 +5,6 @@ import 'package:careconnect_mobile/screens/client_list_screen.dart';
 import 'package:careconnect_mobile/screens/employee_list_screen.dart';
 import 'package:careconnect_mobile/screens/home_screen.dart';
 import 'package:careconnect_mobile/screens/login_screen.dart';
-import 'package:careconnect_mobile/screens/my_appointments_screen.dart';
 import 'package:careconnect_mobile/screens/profile/profile_screen.dart';
 import 'package:careconnect_mobile/screens/review/review_list_screen.dart';
 import 'package:careconnect_mobile/screens/services_list_screen.dart';
@@ -49,12 +48,6 @@ class _MasterScreenState extends State<MasterScreen> {
               title: "Home",
               icon: Icons.home,
               screen: const HomeScreen(),
-            ),
-            _buildDrawerItem(
-              context,
-              title: "My appointments",
-              icon: Icons.event,
-              screen: const MyAppointmentsScreen(),
             ),
             _buildDrawerItem(
               context,
