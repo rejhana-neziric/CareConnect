@@ -11,13 +11,12 @@ namespace CareConnect.Models.Requests
 
         public string Content { get; set; } = null!;
 
-        public DateTime PublishDate { get; set; }
-
-        public int? WorkshopId { get; set; }
-
-        public int? EmployeeId { get; set; }
+        public int EmployeeId { get; set; }
 
         public int? Stars { get; set; }
+
+        [JsonIgnore]
+        public DateTime PublishDate { get; set; } = DateTime.Now;
 
         [JsonIgnore]
         public DateTime ModifiedDate { get; set; } = DateTime.Now;

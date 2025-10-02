@@ -85,6 +85,11 @@ namespace CareConnect.Services
                 query = query.Where(x => x.Employee.User.UserId == search.EmployeeId);
             }
 
+            if (search?.UserId.HasValue == true)
+            {
+                query = query.Where(x => x.UserId == search.UserId);
+            }
+
             if (!string.IsNullOrWhiteSpace(search?.SortBy))
             {
                 query = search?.SortBy switch

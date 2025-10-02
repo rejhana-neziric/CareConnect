@@ -35,9 +35,9 @@ void main() async {
   // Stripe.publishableKey = publishableKey;
   // await Stripe.instance.applySettings();
 
-  Stripe.publishableKey =
-      "pk_test_51SABLc14TOVbfgZv13UIddZmcSEhIjCJMWaWfwAt9SYhkQOF9ov3IRDyd15JX3b8cSrH1Su2bF9Ig1fnLbf0S7Pu00zObqQxuC";
-  await Stripe.instance.applySettings();
+  // Stripe.publishableKey =
+  //     "pk_test_51SABLc14TOVbfgZv13UIddZmcSEhIjCJMWaWfwAt9SYhkQOF9ov3IRDyd15JX3b8cSrH1Su2bF9Ig1fnLbf0S7Pu00zObqQxuC";
+  // await Stripe.instance.applySettings();
 
   runApp(
     MultiProvider(

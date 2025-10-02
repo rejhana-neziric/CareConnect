@@ -2,6 +2,9 @@ import 'dart:convert';
 
 import 'package:careconnect_mobile/models/responses/employee.dart';
 import 'package:careconnect_mobile/models/responses/employee_availability.dart';
+import 'package:careconnect_mobile/models/responses/search_result.dart';
+import 'package:careconnect_mobile/models/search_objects/employee_additional_data.dart';
+import 'package:careconnect_mobile/models/search_objects/employee_search_object.dart';
 import 'package:careconnect_mobile/providers/base_provider.dart';
 import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
@@ -12,6 +15,11 @@ class EmployeeProvider extends BaseProvider<Employee> {
   @override
   Employee fromJson(data) {
     return Employee.fromJson(data);
+  }
+
+  @override
+  int? getId(Employee item) {
+    return item.user?.userId;
   }
 
   // Future<List<EmployeeAvailability>> getEmployeeAvailability(
@@ -43,6 +51,46 @@ class EmployeeProvider extends BaseProvider<Employee> {
   //     throw new Exception("Unknown error");
   //   }
   // }
+
+  Future<SearchResult<Employee>?> loadData({
+    String? fts,
+    String? firstNameGTE,
+    String? lastNameGTE,
+    String? email,
+    String? jobTitle,
+    DateTime? hireDateGTE,
+    DateTime? hireDateLTE,
+    bool? employed,
+    int page = 0,
+    String? sortBy,
+    bool sortAscending = true,
+  }) async {
+    final filterObject = EmployeeSearchObject(
+      fts: fts,
+      firstNameGTE: firstNameGTE,
+      lastNameGTE: lastNameGTE,
+      email: email,
+      jobTitle: jobTitle,
+      hireDateGTE: hireDateGTE,
+      hireDateLTE: hireDateLTE,
+      employed: employed,
+      page: page,
+      sortBy: sortBy,
+      sortAscending: sortAscending,
+      additionalData: EmployeeAdditionalData(
+        isUserIncluded: true,
+        isQualificationIncluded: true,
+      ),
+      includeTotalCount: true,
+    );
+
+    final filter = filterObject.toJson();
+
+    final result = await get(filter: filter);
+
+    notifyListeners();
+    return result;
+  }
 
   Future<List<EmployeeAvailability>> getEmployeeAvailability(
     int employeeId, {

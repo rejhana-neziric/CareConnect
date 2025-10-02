@@ -7,6 +7,7 @@ import 'package:careconnect_mobile/screens/home_screen.dart';
 import 'package:careconnect_mobile/screens/login_screen.dart';
 import 'package:careconnect_mobile/screens/my_appointments_screen.dart';
 import 'package:careconnect_mobile/screens/profile/profile_screen.dart';
+import 'package:careconnect_mobile/screens/review/review_list_screen.dart';
 import 'package:careconnect_mobile/screens/services_list_screen.dart';
 import 'package:careconnect_mobile/screens/workshops_list_screen.dart';
 import 'package:flutter/material.dart';
@@ -72,6 +73,12 @@ class _MasterScreenState extends State<MasterScreen> {
               title: "Profile",
               icon: Icons.account_circle,
               screen: ProfileScreen(),
+            ),
+            _buildDrawerItem(
+              context,
+              title: "My Reviews",
+              icon: Icons.reviews,
+              screen: ReviewListScreen(),
             ),
             _buildDrawerItem(
               context,

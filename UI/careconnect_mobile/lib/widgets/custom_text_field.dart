@@ -5,7 +5,7 @@ import 'package:form_builder_validators/form_builder_validators.dart';
 class CustomTextField extends StatelessWidget {
   final String name;
   final String label;
-  final IconData icon;
+  final IconData? icon;
   final bool obscureText;
   final TextInputType? keyboardType;
   final int maxLines;
@@ -16,7 +16,7 @@ class CustomTextField extends StatelessWidget {
     super.key,
     required this.name,
     required this.label,
-    required this.icon,
+    this.icon,
     this.obscureText = false,
     this.keyboardType,
     this.maxLines = 1,

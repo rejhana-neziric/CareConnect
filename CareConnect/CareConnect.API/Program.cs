@@ -73,7 +73,9 @@ builder.Services.AddTransient<InitialWorkshopState>();
 builder.Services.AddTransient<DraftWorkshopState>();    
 builder.Services.AddTransient<PublishedWorkshopState>();
 builder.Services.AddTransient<CanceledWorkshopState>(); 
-builder.Services.AddTransient<ClosedWorkshopState>();   
+builder.Services.AddTransient<ClosedWorkshopState>();
+
+builder.Services.AddHostedService<CareConnect.Services.BackgroundTasks.AppointmentStatusUpdater>();
 
 builder.Services.AddControllers(x =>
 {
