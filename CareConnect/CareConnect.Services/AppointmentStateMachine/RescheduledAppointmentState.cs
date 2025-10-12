@@ -1,17 +1,23 @@
-﻿using CareConnect.Services.Database;
+﻿using CareConnect.Models.Messages;
+using CareConnect.Services.Database;
 using MapsterMapper;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace CareConnect.Services.AppointmentStateMachine
 {
-    public class RescheduledAppointmedState : BaseAppointmentState
+    public class RescheduledAppointmentState : BaseAppointmentState
     {
-        public RescheduledAppointmedState(CareConnectContext context, IMapper mapper, IServiceProvider serviceProvider) : base(context, mapper, serviceProvider)
+        private readonly IRabbitMqService _rabbitMqService;
+
+
+        public RescheduledAppointmentState(CareConnectContext context, IMapper mapper, IServiceProvider serviceProvider, IRabbitMqService rabbitMqService) : base(context, mapper, serviceProvider)
         {
+            _rabbitMqService = rabbitMqService;
         }
 
         public override Models.Responses.Appointment Cancel(int id)
@@ -22,6 +28,8 @@ namespace CareConnect.Services.AppointmentStateMachine
 
             if (entity == null) return null;
 
+            var oldState = entity.StateMachine; 
+
             entity.StateMachine = "Canceled";
 
             _context.SaveChanges();
@@ -29,7 +37,7 @@ namespace CareConnect.Services.AppointmentStateMachine
             return _mapper.Map<Models.Responses.Appointment>(entity);
         }
 
-        public override Models.Responses.Appointment Confirm(int id)
+        public override Models.Responses.Appointment Start(int id)
         {
             var set = _context.Set<Appointment>();
 
@@ -37,7 +45,7 @@ namespace CareConnect.Services.AppointmentStateMachine
 
             if (entity == null) return null;
 
-            entity.StateMachine = "Confirmed";
+            entity.StateMachine = "Started";
 
             _context.SaveChanges();
 
@@ -46,7 +54,7 @@ namespace CareConnect.Services.AppointmentStateMachine
 
         public override List<string> AllowedActions(Appointment entity)
         {
-            return new List<string>() { nameof(Confirm), nameof(Cancel) };
+            return new List<string>() { nameof(Cancel), nameof(Start) };
         }
     }
 }

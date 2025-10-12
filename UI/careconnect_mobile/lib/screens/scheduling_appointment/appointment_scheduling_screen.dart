@@ -14,6 +14,8 @@ class AppointmentSchedulingScreen extends StatefulWidget {
   final int childId;
   final Employee employee;
   final Service service;
+  final bool isRescheduling;
+  final int? appointmentId;
 
   const AppointmentSchedulingScreen({
     super.key,
@@ -21,6 +23,8 @@ class AppointmentSchedulingScreen extends StatefulWidget {
     required this.childId,
     required this.employee,
     required this.service,
+    this.isRescheduling = false,
+    this.appointmentId,
   });
 
   @override
@@ -517,6 +521,8 @@ class _AppointmentSchedulingScreenState
           availability: selectedTimeSlot!.availability,
           clientId: widget.clientId,
           childId: widget.childId,
+          isRescheduling: widget.isRescheduling,
+          appointmentId: widget.appointmentId,
         ),
       ),
     );

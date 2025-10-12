@@ -1,4 +1,5 @@
 import 'package:careconnect_admin/core/layouts/master_screen.dart';
+import 'package:careconnect_admin/core/theme/app_colors.dart';
 import 'package:careconnect_admin/models/enums/appointment_status.dart';
 import 'package:careconnect_admin/models/responses/appointment.dart';
 import 'package:careconnect_admin/models/responses/child.dart';
@@ -7,9 +8,11 @@ import 'package:careconnect_admin/models/responses/search_result.dart';
 import 'package:careconnect_admin/providers/appointment_provider.dart';
 import 'package:careconnect_admin/providers/child_provider.dart';
 import 'package:careconnect_admin/providers/employee_provider.dart';
+import 'package:careconnect_admin/widgets/confirm_dialog.dart';
 import 'package:careconnect_admin/widgets/custom_dropdown_fliter.dart';
 import 'package:careconnect_admin/widgets/no_results.dart';
 import 'package:careconnect_admin/widgets/primary_button.dart';
+import 'package:careconnect_admin/widgets/snackbar.dart';
 import 'package:data_table_2/data_table_2.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
@@ -69,6 +72,8 @@ class _AppointmentListScreenState extends State<AppointmentListScreen> {
     'Canceled': 'Canceled',
     'Started': 'Started',
     'Completed': 'Completed',
+    'Reschedule Requested': 'RescheduleRequested',
+    'Reschedule Pending Approval': 'ReschedulePendingApproval',
   };
 
   final GlobalKey<_AppointmentTableState> tableKey = GlobalKey();
@@ -251,7 +256,7 @@ class _AppointmentListScreenState extends State<AppointmentListScreen> {
                 constraints: BoxConstraints(maxWidth: 250),
                 child: Container(
                   color: colorScheme.surfaceContainerLowest,
-                  width: 180,
+                  width: 270,
                   child: CustomDropdownFliter(
                     selectedValue: selectedStatusOption,
                     options: statusOptions,
@@ -346,6 +351,27 @@ class _AppointmentListScreenState extends State<AppointmentListScreen> {
                 key: tableKey,
                 result: result,
                 onPageChanged: loadData,
+                onActionSelected: (appointment, action) {
+                  switch (action) {
+                    case 'Cancel':
+                      _cancelAppointment(appointment);
+                      break;
+                    case 'Confirm':
+                      _confirmAppointment(appointment);
+                      break;
+                    case 'Reschedule':
+                      _rescheduleAppointment(appointment);
+                    case 'Request Reschedule':
+                      _requestRescheduleAppointment(appointment);
+                    case 'Start':
+                      _startAppointment(appointment);
+                    case 'Complete':
+                      _completeAppointment(appointment);
+                      break;
+                    default:
+                      print('Unknown action: $action');
+                  }
+                },
               ),
             ),
           ),
@@ -366,13 +392,112 @@ class _AppointmentListScreenState extends State<AppointmentListScreen> {
       ),
     );
   }
+
+  Future<void> _handleAppointmentAction({
+    required Appointment appointment,
+    required String title,
+    required String content,
+    required String confirmText,
+    required Future<bool> Function({required int appointmentId}) action,
+    required String successMessage,
+  }) async {
+    final shouldProceed = await CustomConfirmDialog.show(
+      context,
+      icon: Icons.info,
+      iconBackgroundColor: AppColors.mauveGray,
+      title: title,
+      content: content,
+      confirmText: confirmText,
+      cancelText: 'Cancel',
+    );
+
+    if (shouldProceed != true) return;
+
+    final success = await action(appointmentId: appointment.appointmentId);
+
+    if (!mounted) return;
+
+    CustomSnackbar.show(
+      context,
+      message: success
+          ? successMessage
+          : 'Something went wrong. Please try again.',
+      type: success ? SnackbarType.success : SnackbarType.error,
+    );
+  }
+
+  void _cancelAppointment(Appointment appointment) => _handleAppointmentAction(
+    appointment: appointment,
+    title: 'Cancel Appointment',
+    content: 'Are you sure you want to cancel appointment?',
+    confirmText: 'Cancel',
+    action: appointmentProvider.cancelAppointment,
+    successMessage: 'You have successfully canceled the appointment.',
+  );
+
+  void _confirmAppointment(Appointment appointment) => _handleAppointmentAction(
+    appointment: appointment,
+    title: 'Confirm Appointment',
+    content: 'Are you sure you want to confirm appointment?',
+    confirmText: 'Confirm',
+    action: appointmentProvider.confirmAppointment,
+    successMessage: 'You have successfully confirmed the appointment.',
+  );
+
+  void _rescheduleAppointment(Appointment appointment) =>
+      _handleAppointmentAction(
+        appointment: appointment,
+        title: 'Reschedule Appointment',
+        content: 'Are you sure you want to confirm rescheduling appointment?',
+        confirmText: 'Reschedule',
+        action: appointmentProvider.rescheduleAppointmet,
+        successMessage:
+            'You have successfully confirmed rescheduling the appointment.',
+      );
+
+  void _requestRescheduleAppointment(
+    Appointment appointment,
+  ) => _handleAppointmentAction(
+    appointment: appointment,
+    title: 'Request Rescheduling Appointment',
+    content: 'Are you sure you want to request rescheduling appointment?',
+    confirmText: 'Reschedule',
+    action: appointmentProvider.requestReschedule,
+    successMessage:
+        'You have successfully requested rescheduling. You will be notified when the client chooses a new appointment.',
+  );
+
+  void _startAppointment(Appointment appointment) => _handleAppointmentAction(
+    appointment: appointment,
+    title: 'Start Appointment',
+    content: 'Are you sure you want to start appointment?',
+    confirmText: 'Start',
+    action: appointmentProvider.startAppointment,
+    successMessage: 'You have successfully started the appointment.',
+  );
+
+  void _completeAppointment(Appointment appointment) =>
+      _handleAppointmentAction(
+        appointment: appointment,
+        title: 'Complete Appointment',
+        content: 'Are you sure you want to complete appointment?',
+        confirmText: 'Complete',
+        action: appointmentProvider.completeAppointment,
+        successMessage: 'You have successfully completed the appointment.',
+      );
 }
 
 class AppointmentTable extends StatefulWidget {
   final SearchResult<Appointment>? result;
   final Future<void> Function({int page}) onPageChanged;
+  final void Function(Appointment appointment, String action) onActionSelected;
 
-  const AppointmentTable({super.key, this.result, required this.onPageChanged});
+  const AppointmentTable({
+    super.key,
+    this.result,
+    required this.onPageChanged,
+    required this.onActionSelected,
+  });
 
   @override
   State<AppointmentTable> createState() => _AppointmentTableState();
@@ -415,6 +540,7 @@ class _AppointmentTableState extends State<AppointmentTable> {
       onPageChanged: _fetchPage,
       pageSize: _pageSize,
       currentPage: currentPage,
+      onActionSelected: widget.onActionSelected,
     );
   }
 
@@ -427,32 +553,21 @@ class _AppointmentTableState extends State<AppointmentTable> {
   }
 
   Future<void> _fetchPage(int page) async {
-    setState(() {
-      isLoading = true;
-      currentPage = page;
-    });
+    if (isLoading) return;
+
+    setState(() => isLoading = true);
 
     try {
       await widget.onPageChanged(page: page);
+      if (!mounted) return;
 
-      if (mounted) {
-        setState(() {
-          currentPage = page;
-          _updateDataSource();
-          isLoading = false;
-        });
-      }
-    } catch (e) {
-      if (mounted) {
-        setState(() {
-          isLoading = false;
-          currentPage = currentPage > 0 ? currentPage - 1 : 0;
-        });
-      }
-
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Error loading data: $e')));
+      // Only update after data has arrived
+      setState(() {
+        currentPage = page;
+        _updateDataSource();
+      });
+    } finally {
+      if (mounted) setState(() => isLoading = false);
     }
   }
 
@@ -473,15 +588,15 @@ class _AppointmentTableState extends State<AppointmentTable> {
         PaginatedDataTable2(
           key: ValueKey('${widget.result?.result.hashCode}_$currentPage'),
           wrapInCard: false,
-          renderEmptyRowsInTheEnd: false,
+          renderEmptyRowsInTheEnd: true,
           columns: [
-            DataColumn2(label: Text('Client'), size: ColumnSize.S),
-            DataColumn2(label: Text('Child'), size: ColumnSize.S),
-            DataColumn2(label: Text('Employee'), size: ColumnSize.S),
+            DataColumn2(label: Text('Client'), size: ColumnSize.M),
+            DataColumn2(label: Text('Child'), size: ColumnSize.M),
+            DataColumn2(label: Text('Employee'), size: ColumnSize.M),
             DataColumn2(label: Text('Service'), size: ColumnSize.L),
             DataColumn2(label: Text('Date'), size: ColumnSize.S),
             DataColumn2(label: Text('Time'), size: ColumnSize.S),
-            DataColumn2(label: Text('Status'), size: ColumnSize.S),
+            DataColumn2(label: Text('Status'), size: ColumnSize.L),
             DataColumn2(label: Text('Actions'), size: ColumnSize.S),
           ],
           source: _dataSource!,
@@ -493,9 +608,9 @@ class _AppointmentTableState extends State<AppointmentTable> {
             }
           },
           initialFirstRowIndex: currentPage * _pageSize,
-          columnSpacing: 0,
-          horizontalMargin: 12,
-          minWidth: 400,
+          columnSpacing: 4,
+          horizontalMargin: 8,
+          minWidth: 800,
           showCheckboxColumn: false,
           availableRowsPerPage: const [10],
         ),
@@ -518,6 +633,7 @@ class AppointmentDataSource extends DataTableSource {
   final Future<void> Function(int page)? onPageChanged;
   final int pageSize;
   final int currentPage;
+  final void Function(Appointment appointment, String action) onActionSelected;
 
   AppointmentDataSource(
     this.appointments,
@@ -526,6 +642,7 @@ class AppointmentDataSource extends DataTableSource {
     this.onPageChanged,
     this.pageSize = 10,
     this.currentPage = 0,
+    required this.onActionSelected,
   });
 
   final ValueNotifier<int?> hoveredRowNotifier = ValueNotifier(null);
@@ -588,18 +705,25 @@ class AppointmentDataSource extends DataTableSource {
           ),
         ),
         DataCell(
-          DropdownButton<String>(
-            hint: Text("Actions"),
-            items: appointmentStatusFromString(appointment.stateMachine ?? '')
-                .allowedActions
-                .map(
-                  (action) =>
-                      DropdownMenuItem(value: action, child: Text(action)),
-                )
-                .toList(),
-            onChanged: (value) {
-              // todo
-            },
+          SizedBox(
+            width: 120, // adjust as needed
+            child: DropdownButton<String>(
+              isExpanded: true,
+              hint: const Text("Actions"),
+              underline: SizedBox.shrink(),
+              items: appointmentStatusFromString(appointment.stateMachine ?? '')
+                  .allowedActions
+                  .map(
+                    (action) =>
+                        DropdownMenuItem(value: action, child: Text(action)),
+                  )
+                  .toList(),
+              onChanged: (value) {
+                if (value != null) {
+                  onActionSelected(appointment, value);
+                }
+              },
+            ),
           ),
         ),
       ],

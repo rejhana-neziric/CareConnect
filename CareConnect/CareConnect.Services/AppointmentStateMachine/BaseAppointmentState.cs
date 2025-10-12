@@ -27,7 +27,17 @@ namespace CareConnect.Services.AppointmentStateMachine
             throw new UserException("Method not allowed.");
         }
 
-        public virtual Models.Responses.Appointment Reschedule(int id, AppointmentRescheduleRequest request)
+        public virtual Models.Responses.Appointment Reschedule(int id)
+        {
+            throw new UserException("Method not allowed.");
+        }
+
+        public virtual Models.Responses.Appointment RescheduleRequest(int id)
+        {
+            throw new UserException("Method not allowed.");
+        }
+
+        public virtual Models.Responses.Appointment ReschedulePendingApprove(int id, AppointmentRescheduleRequest request)
         {
             throw new UserException("Method not allowed.");
         }
@@ -68,7 +78,11 @@ namespace CareConnect.Services.AppointmentStateMachine
                 case "Confirmed":
                     return _serviceProvider.GetService<ConfirmedAppointmentState>();
                 case "Rescheduled":
-                    return _serviceProvider.GetService<RescheduledAppointmedState>();
+                    return _serviceProvider.GetService<RescheduledAppointmentState>();
+                case "RescheduleRequested":
+                    return _serviceProvider.GetService<RescheduleRequestedAppointmentState>();
+                case "ReschedulePendingApproval":
+                    return _serviceProvider.GetService<ReschedulePendingApprovalAppointmentState>(); 
                 case "Canceled":
                     return _serviceProvider.GetService<CanceledAppointmentState>();
                 case "Started":

@@ -1,6 +1,7 @@
 ﻿using CareConnect.Models.Requests;
 using CareConnect.Models.Responses;
 using CareConnect.Models.SearchObjects;
+using CareConnect.Services.AppointmentStateMachine;
 
 namespace CareConnect.Services
 {
@@ -14,7 +15,11 @@ namespace CareConnect.Services
 
         public Appointment Complete(int id);
 
-        public Appointment Reschedule(int id, AppointmentRescheduleRequest request);
+        public Appointment Reschedule(int id);
+
+        public Appointment RescheduleRequest(int id);
+
+        public Appointment ReschedulePendingApprove(int id, AppointmentRescheduleRequest request); 
 
         public List<string> AllowedActions(int id);
     }

@@ -1,6 +1,7 @@
 import 'package:careconnect_mobile/core/theme/app_colors.dart';
 import 'package:careconnect_mobile/models/auth_user.dart';
 import 'package:careconnect_mobile/models/requests/appointment_insert_request.dart';
+import 'package:careconnect_mobile/models/requests/appointment_reschedule_request.dart';
 import 'package:careconnect_mobile/models/responses/child.dart';
 import 'package:careconnect_mobile/models/responses/employee.dart';
 import 'package:careconnect_mobile/models/responses/employee_availability.dart';
@@ -24,6 +25,8 @@ class AppointmentConfirmationScreen extends StatefulWidget {
   final EmployeeAvailability availability;
   final int clientId;
   final int childId;
+  final bool isRescheduling;
+  final int? appointmentId;
 
   const AppointmentConfirmationScreen({
     super.key,
@@ -33,6 +36,8 @@ class AppointmentConfirmationScreen extends StatefulWidget {
     required this.availability,
     required this.clientId,
     required this.childId,
+    this.isRescheduling = false,
+    this.appointmentId,
   });
 
   @override
@@ -126,25 +131,10 @@ class _AppointmentConfirmationScreenState
 
                   SizedBox(height: 20),
 
-                  //Appointment Type
-                  Text(
-                    'Appointment Type',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                      color: colorScheme.primary,
-                    ),
-                  ),
-                  SizedBox(height: 12),
-
-                  _buildAppointmentType(colorScheme),
-
-                  SizedBox(height: 20),
-
-                  if (children.length > 1) ...[
-                    //Select Child
+                  if (widget.isRescheduling != true) ...[
+                    //Appointment Type
                     Text(
-                      'Select Child',
+                      'Appointment Type',
                       style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w600,
@@ -152,13 +142,29 @@ class _AppointmentConfirmationScreenState
                       ),
                     ),
                     SizedBox(height: 12),
-
-                    _buildSelectChild(colorScheme),
+                    _buildAppointmentType(colorScheme),
 
                     SizedBox(height: 20),
-                  ],
 
-                  SizedBox(height: 24),
+                    if (children.length > 1) ...[
+                      //Select Child
+                      Text(
+                        'Select Child',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                          color: colorScheme.primary,
+                        ),
+                      ),
+                      SizedBox(height: 12),
+
+                      _buildSelectChild(colorScheme),
+
+                      SizedBox(height: 20),
+                    ],
+
+                    SizedBox(height: 24),
+                  ],
 
                   _buildReminder(colorScheme),
 
@@ -451,7 +457,8 @@ class _AppointmentConfirmationScreenState
 
     if (widget.availability.service == null) return;
 
-    if (selectedAppointmentType == null || selectedChildId == null) {
+    if (widget.isRescheduling != true &&
+        (selectedAppointmentType == null || selectedChildId == null)) {
       return CustomSnackbar.show(
         context,
         message: 'Please select required field.',
@@ -463,15 +470,19 @@ class _AppointmentConfirmationScreenState
       context,
       iconBackgroundColor: AppColors.accentDeepMauve,
       icon: Icons.info,
-      title: 'Schedule Appointment',
-      content: 'Are you sure you want to schedule this appointment?',
-      confirmText: 'Schedule',
+      title: widget.isRescheduling == true
+          ? 'Reschedule Appointment'
+          : 'Schedule Appointment',
+      content: widget.isRescheduling == true
+          ? 'Are you sure you want choose this new appointment?'
+          : 'Are you sure you want to schedule this appointment?',
+      confirmText: widget.isRescheduling == true ? 'Reschedule' : 'Schedule',
       cancelText: 'Cancel',
     );
 
     if (shouldProceed != true) return;
 
-    bool result;
+    bool result = false;
 
     try {
       final request = AppointmentInsertRequest(
@@ -483,19 +494,31 @@ class _AppointmentConfirmationScreenState
         date: widget.selectedDate,
       );
 
-      if (widget.availability.service!.price == null) {
-        result = await appointmentProvider.enrollInFreeItem(
-          context: context,
-          appointment: request,
-        );
-      } else {
-        final client = await clientProvider.getById(currentUser!.id);
+      if (widget.isRescheduling != true) {
+        if (widget.availability.service!.price == null) {
+          result = await appointmentProvider.enrollInFreeItem(
+            context: context,
+            appointment: request,
+          );
+        } else {
+          final client = await clientProvider.getById(currentUser!.id);
 
-        result = await appointmentProvider.processPayment(
-          context: context,
-          amount: widget.availability.service!.price!,
-          client: client,
-          appointment: request,
+          result = await appointmentProvider.processPayment(
+            context: context,
+            amount: widget.availability.service!.price!,
+            client: client,
+            appointment: request,
+          );
+        }
+      } else {
+        final rescheduleRequest = AppointmentRescheduleRequest(
+          employeeAvailabilityId: widget.availability.employeeAvailabilityId,
+          date: widget.selectedDate,
+        );
+
+        result = await appointmentProvider.requestNewAppointmentTime(
+          appointmentId: widget.appointmentId!,
+          request: rescheduleRequest,
         );
       }
 
@@ -509,7 +532,10 @@ class _AppointmentConfirmationScreenState
             Navigator.push(
               context,
               MaterialPageRoute(
-                builder: (_) => AppointmentSuccessScreen(appointment: request),
+                builder: (_) => AppointmentSuccessScreen(
+                  appointment: request,
+                  isRescheduling: widget.isRescheduling,
+                ),
               ),
             );
           }

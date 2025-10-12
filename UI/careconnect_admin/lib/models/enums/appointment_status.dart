@@ -4,6 +4,8 @@ enum AppointmentStatus {
   scheduled,
   confirmed,
   rescheduled,
+  reschedulerequested,
+  reschedulependingapproval,
   canceled,
   started,
   completed,
@@ -13,34 +15,42 @@ extension AppointmentStatusStyle on AppointmentStatus {
   Color get backgroundColor {
     switch (this) {
       case AppointmentStatus.scheduled:
-        return const Color(0xFFE0E0E0); // light gray
+        return const Color(0xFFE3F2FD); // light blue
       case AppointmentStatus.confirmed:
         return const Color(0xFFD0F0DA); // soft green
       case AppointmentStatus.rescheduled:
-        return const Color(0xFFFFE5B4); // light orange
+        return const Color(0xFFFFF3E0); // soft orange-beige
+      case AppointmentStatus.reschedulerequested:
+        return const Color(0xFFFFF3E0); // soft orange-beige
+      case AppointmentStatus.reschedulependingapproval:
+        return const Color(0xFFFFF3E0); // soft orange-beige
       case AppointmentStatus.canceled:
-        return const Color(0xFFF8D7DA); // light red
+        return const Color(0xFFFFEBEE); // light red/pink
       case AppointmentStatus.started:
-        return const Color(0xFFFFF3CD); // pale yellow/orange
+        return const Color(0xFFFFF8E1); // pale yellow
       case AppointmentStatus.completed:
-        return const Color(0xFFC8E6C9); // slightly darker green
+        return const Color(0xFFE8F5E9); // soft success green
     }
   }
 
   Color get textColor {
     switch (this) {
       case AppointmentStatus.scheduled:
-        return Colors.black54;
+        return Colors.blue.shade800; // stronger blue
       case AppointmentStatus.confirmed:
-        return Colors.green.shade800;
+        return Colors.green.shade800; // deep green
       case AppointmentStatus.rescheduled:
-        return Colors.orange.shade800;
+        return Colors.orange.shade800; // medium orange
+      case AppointmentStatus.reschedulerequested:
+        return Colors.orange.shade900; // darker orange
+      case AppointmentStatus.reschedulependingapproval:
+        return Colors.deepOrange.shade800; // deeper orange-red
       case AppointmentStatus.canceled:
-        return Colors.red.shade800;
+        return Colors.red.shade800; // strong red
       case AppointmentStatus.started:
-        return Colors.orange.shade900;
+        return Colors.amber.shade900; // deep amber
       case AppointmentStatus.completed:
-        return Colors.green.shade900;
+        return Colors.teal.shade800; // calm dark green/teal
     }
   }
 
@@ -52,6 +62,10 @@ extension AppointmentStatusStyle on AppointmentStatus {
         return "Confirmed";
       case AppointmentStatus.rescheduled:
         return "Rescheduled";
+      case AppointmentStatus.reschedulerequested:
+        return "Requested Reschedule";
+      case AppointmentStatus.reschedulependingapproval:
+        return "Reschedule Pending Approval";
       case AppointmentStatus.canceled:
         return "Canceled";
       case AppointmentStatus.started:
@@ -70,6 +84,10 @@ AppointmentStatus appointmentStatusFromString(String status) {
       return AppointmentStatus.confirmed;
     case 'rescheduled':
       return AppointmentStatus.rescheduled;
+    case 'reschedulerequested':
+      return AppointmentStatus.reschedulerequested;
+    case 'reschedulependingapproval':
+      return AppointmentStatus.reschedulependingapproval;
     case 'canceled':
       return AppointmentStatus.canceled;
     case 'started':
@@ -85,11 +103,15 @@ extension AppointmentStatusActions on AppointmentStatus {
   List<String> get allowedActions {
     switch (this) {
       case AppointmentStatus.scheduled:
-        return ['Confirm', 'Cancel'];
+        return ['Confirm', 'Cancel', 'Request Reschedule'];
       case AppointmentStatus.confirmed:
-        return ['Cancel', 'Start', 'Reschedule'];
+        return ['Cancel', 'Start', 'Request Reschedule'];
       case AppointmentStatus.rescheduled:
-        return ['Confirm', 'Cancel'];
+        return ['Start', 'Cancel'];
+      case AppointmentStatus.reschedulerequested:
+        return ['Cancel'];
+      case AppointmentStatus.reschedulependingapproval:
+        return ['Reschedule', 'Cancel'];
       case AppointmentStatus.started:
         return ['Complete'];
       case AppointmentStatus.completed:

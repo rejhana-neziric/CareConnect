@@ -1,11 +1,14 @@
 import 'package:careconnect_mobile/core/theme/app_colors.dart';
 import 'package:careconnect_mobile/models/auth_user.dart';
 import 'package:careconnect_mobile/providers/auth_provider.dart';
+import 'package:careconnect_mobile/providers/notification_provider.dart';
+import 'package:careconnect_mobile/providers/signalr.dart';
 import 'package:careconnect_mobile/providers/user_provider.dart';
 import 'package:careconnect_mobile/screens/employee_list_screen.dart';
 import 'package:careconnect_mobile/screens/signup/sign_up_flow.dart';
 import 'package:careconnect_mobile/widgets/snackbar.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:form_builder_validators/form_builder_validators.dart';
 import 'package:provider/provider.dart';
@@ -33,6 +36,8 @@ class _LoginScreenState extends State<LoginScreen>
   String? password;
 
   List<String>? permissions;
+
+  final String _hubUrl = dotenv.env['SIGNALR_HUB_URL'] ?? '';
 
   @override
   void initState() {
@@ -386,6 +391,15 @@ class _LoginScreenState extends State<LoginScreen>
       final password = values['password'] as String;
 
       try {
+        final notificationProvider = Provider.of<NotificationProvider>(
+          context,
+          listen: false,
+        );
+
+        notificationProvider.clearNotifications();
+
+        await SignalRService().disconnect();
+        await Future.delayed(const Duration(milliseconds: 500));
         final response = await userProvider.login(username, password);
 
         if (response != null) {
@@ -409,6 +423,8 @@ class _LoginScreenState extends State<LoginScreen>
           );
 
           Provider.of<AuthProvider>(context, listen: false).setUser(authUser);
+
+          await notificationProvider.initialize(_hubUrl, authUser.id);
 
           Navigator.push(
             context,

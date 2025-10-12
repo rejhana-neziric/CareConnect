@@ -41,6 +41,7 @@ AppointmentSearchObject _$AppointmentSearchObjectFromJson(
   sortAscending: json['sortAscending'] as bool?,
   includeTotalCount: json['includeTotalCount'] as bool?,
   sortBy: json['sortBy'] as String?,
+  retrieveAll: json['retrieveAll'] as bool?,
 );
 
 Map<String, dynamic> _$AppointmentSearchObjectToJson(
@@ -70,4 +71,5 @@ Map<String, dynamic> _$AppointmentSearchObjectToJson(
   'sortBy': instance.sortBy,
   'sortAscending': instance.sortAscending,
   'includeTotalCount': instance.includeTotalCount,
+  'retrieveAll': instance.retrieveAll,
 };

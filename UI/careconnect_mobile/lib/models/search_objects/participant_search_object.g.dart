@@ -26,6 +26,7 @@ ParticipantSearchObject _$ParticipantSearchObjectFromJson(
       : ParticipantAdditionalData.fromJson(
           json['additionalData'] as Map<String, dynamic>,
         ),
+  userId: (json['userId'] as num?)?.toInt(),
   page: (json['page'] as num?)?.toInt(),
   sortBy: json['sortBy'] as String?,
   sortAscending: json['sortAscending'] as bool?,
@@ -45,6 +46,7 @@ Map<String, dynamic> _$ParticipantSearchObjectToJson(
   'registrationDateGTE': instance.registrationDateGTE?.toIso8601String(),
   'registrationDateLTE': instance.registrationDateLTE?.toIso8601String(),
   'additionalData': instance.additionalData?.toJson(),
+  'userId': instance.userId,
   'page': instance.page,
   'sortBy': instance.sortBy,
   'sortAscending': instance.sortAscending,

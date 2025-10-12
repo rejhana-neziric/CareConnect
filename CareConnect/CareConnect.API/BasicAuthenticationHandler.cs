@@ -43,7 +43,7 @@ namespace CareConnect.API
                 var claims = new List<Claim>()
                 {
                     new Claim(ClaimTypes.Name, user.Username),
-                    new Claim(ClaimTypes.NameIdentifier, user.FirstName)
+                    new Claim(ClaimTypes.NameIdentifier, user.UserId.ToString())
                 };
 
                 foreach (var role in user.UsersRoles)

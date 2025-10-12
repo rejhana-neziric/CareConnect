@@ -205,6 +205,7 @@ namespace CareConnect.Services
             var entity = GetById(id);
 
             var state = BaseAppointmentState.CreateAppointmentState(entity.StateMachine);
+
             return state.Confirm(id);
         }
 
@@ -224,12 +225,28 @@ namespace CareConnect.Services
             return state.Complete(id);
         }
 
-        public Models.Responses.Appointment Reschedule(int id, AppointmentRescheduleRequest request)
+        public Models.Responses.Appointment Reschedule(int id)
         {
             var entity = GetById(id);
 
             var state = BaseAppointmentState.CreateAppointmentState(entity.StateMachine);
-            return state.Reschedule(id, request);
+            return state.Reschedule(id);
+        }
+
+        public Models.Responses.Appointment RescheduleRequest(int id)
+        {
+            var entity = GetById(id);
+
+            var state = BaseAppointmentState.CreateAppointmentState(entity.StateMachine);
+            return state.RescheduleRequest(id);
+        }
+
+        public Models.Responses.Appointment ReschedulePendingApprove(int id, AppointmentRescheduleRequest request)
+        {
+            var entity = GetById(id);
+
+            var state = BaseAppointmentState.CreateAppointmentState(entity.StateMachine);
+            return state.ReschedulePendingApprove(id, request);
         }
 
         public List<string> AllowedActions(int id)

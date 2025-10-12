@@ -17,6 +17,7 @@ class EmployeeSearchObject {
   int? page;
   String? sortBy;
   bool? sortAscending;
+  bool? retrieveAll;
   EmployeeAdditionalData? additionalData;
   bool? includeTotalCount;
 
@@ -32,6 +33,7 @@ class EmployeeSearchObject {
     this.page,
     this.sortBy,
     this.sortAscending,
+    this.retrieveAll,
     this.additionalData,
     this.includeTotalCount,
   });

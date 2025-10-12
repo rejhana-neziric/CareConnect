@@ -1,4 +1,4 @@
-﻿Appointment: Get, GetById, Insert, Update, Delete, Cancel, Confirm, Start, Complete, Reschedule, AllowedActions, GetAppointmentTypes
+﻿Appointment: Get, GetById, Insert, Update, Delete, Cancel, Confirm, Start, Complete, Reschedule, RescheduleRequested, ReschedulePendingApproval, AllowedActions, GetAppointmentTypes
 Child: Get, GetById, Insert, Update, Delete
 ChildrenDiagnosis: Get, GetById, Insert, Update, Delete
 ClientsChild: Get, GetById, Insert, Update, Delete, GetStatistics, GetClientAndChildByIds, GetAppointment

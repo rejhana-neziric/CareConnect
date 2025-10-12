@@ -1,8 +1,10 @@
+import 'dart:convert';
 import 'package:careconnect_admin/models/responses/appointment.dart';
 import 'package:careconnect_admin/models/responses/search_result.dart';
 import 'package:careconnect_admin/models/search_objects/appointment_additional_data.dart';
 import 'package:careconnect_admin/models/search_objects/appointment_search_object.dart';
 import 'package:careconnect_admin/providers/base_provider.dart';
+import 'package:http/http.dart' as http;
 
 class AppointmentProvider extends BaseProvider<Appointment> {
   AppointmentProvider() : super("Appointment");
@@ -66,5 +68,71 @@ class AppointmentProvider extends BaseProvider<Appointment> {
 
     notifyListeners();
     return result;
+  }
+
+  Future<bool> _updateAppointmentStatus({
+    required int appointmentId,
+    required String actionPath,
+  }) async {
+    final url = '$baseUrl$endpoint/$appointmentId/$actionPath';
+    final uri = Uri.parse(url);
+    final headers = createHeaders();
+
+    final response = await http.put(uri, headers: headers);
+
+    if (isValidResponse(response)) {
+      final data = jsonDecode(response.body);
+      final updated = fromJson(data);
+      final index = item.result.indexWhere((e) => getId(e) == appointmentId);
+      if (index != -1) {
+        item.result[index] = updated;
+        notifyListeners();
+      }
+      return true;
+    }
+
+    return false;
+  }
+
+  Future<bool> confirmAppointment({required int appointmentId}) {
+    return _updateAppointmentStatus(
+      appointmentId: appointmentId,
+      actionPath: 'confirm',
+    );
+  }
+
+  Future<bool> requestReschedule({required int appointmentId}) {
+    return _updateAppointmentStatus(
+      appointmentId: appointmentId,
+      actionPath: 'request-reschedule',
+    );
+  }
+
+  Future<bool> cancelAppointment({required int appointmentId}) {
+    return _updateAppointmentStatus(
+      appointmentId: appointmentId,
+      actionPath: 'cancel',
+    );
+  }
+
+  Future<bool> startAppointment({required int appointmentId}) {
+    return _updateAppointmentStatus(
+      appointmentId: appointmentId,
+      actionPath: 'start',
+    );
+  }
+
+  Future<bool> completeAppointment({required int appointmentId}) {
+    return _updateAppointmentStatus(
+      appointmentId: appointmentId,
+      actionPath: 'complete',
+    );
+  }
+
+  Future<bool> rescheduleAppointmet({required int appointmentId}) {
+    return _updateAppointmentStatus(
+      appointmentId: appointmentId,
+      actionPath: 'reschedule',
+    );
   }
 }

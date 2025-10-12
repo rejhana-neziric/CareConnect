@@ -10,6 +10,7 @@ import 'package:careconnect_admin/providers/employee_availability_provider.dart'
 import 'package:careconnect_admin/providers/employee_form_availability_provider.dart';
 import 'package:careconnect_admin/providers/employee_form_provider.dart';
 import 'package:careconnect_admin/providers/employee_provider.dart';
+import 'package:careconnect_admin/providers/notification_provider.dart';
 import 'package:careconnect_admin/providers/participant_provider.dart';
 import 'package:careconnect_admin/providers/report_provider.dart';
 import 'package:careconnect_admin/providers/review_provider.dart';
@@ -23,10 +24,13 @@ import 'package:careconnect_admin/providers/workshop_provider.dart';
 import 'package:careconnect_admin/screens/login_screen.dart';
 import 'package:careconnect_admin/core/theme/app_colors.dart';
 import 'package:careconnect_admin/core/theme/theme_notifier.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-void main() {
+void main() async {
+  await dotenv.load(fileName: ".env");
+
   runApp(
     MultiProvider(
       providers: [
@@ -85,6 +89,10 @@ void main() {
         ChangeNotifierProvider<UserProvider>(create: (_) => UserProvider()),
         ChangeNotifierProvider<AuthProvider>(create: (_) => AuthProvider()),
         ChangeNotifierProvider<ReportProvider>(create: (_) => ReportProvider()),
+        ChangeNotifierProvider(
+          create: (_) => NotificationProvider(),
+          lazy: false,
+        ),
       ],
       child: const MyApp(),
     ),

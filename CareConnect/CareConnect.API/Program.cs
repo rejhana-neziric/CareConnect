@@ -6,8 +6,11 @@ using CareConnect.Models.Responses;
 using CareConnect.Services;
 using CareConnect.Services.AppointmentStateMachine;
 using CareConnect.Services.Database;
+using CareConnect.Api.Hubs;
 using CareConnect.Services.WorkshopStateMachine;
+using CareConnect.Subscriber;
 using DotNetEnv;
+using EasyNetQ;
 using Mapster;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
@@ -18,6 +21,7 @@ using Serilog;
 using Stripe;
 using System.Reflection;
 using System.Text.Json.Serialization;
+using Microsoft.AspNetCore.SignalR;
 
 var envFilePath = Path.Combine(Directory.GetParent(Directory.GetCurrentDirectory())!.FullName, ".env");
 Env.Load(envFilePath);
@@ -63,7 +67,9 @@ builder.Services.AddTransient<BaseAppointmentState>();
 builder.Services.AddTransient<InitialAppointmentState>();
 builder.Services.AddTransient<ScheduledAppointmentState>();
 builder.Services.AddTransient<ConfirmedAppointmentState>();
-builder.Services.AddTransient<RescheduledAppointmedState>();
+builder.Services.AddTransient<RescheduledAppointmentState>();
+builder.Services.AddTransient<RescheduleRequestedAppointmentState>();
+builder.Services.AddTransient<ReschedulePendingApprovalAppointmentState>();
 builder.Services.AddTransient<StartedAppointmentService>();
 builder.Services.AddTransient<CompletedAppointmentState>();
 builder.Services.AddTransient<CanceledAppointmentState>();
@@ -74,6 +80,21 @@ builder.Services.AddTransient<DraftWorkshopState>();
 builder.Services.AddTransient<PublishedWorkshopState>();
 builder.Services.AddTransient<CanceledWorkshopState>(); 
 builder.Services.AddTransient<ClosedWorkshopState>();
+
+builder.Services.AddSingleton<IRabbitMqService, RabbitMqService>();
+
+builder.Services.AddSignalR();
+
+builder.WebHost.UseUrls("http://0.0.0.0:5241");
+
+builder.Services.AddSingleton<IUserIdProvider, CustomUserIdProvider>();
+
+// RabbitMQ connection
+builder.Services.AddSingleton<IBus>(provider =>
+{
+    var connectionString = builder.Configuration.GetConnectionString("RabbitMQ");
+    return RabbitHutch.CreateBus(connectionString);
+});
 
 builder.Services.AddHostedService<CareConnect.Services.BackgroundTasks.AppointmentStatusUpdater>();
 
@@ -152,6 +173,16 @@ builder.Services.AddAuthorization(options =>
     }
 });
 
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowFlutter", policy =>
+    {
+        policy.WithOrigins("http://localhost:*", "https://localhost:*", "http://10.0.2.2:*" )
+              .AllowAnyHeader()
+              .AllowAnyMethod()
+              .AllowCredentials();
+    });
+});
 
 var app = builder.Build();
 
@@ -164,13 +195,21 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
+//app.UseRouting();
+
+app.UseAuthentication();    
+
 app.UseAuthorization();
 
 app.UseSerilogRequestLogging();
 
 app.MapControllers();
 
-using(var scope = app.Services.CreateScope())
+app.UseCors();
+
+app.MapHub<NotificationHub>("/notificationHub");
+
+using (var scope = app.Services.CreateScope())
 {
     var dataContext = scope.ServiceProvider.GetRequiredService<CareConnectContext>();
    

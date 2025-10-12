@@ -29,6 +29,7 @@ class AppointmentSearchObject {
   String? sortBy;
   bool? sortAscending;
   bool? includeTotalCount;
+  bool? retrieveAll;
 
   AppointmentSearchObject({
     this.fts,
@@ -55,6 +56,7 @@ class AppointmentSearchObject {
     this.sortAscending,
     this.includeTotalCount,
     this.sortBy,
+    this.retrieveAll,
   });
 
   factory AppointmentSearchObject.fromJson(Map<String, dynamic> json) =>

@@ -8,6 +8,7 @@ import 'package:careconnect_mobile/providers/client_provider.dart';
 import 'package:careconnect_mobile/providers/clients_child_provider.dart';
 import 'package:careconnect_mobile/providers/employee_availability_provider.dart';
 import 'package:careconnect_mobile/providers/employee_provider.dart';
+import 'package:careconnect_mobile/providers/notification_provider.dart';
 import 'package:careconnect_mobile/providers/participant_provider.dart';
 import 'package:careconnect_mobile/providers/payment_provider.dart';
 import 'package:careconnect_mobile/providers/review_provider.dart';
@@ -17,6 +18,7 @@ import 'package:careconnect_mobile/providers/user_provider.dart';
 import 'package:careconnect_mobile/providers/workshop_provider.dart';
 import 'package:careconnect_mobile/screens/login_screen.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_stripe/flutter_stripe.dart';
 import 'package:provider/provider.dart';
 
@@ -24,20 +26,15 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   // Load env file
-  // await dotenv.load(fileName: ".env");
+  await dotenv.load(fileName: ".env");
 
-  // // Get publishable key from env
-  // final publishableKey = dotenv.env['STRIPE_PUBLISHABLE_KEY'];
+  final publishableKey = dotenv.env['STRIPE_PUBLISHABLE_KEY'];
 
-  // if (publishableKey == null || publishableKey.isEmpty) {
-  //   throw Exception("Stripe publishable key not found in .env");
-  // }
+  if (publishableKey == null || publishableKey.isEmpty) {
+    throw Exception("Stripe publishable key not found in .env");
+  }
 
-  // Stripe.publishableKey = publishableKey;
-  // await Stripe.instance.applySettings();
-
-  Stripe.publishableKey =
-      "pk_test_51SABLc14TOVbfgZv13UIddZmcSEhIjCJMWaWfwAt9SYhkQOF9ov3IRDyd15JX3b8cSrH1Su2bF9Ig1fnLbf0S7Pu00zObqQxuC";
+  Stripe.publishableKey = publishableKey;
   await Stripe.instance.applySettings();
 
   runApp(
@@ -79,6 +76,10 @@ void main() async {
         ChangeNotifierProvider<ParticipantProvider>(
           create: (_) => ParticipantProvider(),
         ),
+        ChangeNotifierProvider(
+          create: (_) => NotificationProvider(),
+          lazy: false,
+        ),
       ],
       child: const MyApp(),
     ),
@@ -88,7 +89,6 @@ void main() async {
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return Consumer<ThemeNotifier>(

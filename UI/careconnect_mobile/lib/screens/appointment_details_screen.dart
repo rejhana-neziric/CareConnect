@@ -1,8 +1,15 @@
+import 'package:careconnect_mobile/core/theme/app_colors.dart';
 import 'package:careconnect_mobile/models/enums/appointment_status.dart';
+import 'package:careconnect_mobile/models/requests/appointment_reschedule_request.dart';
 import 'package:careconnect_mobile/models/responses/appointment.dart';
+import 'package:careconnect_mobile/providers/appointment_provider.dart';
+import 'package:careconnect_mobile/widgets/confim_dialog.dart';
+import 'package:careconnect_mobile/widgets/primary_button.dart';
+import 'package:careconnect_mobile/widgets/snackbar.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
 
 class AppointmentDetailsScreen extends StatefulWidget {
   final Appointment appointment;
@@ -15,6 +22,23 @@ class AppointmentDetailsScreen extends StatefulWidget {
 }
 
 class _AppointmentDetailsScreenState extends State<AppointmentDetailsScreen> {
+  late AppointmentProvider appointmentProvider;
+  late Appointment appointment;
+
+  late AppointmentStatus status;
+
+  late List<String> actions;
+
+  @override
+  void initState() {
+    super.initState();
+
+    appointmentProvider = context.read<AppointmentProvider>();
+    appointment = widget.appointment;
+    status = appointmentStatusFromString(widget.appointment.stateMachine!);
+    actions = status.allowedActions;
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -90,19 +114,17 @@ class _AppointmentDetailsScreenState extends State<AppointmentDetailsScreen> {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
             decoration: BoxDecoration(
-              color: appointmentStatusFromString(
-                status,
-              ).backgroundColor, //colorScheme.primaryContainer,
+              color: appointmentStatusFromString(status).backgroundColor,
               borderRadius: BorderRadius.circular(20),
             ),
             child: Text(
-              status.toUpperCase(),
+              appointmentStatusFromString(
+                widget.appointment.stateMachine!,
+              ).label,
               style: TextStyle(
                 color: appointmentStatusFromString(
-                  status,
-                ).textColor, //Colors.white,
-                fontWeight: FontWeight.bold,
-                fontSize: 12,
+                  widget.appointment.stateMachine!,
+                ).textColor,
               ),
             ),
           ),
@@ -184,71 +206,40 @@ class _AppointmentDetailsScreenState extends State<AppointmentDetailsScreen> {
   }
 
   Widget _buildActionButtons(BuildContext context) {
-    final status = appointmentStatusFromString(
-      widget.appointment.stateMachine!,
-    );
-
-    final actions = status.allowedActions;
-
     if (actions.isEmpty) return SizedBox.shrink();
 
     return Column(
       children: [
         Row(
           children: actions.map((action) {
-            IconData icon;
-            Color? foreground;
+            Color? backgroundColor;
             VoidCallback onPressed;
 
             switch (action) {
-              case 'Confirm':
-                icon = Icons.check_circle;
-                foreground = Colors.green;
-                onPressed = () => {}; //_confirmAppointment(context);
-                break;
               case 'Cancel':
-                icon = Icons.cancel;
-                foreground = Colors.red;
-                onPressed = () => {}; //_cancelAppointment(context);
+                backgroundColor = Colors.red;
+                onPressed = () => _cancelAppointment(widget.appointment);
                 break;
-              case 'Start':
-                icon = Icons.play_arrow;
-                foreground = Colors.blue;
-                onPressed = () => {}; //_startAppointment(context);
+              case 'Choose new time':
+                backgroundColor = AppColors.accentDeepMauve;
+                onPressed = () => _requestNewAppointmentTime(
+                  appointmentId: widget.appointment.appointmentId,
+                  request: new AppointmentRescheduleRequest(),
+                );
                 break;
-              case 'Reschedule':
-                icon = Icons.schedule;
-                foreground = null;
-                onPressed = () => {}; //_rescheduleAppointment(context);
-                break;
-              case 'Complete':
-                icon = Icons.done_all;
-                foreground = Colors.green;
-                onPressed = () => {}; //_completeAppointment(context);
-                break;
+
               default:
-                icon = Icons.help_outline;
-                foreground = null;
+                backgroundColor = null;
                 onPressed = () {};
             }
 
             return Expanded(
               child: Padding(
                 padding: const EdgeInsets.only(right: 12),
-                child: OutlinedButton.icon(
+                child: PrimaryButton(
+                  label: action,
                   onPressed: onPressed,
-                  icon: Icon(icon),
-                  label: Text(action),
-                  style: OutlinedButton.styleFrom(
-                    foregroundColor: foreground,
-                    side: foreground != null
-                        ? BorderSide(color: foreground.withOpacity(0.5))
-                        : null,
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
+                  backgroundColor: backgroundColor,
                 ),
               ),
             );
@@ -542,7 +533,6 @@ class _AppointmentDetailsScreenState extends State<AppointmentDetailsScreen> {
 
   String _formatTime(String timeString) {
     try {
-      // Try to parse as HH:mm format
       final timeParts = timeString.split(':');
       if (timeParts.length >= 2) {
         final hour = int.parse(timeParts[0]);
@@ -564,45 +554,88 @@ class _AppointmentDetailsScreenState extends State<AppointmentDetailsScreen> {
     }
   }
 
-  void _rescheduleAppointment(BuildContext context) {
-    // Navigate to reschedule screen
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Opening reschedule options...')),
+  Future<void> _handleAppointmentAction({
+    required Appointment appointment,
+    required String title,
+    required String content,
+    required String confirmText,
+    required Future<bool> Function({required int appointmentId}) action,
+    required String successMessage,
+    Future<void> Function()? onSuccess,
+  }) async {
+    final shouldProceed = await CustomConfirmDialog.show(
+      context,
+      icon: Icons.info,
+      iconBackgroundColor: AppColors.mauveGray,
+      title: title,
+      content: content,
+      confirmText: confirmText,
+      cancelText: 'Cancel',
     );
+
+    if (shouldProceed != true) return;
+
+    final success = await action(appointmentId: appointment.appointmentId);
+
+    if (!mounted) return;
+
+    CustomSnackbar.show(
+      context,
+      message: success
+          ? successMessage
+          : 'Something went wrong. Please try again.',
+      type: success ? SnackbarType.success : SnackbarType.error,
+    );
+
+    if (success && onSuccess != null) {
+      await onSuccess();
+    }
   }
 
-  void _cancelAppointment(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: const Text('Cancel Appointment'),
-        content: const Text(
-          'Are you sure you want to cancel this appointment? This action cannot be undone.',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Keep Appointment'),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              Navigator.pop(context);
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Appointment cancelled successfully'),
-                  backgroundColor: Colors.red,
-                ),
-              );
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.red,
-              foregroundColor: Colors.white,
-            ),
-            child: const Text('Cancel Appointment'),
-          ),
-        ],
-      ),
+  void _cancelAppointment(Appointment appointment) => _handleAppointmentAction(
+    appointment: appointment,
+    title: 'Cancel Appointment',
+    content: 'Are you sure you want to cancel appointment?',
+    confirmText: 'Cancel',
+    action: appointmentProvider.cancelAppointment,
+    successMessage: 'You have successfully canceled the appointment.',
+    onSuccess: () async {
+      setState(() {
+        appointment.stateMachine = "Canceled";
+        actions = [];
+      });
+    },
+  );
+
+  Future<void> _requestNewAppointmentTime({
+    required int appointmentId,
+    required AppointmentRescheduleRequest request,
+  }) async {
+    final shouldProceed = await CustomConfirmDialog.show(
+      context,
+      icon: Icons.info,
+      iconBackgroundColor: AppColors.mauveGray,
+      title: '',
+      content: '',
+      confirmText: 'Confirm new time',
+      cancelText: 'Cancel',
+    );
+
+    if (shouldProceed != true) return;
+
+    final success = await appointmentProvider.requestNewAppointmentTime(
+      appointmentId: appointmentId,
+      request: request,
+    );
+
+    if (!mounted) return;
+
+    CustomSnackbar.show(
+      context,
+      message: success
+          ? 'You have successfully chose new appointment time. You will be notified when employee reviews request.'
+          : 'Something went wrong. Please try again.',
+      type: success ? SnackbarType.success : SnackbarType.error,
     );
   }
 }

@@ -34,6 +34,11 @@ class _HomeScreenState extends State<HomeScreen> {
   AuthUser? currentUser;
 
   @override
+  void initState() {
+    super.initState();
+  }
+
+  @override
   void didChangeDependencies() {
     super.didChangeDependencies();
     _initializeProviders();
@@ -71,8 +76,6 @@ class _HomeScreenState extends State<HomeScreen> {
         appointments = response?.result ?? [];
       });
     } catch (e) {
-      // Handle error appropriately
-      print('Error loading appointments: $e');
     } finally {
       setState(() {
         isLoadingAppointments = false;
@@ -94,7 +97,6 @@ class _HomeScreenState extends State<HomeScreen> {
         workshops = response?.result ?? [];
       });
     } catch (e) {
-      // Handle error appropriately
       print('Error loading workshops: $e');
     } finally {
       setState(() {

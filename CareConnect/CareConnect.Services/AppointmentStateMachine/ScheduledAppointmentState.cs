@@ -45,9 +45,26 @@ namespace CareConnect.Services.AppointmentStateMachine
             return _mapper.Map<Models.Responses.Appointment>(entity);
         }
 
+        public override Models.Responses.Appointment RescheduleRequest(int id)
+        {
+            var set = _context.Set<Appointment>();
+
+            var entity = set.Find(id);
+
+            if (entity == null) return null;
+
+            var oldState = entity.StateMachine;
+
+            entity.StateMachine = "RescheduleRequested";
+
+            _context.SaveChanges();
+
+            return _mapper.Map<Models.Responses.Appointment>(entity);
+        }
+
         public override List<string> AllowedActions(Appointment entity)
         {
-            return new List<string>() { nameof(Confirm), nameof(Cancel) };
+            return new List<string>() { nameof(Confirm), nameof(Cancel), nameof(RescheduleRequest) };
         }
     }
 }

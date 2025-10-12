@@ -14,6 +14,8 @@ public static class Permissions
         public const string Start = "Permissions.Appointment.Start";
         public const string Complete = "Permissions.Appointment.Complete";
         public const string Reschedule = "Permissions.Appointment.Reschedule";
+        public const string RescheduleRequested = "Permissions.Appointment.RescheduleRequested";
+        public const string ReschedulePendingApproval = "Permissions.Appointment.ReschedulePendingApproval";
         public const string AllowedActions = "Permissions.Appointment.AllowedActions";
         public const string GetAppointmentTypes = "Permissions.Appointment.GetAppointmentTypes";
     }

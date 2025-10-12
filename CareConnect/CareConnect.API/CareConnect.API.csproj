@@ -28,6 +28,7 @@
   <ItemGroup>
     <ProjectReference Include="..\CareConnect.Models\CareConnect.Models.csproj" />
     <ProjectReference Include="..\CareConnect.Services\CareConnect.Services.csproj" />
+    <ProjectReference Include="..\CareConnect.Subscriber\CareConnect.Subscriber.csproj" />
   </ItemGroup>
 
 </Project>

@@ -1,5 +1,3 @@
-import 'package:careconnect_mobile/models/requests/appointment_insert_request.dart';
-
 import 'package:json_annotation/json_annotation.dart';
 
 part 'enrollment_request.g.dart';

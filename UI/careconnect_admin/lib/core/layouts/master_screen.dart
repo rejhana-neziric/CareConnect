@@ -1,16 +1,21 @@
+import 'dart:async';
 import 'package:careconnect_admin/models/auth_credentials.dart';
 import 'package:careconnect_admin/providers/auth_provider.dart';
+import 'package:careconnect_admin/providers/notification_provider.dart';
 import 'package:careconnect_admin/screens/appointment_list_screen.dart';
 import 'package:careconnect_admin/screens/client_list_screen.dart';
 import 'package:careconnect_admin/screens/employee_availability/employee_availability_details_screen.dart';
 import 'package:careconnect_admin/screens/employee_availability/employee_availability_list_screen.dart';
 import 'package:careconnect_admin/screens/employee_list_screen.dart';
 import 'package:careconnect_admin/screens/login_screen.dart';
+import 'package:careconnect_admin/screens/notifications_screen.dart';
 import 'package:careconnect_admin/screens/report_screen.dart';
 import 'package:careconnect_admin/screens/review_list_screen.dart';
 import 'package:careconnect_admin/screens/services_list_screen.dart';
 import 'package:careconnect_admin/screens/workshops_list_screen.dart';
 import 'package:careconnect_admin/core/theme/theme_notifier.dart';
+import 'package:careconnect_admin/services/singalr_service.dart';
+import 'package:careconnect_admin/widgets/notification_bell.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -33,6 +38,22 @@ class MasterScreen extends StatefulWidget {
 }
 
 class _MasterScreenState extends State<MasterScreen> {
+  final List<String> _debugLogs = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _addLog('App started');
+  }
+
+  void _addLog(String message) {
+    final timestamp = DateTime.now().toString().substring(11, 19);
+    setState(() {
+      _debugLogs.insert(0, '[$timestamp] $message');
+    });
+    debugPrint('[$timestamp] $message');
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -201,26 +222,19 @@ class _MasterScreenState extends State<MasterScreen> {
                       ),
 
                       ListTile(
+                        leading: Icon(Icons.notifications),
+                        title: Text("Notifications"),
+                        onTap: () => Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (context) => NotificationsScreen(),
+                          ),
+                        ),
+                      ),
+
+                      ListTile(
                         leading: Icon(Icons.logout_outlined),
                         title: Text("Logout"),
-                        onTap: () {
-                          AuthCredentials.username = null;
-                          AuthCredentials.password = null;
-
-                          final auth = Provider.of<AuthProvider>(
-                            context,
-                            listen: false,
-                          );
-
-                          auth.logout();
-
-                          Navigator.pushReplacement(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => LoginScreen(),
-                            ),
-                          );
-                        },
+                        onTap: () => _handleLogout(),
                       ),
 
                       Padding(
@@ -268,6 +282,23 @@ class _MasterScreenState extends State<MasterScreen> {
                         ),
                         Row(
                           children: [
+                            Consumer<NotificationProvider>(
+                              builder: (context, notificationProvider, _) {
+                                return NotificationBell(
+                                  notificationCount:
+                                      notificationProvider.unreadCount,
+                                  onTap: () {
+                                    Navigator.of(context).push(
+                                      MaterialPageRoute(
+                                        builder: (context) =>
+                                            NotificationsScreen(),
+                                      ),
+                                    );
+                                  },
+                                );
+                              },
+                            ),
+
                             // Theme toggle button in header (alternative position)
                             _buildThemeToggleButton(context, themeNotifier),
                             if (widget.button != null) ...[
@@ -306,6 +337,34 @@ class _MasterScreenState extends State<MasterScreen> {
         ],
       ),
     );
+  }
+
+  void _handleLogout() async {
+    final notificationProvider = Provider.of<NotificationProvider>(
+      context,
+      listen: false,
+    );
+
+    notificationProvider.clearNotifications();
+    debugPrint('✓ Notifications cleared');
+
+    await SignalRService().disconnect();
+    debugPrint('✓ SignalR disconnected');
+
+    await Future.delayed(const Duration(milliseconds: 300));
+
+    if (context.mounted) {
+      AuthCredentials.username = null;
+      AuthCredentials.password = null;
+
+      final auth = Provider.of<AuthProvider>(context, listen: false);
+      auth.logout();
+
+      Navigator.of(context).pushAndRemoveUntil(
+        MaterialPageRoute(builder: (context) => LoginScreen()),
+        (route) => false, // Remove all previous routes
+      );
+    }
   }
 
   // Widget _buildNavTile(

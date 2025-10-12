@@ -13,11 +13,14 @@ android {
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
+        isCoreLibraryDesugaringEnabled = true
     }
 
     kotlinOptions {
         jvmTarget = JavaVersion.VERSION_11.toString()
     }
+
+    compileSdk = 36
 
     defaultConfig {
         // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
@@ -41,4 +44,12 @@ android {
 
 flutter {
     source = "../.."
+}
+
+
+dependencies {
+    implementation("org.jetbrains.kotlin:kotlin-stdlib:1.9.0")
+
+    // Upgrade to 2.1.4 or above
+    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.4")
 }

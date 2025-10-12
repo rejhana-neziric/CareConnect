@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:careconnect_mobile/models/requests/appointment_insert_request.dart';
+import 'package:careconnect_mobile/models/requests/appointment_reschedule_request.dart';
 import 'package:careconnect_mobile/models/requests/payment_intent_request.dart';
 import 'package:careconnect_mobile/models/responses/appointment.dart';
 import 'package:careconnect_mobile/models/responses/client.dart';
@@ -52,6 +53,7 @@ class AppointmentProvider extends BaseProvider<Appointment> {
     int page = 0,
     String? sortBy,
     bool sortAscending = true,
+    bool? retrieveAll,
   }) async {
     final filterObject = AppointmentSearchObject(
       fts: fts,
@@ -82,6 +84,7 @@ class AppointmentProvider extends BaseProvider<Appointment> {
         isEmployeeAvailabilityIncluded: true,
       ),
       includeTotalCount: true,
+      retrieveAll: retrieveAll,
     );
 
     final filter = filterObject.toJson();
@@ -206,5 +209,62 @@ class AppointmentProvider extends BaseProvider<Appointment> {
     } catch (e) {
       return false;
     }
+  }
+
+  Future<bool> _updateAppointmentStatus({
+    required int appointmentId,
+    required String actionPath,
+  }) async {
+    final url = '$baseUrl$endpoint/$appointmentId/$actionPath';
+    final uri = Uri.parse(url);
+    final headers = createHeaders();
+
+    final response = await http.put(uri, headers: headers);
+
+    if (isValidResponse(response)) {
+      final data = jsonDecode(response.body);
+      final updated = fromJson(data);
+      final index = item.result.indexWhere((e) => getId(e) == appointmentId);
+      if (index != -1) {
+        item.result[index] = updated;
+        notifyListeners();
+      }
+      return true;
+    }
+
+    return false;
+  }
+
+  Future<bool> cancelAppointment({required int appointmentId}) {
+    return _updateAppointmentStatus(
+      appointmentId: appointmentId,
+      actionPath: 'cancel',
+    );
+  }
+
+  Future<bool> requestNewAppointmentTime({
+    required int appointmentId,
+    required AppointmentRescheduleRequest request,
+  }) async {
+    final url = '$baseUrl$endpoint/$appointmentId/reschedule-pending-approval';
+    final uri = Uri.parse(url);
+    final headers = createHeaders();
+
+    var jsonRequest = jsonEncode(request);
+
+    final response = await http.put(uri, headers: headers, body: jsonRequest);
+
+    if (isValidResponse(response)) {
+      final data = jsonDecode(response.body);
+      final updated = fromJson(data);
+      final index = item.result.indexWhere((e) => getId(e) == appointmentId);
+      if (index != -1) {
+        item.result[index] = updated;
+        notifyListeners();
+      }
+      return true;
+    }
+
+    return false;
   }
 }

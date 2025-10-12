@@ -71,6 +71,7 @@ class _MyAppointmentsScreenState extends State<MyAppointmentsScreen> {
       serviceNameGTE: serviceName,
       sortBy: _sortBy,
       sortAscending: _sortAscending,
+      retrieveAll: true,
     );
 
     setState(() {
@@ -292,51 +293,47 @@ class _MyAppointmentsScreenState extends State<MyAppointmentsScreen> {
           ),
         ),
       ),
-      body:
-          //  SingleChildScrollView(
-          //   child:
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Row(
-                  children: [
-                    // Search bar
-                    Expanded(
-                      child: TextField(
-                        controller: _searchController,
-                        decoration: InputDecoration(
-                          hintText: "Search by service name...",
-                          prefixIcon: const Icon(Icons.search),
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          isDense: true,
-                        ),
-                        onChanged: (value) {
-                          setState(() {
-                            serviceName = value;
-                          });
-                          loadAppointments();
-                        },
+      body: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Row(
+              children: [
+                // Search bar
+                Expanded(
+                  child: TextField(
+                    controller: _searchController,
+                    decoration: InputDecoration(
+                      hintText: "Search by service name...",
+                      prefixIcon: const Icon(Icons.search),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
                       ),
+                      isDense: true,
                     ),
-                    const SizedBox(width: 8),
-
-                    // Filter button
-                    IconButton(
-                      onPressed: _showFilters,
-                      icon: const Icon(Icons.tune),
-                      tooltip: "Open filters",
-                    ),
-                  ],
+                    onChanged: (value) {
+                      setState(() {
+                        serviceName = value;
+                      });
+                      loadAppointments();
+                    },
+                  ),
                 ),
-              ),
-              Expanded(child: _buildMyAppointments(colorScheme)),
-            ],
+                const SizedBox(width: 8),
+
+                // Filter button
+                IconButton(
+                  onPressed: _showFilters,
+                  icon: const Icon(Icons.tune),
+                  tooltip: "Open filters",
+                ),
+              ],
+            ),
           ),
-      //),
+          Expanded(child: _buildMyAppointments(colorScheme)),
+        ],
+      ),
     );
   }
 
@@ -446,14 +443,16 @@ class _MyAppointmentsScreenState extends State<MyAppointmentsScreen> {
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
                 IconButton(
-                  onPressed: () {
-                    Navigator.push(
+                  onPressed: () async {
+                    await Navigator.push(
                       context,
                       MaterialPageRoute(
                         builder: (context) =>
                             AppointmentDetailsScreen(appointment: appointment),
                       ),
                     );
+
+                    loadAppointments();
                   },
                   icon: const Icon(Icons.chevron_right, color: Colors.grey),
                 ),

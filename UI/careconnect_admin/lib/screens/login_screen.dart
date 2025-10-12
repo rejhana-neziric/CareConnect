@@ -1,10 +1,13 @@
 import 'package:careconnect_admin/models/auth_user.dart';
 import 'package:careconnect_admin/providers/auth_provider.dart';
+import 'package:careconnect_admin/providers/notification_provider.dart';
 import 'package:careconnect_admin/providers/user_provider.dart';
 import 'package:careconnect_admin/screens/employee_list_screen.dart';
+import 'package:careconnect_admin/services/singalr_service.dart';
 import 'package:careconnect_admin/widgets/primary_button.dart';
 import 'package:careconnect_admin/widgets/snackbar.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:form_builder_validators/form_builder_validators.dart';
 import 'package:provider/provider.dart';
@@ -23,6 +26,8 @@ class _LoginScreenState extends State<LoginScreen> {
   String? password;
 
   List<String>? permissions;
+
+  final String _hubUrl = dotenv.env['SIGNALR_HUB_URL'] ?? '';
 
   @override
   void initState() {
@@ -172,6 +177,19 @@ class _LoginScreenState extends State<LoginScreen> {
                                         values['password'] as String;
 
                                     try {
+                                      final notificationProvider =
+                                          Provider.of<NotificationProvider>(
+                                            context,
+                                            listen: false,
+                                          );
+
+                                      notificationProvider.clearNotifications();
+
+                                      await SignalRService().disconnect();
+                                      await Future.delayed(
+                                        const Duration(milliseconds: 500),
+                                      );
+
                                       final response = await userProvider.login(
                                         username,
                                         password,
@@ -181,6 +199,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                         getPermissions(response.username);
 
                                         final authUser = AuthUser(
+                                          id: response.userId,
                                           username: response.username,
                                           roles: response.roles,
                                           permissions: permissions ?? [],
@@ -190,6 +209,11 @@ class _LoginScreenState extends State<LoginScreen> {
                                           context,
                                           listen: false,
                                         ).setUser(authUser);
+
+                                        await notificationProvider.initialize(
+                                          _hubUrl,
+                                          authUser.id,
+                                        );
 
                                         Navigator.push(
                                           context,

@@ -6,8 +6,13 @@ import 'package:intl/intl.dart';
 
 class AppointmentSuccessScreen extends StatelessWidget {
   final AppointmentInsertRequest appointment;
+  final bool? isRescheduling;
 
-  const AppointmentSuccessScreen({super.key, required this.appointment});
+  const AppointmentSuccessScreen({
+    super.key,
+    required this.appointment,
+    this.isRescheduling = false,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -51,7 +56,9 @@ class AppointmentSuccessScreen extends StatelessWidget {
 
                     // Success Message
                     Text(
-                      'Appointment Scheduled!',
+                      isRescheduling == true
+                          ? 'Appointment Reschedule Pending'
+                          : 'Appointment Scheduled!',
                       style: TextStyle(
                         fontSize: 28,
                         fontWeight: FontWeight.bold,
@@ -63,7 +70,9 @@ class AppointmentSuccessScreen extends StatelessWidget {
                     SizedBox(height: 12),
 
                     Text(
-                      'Your appointment has been successfully scheduled. The employee will review and confirm it. Please note that the appointment is not final until confirmed by employee..',
+                      isRescheduling == true
+                          ? 'You have successfully requested new appointment time.The employee will review and confirm it. Please note that the appointment is not final until confirmed by employee. '
+                          : 'Your appointment has been successfully scheduled. The employee will review and confirm it. Please note that the appointment is not final until confirmed by employee.',
                       style: TextStyle(
                         fontSize: 16,
                         color: colorScheme.onSurface,

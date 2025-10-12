@@ -65,6 +65,7 @@ namespace CareConnect.Services.AppointmentStateMachine
                     .Include(a => a.EmployeeAvailability)
                         .ThenInclude(ea => ea.Service)
                     .Include(a => a.EmployeeAvailability.Employee)
+                    .Include(a => a.EmployeeAvailability.Employee.User)
                     .Include(a => a.ClientsChild)
                         .ThenInclude(cc => cc.Child)
                     .Include(a => a.ClientsChild.Client)

@@ -43,7 +43,10 @@ class _EmployeeAvailabilityDetailsScreenState
   }
 
   Future<void> loadEmployees() async {
-    final response = await employeeProvider.loadData(employed: true);
+    final response = await employeeProvider.loadData(
+      employed: true,
+      retrieveAll: true,
+    );
 
     setState(() {
       employees = response?.result ?? [];

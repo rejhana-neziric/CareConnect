@@ -24,6 +24,7 @@ EmployeeSearchObject _$EmployeeSearchObjectFromJson(
   page: (json['page'] as num?)?.toInt(),
   sortBy: json['sortBy'] as String?,
   sortAscending: json['sortAscending'] as bool?,
+  retrieveAll: json['retrieveAll'] as bool?,
   additionalData: json['additionalData'] == null
       ? null
       : EmployeeAdditionalData.fromJson(
@@ -46,6 +47,7 @@ Map<String, dynamic> _$EmployeeSearchObjectToJson(
   'page': instance.page,
   'sortBy': instance.sortBy,
   'sortAscending': instance.sortAscending,
+  'retrieveAll': instance.retrieveAll,
   'additionalData': instance.additionalData?.toJson(),
   'includeTotalCount': instance.includeTotalCount,
 };
