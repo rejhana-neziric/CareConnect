@@ -197,5 +197,7 @@ public static class Permissions
         public const string GetStatistics = "Permissions.Workshop.GetStatistics";
         public const string Enroll = "Permissions.Workshop.Enroll";
         public const string GetWorkshopEnrollmentStatus = "Permissions.Workshop.GetWorkshopEnrollmentStatus";
+        public const string TrainModel = "Permissions.Workshop.TrainModel";
+        public const string PredictForNewWorkshop = "Permissions.Workshop.PredictForNewWorkshop";
     }
 }

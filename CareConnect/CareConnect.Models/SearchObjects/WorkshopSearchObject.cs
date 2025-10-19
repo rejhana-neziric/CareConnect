@@ -11,17 +11,11 @@ namespace CareConnect.Models.SearchObjects
 
         public string? Status { get; set; } = null!;
 
-        public DateTime? StartDateGTE { get; set; }
+        public DateTime? DateGTE { get; set; }
 
-        public DateTime? StartDateLTE { get; set; }
-
-        public DateTime? EndDateGTE { get; set; }
-
-        public DateTime? EndDateLTE { get; set; }
+        public DateTime? DateLTE { get; set; }
 
         public decimal? Price { get; set; }
-
-        public decimal? MemberPrice { get; set; }
 
         public int? MaxParticipants { get; set; }
 
@@ -30,6 +24,5 @@ namespace CareConnect.Models.SearchObjects
         public string? WorkshopType { get; set; }
 
         public int? ParticipantId { get; set; }
-
     }
 }

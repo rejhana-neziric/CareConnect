@@ -7,10 +7,8 @@ class WorkshopUpdateRequest {
   String? name;
   String? description;
   String? workshopType;
-  DateTime? startDate;
-  DateTime? endDate;
+  DateTime? date;
   double? price;
-  double? memberPrice;
   int? maxParticipants;
   int? participants;
   String? notes;
@@ -19,10 +17,8 @@ class WorkshopUpdateRequest {
     this.name,
     this.description,
     this.workshopType,
-    this.startDate,
-    this.endDate,
+    this.date,
     this.price,
-    this.memberPrice,
     this.maxParticipants,
     this.participants,
     this.notes,

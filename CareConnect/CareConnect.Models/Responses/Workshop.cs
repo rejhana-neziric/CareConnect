@@ -14,13 +14,9 @@ namespace CareConnect.Models.Responses
 
         public string Status { get; set; } = null!;
 
-        public DateTime StartDate { get; set; }
-
-        public DateTime? EndDate { get; set; }
+        public DateTime Date { get; set; }
 
         public decimal? Price { get; set; }
-
-        public decimal? MemberPrice { get; set; }
 
         public int? MaxParticipants { get; set; }
 

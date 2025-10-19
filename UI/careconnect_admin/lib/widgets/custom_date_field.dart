@@ -9,6 +9,7 @@ class CustomDateField extends StatelessWidget {
   final String? Function(DateTime?)? validator;
   final bool enabled;
   final bool required;
+  final bool timePicker;
 
   const CustomDateField({
     super.key,
@@ -18,6 +19,7 @@ class CustomDateField extends StatelessWidget {
     this.validator,
     this.enabled = true,
     this.required = false,
+    this.timePicker = false,
   });
 
   @override
@@ -53,13 +55,38 @@ class CustomDateField extends StatelessWidget {
                   child: InkWell(
                     onTap: enabled
                         ? () async {
-                            final picked = await showDatePicker(
+                            final pickedDate = await showDatePicker(
                               context: context,
                               initialDate: field.value ?? DateTime.now(),
                               firstDate: DateTime(1900),
                               lastDate: DateTime(2100),
                             );
-                            if (picked != null) field.didChange(picked);
+                            if (pickedDate == null) return;
+
+                            if (timePicker) {
+                              // pick time if enabled
+                              final pickedTime = await showTimePicker(
+                                context: context,
+                                initialTime: TimeOfDay.fromDateTime(
+                                  field.value ?? DateTime.now(),
+                                ),
+                              );
+
+                              if (pickedTime != null) {
+                                final combined = DateTime(
+                                  pickedDate.year,
+                                  pickedDate.month,
+                                  pickedDate.day,
+                                  pickedTime.hour,
+                                  pickedTime.minute,
+                                );
+                                field.didChange(combined);
+                              } else {
+                                field.didChange(pickedDate);
+                              }
+                            } else {
+                              field.didChange(pickedDate);
+                            }
                           }
                         : null,
                     child: InputDecorator(
@@ -90,7 +117,13 @@ class CustomDateField extends StatelessWidget {
                       ),
                       child: Text(
                         field.value != null
-                            ? DateFormat('dd/MM/yyyy').format(field.value!)
+                            ? timePicker
+                                  ? DateFormat(
+                                      'dd. MM. yyyy. HH:mm',
+                                    ).format(field.value!)
+                                  : DateFormat(
+                                      'dd. MM. yyyy.',
+                                    ).format(field.value!)
                             : '',
                         style: const TextStyle(fontSize: 16),
                       ),

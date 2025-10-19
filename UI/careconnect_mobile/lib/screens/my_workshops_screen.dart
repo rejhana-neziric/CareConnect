@@ -220,9 +220,7 @@ class _MyWorkshopsScreenState extends State<MyWorkshopsScreen> {
 
                 _buildWorkshopDetail(
                   Icons.date_range,
-                  workshop.endDate != null
-                      ? '${DateFormat('d. MM. yyyy').format(workshop.startDate)} - ${DateFormat('d. MM. yyyy').format(workshop.endDate!)}'
-                      : DateFormat('d MMM y').format(workshop.startDate),
+                  DateFormat('d MMM y').format(workshop.date),
                 ),
 
                 const SizedBox(height: 8),

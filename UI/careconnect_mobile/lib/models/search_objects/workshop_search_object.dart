@@ -7,12 +7,9 @@ class WorkshopSearchObject {
   String? fts;
   final String? nameGTE;
   final String? status;
-  final DateTime? startDateGTE;
-  final DateTime? startDateLTE;
-  final DateTime? endDateGTE;
-  final DateTime? endDateLTE;
+  final DateTime? dateGTE;
+  final DateTime? dateLTE;
   final double? price;
-  final double? memberPrice;
   final int? maxParticipants;
   final int? participants;
   final String? workshopType;
@@ -27,12 +24,9 @@ class WorkshopSearchObject {
     this.fts,
     this.nameGTE,
     this.status,
-    this.startDateGTE,
-    this.startDateLTE,
-    this.endDateGTE,
-    this.endDateLTE,
+    this.dateGTE,
+    this.dateLTE,
     this.price,
-    this.memberPrice,
     this.maxParticipants,
     this.participants,
     this.workshopType,

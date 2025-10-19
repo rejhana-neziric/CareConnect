@@ -7,10 +7,8 @@ class WorkshopInsertRequest {
   String name;
   String description;
   String workshopType;
-  DateTime startDate;
-  DateTime? endDate;
+  DateTime date;
   double? price;
-  double? memberPrice;
   int? maxParticipants;
   int? participants;
   String? notes;
@@ -19,10 +17,8 @@ class WorkshopInsertRequest {
     required this.name,
     required this.description,
     required this.workshopType,
-    required this.startDate,
-    this.endDate,
+    required this.date,
     this.price,
-    this.memberPrice,
     this.maxParticipants,
     this.participants,
     this.notes,

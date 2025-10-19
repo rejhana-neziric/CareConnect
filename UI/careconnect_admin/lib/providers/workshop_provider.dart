@@ -3,6 +3,8 @@ import 'package:careconnect_admin/models/responses/search_result.dart';
 import 'package:careconnect_admin/models/responses/workshop.dart';
 import 'package:careconnect_admin/models/responses/workshop_statistics.dart';
 import 'package:careconnect_admin/models/search_objects/workshop_search_object.dart';
+import 'package:careconnect_admin/models/workshopML/training_result.dart';
+import 'package:careconnect_admin/models/workshopML/workshop_prediction.dart';
 import 'package:careconnect_admin/providers/base_provider.dart';
 import 'package:careconnect_admin/screens/participant_list_screeen.dart';
 import 'package:flutter/material.dart';
@@ -45,12 +47,9 @@ class WorkshopProvider extends BaseProvider<Workshop> {
     String? fts,
     String? nameGTE,
     String? status,
-    DateTime? startDateGTE,
-    DateTime? startDateLTE,
-    DateTime? endDateGTE,
-    DateTime? endDateLTE,
+    DateTime? dateGTE,
+    DateTime? dateLTE,
     double? price,
-    double? memberPrice,
     int? maxParticipants,
     int? participants,
     String? workshopType,
@@ -62,12 +61,9 @@ class WorkshopProvider extends BaseProvider<Workshop> {
       fts: fts,
       nameGTE: nameGTE,
       status: status,
-      startDateGTE: startDateGTE,
-      startDateLTE: startDateLTE,
-      endDateGTE: endDateGTE,
-      endDateLTE: endDateLTE,
+      dateGTE: dateGTE,
+      dateLTE: dateLTE,
       price: price,
-      memberPrice: memberPrice,
       maxParticipants: maxParticipants,
       participants: participants,
       workshopType: workshopType,
@@ -158,6 +154,114 @@ class WorkshopProvider extends BaseProvider<Workshop> {
       return true;
     } else {
       throw Exception("Unknown error");
+    }
+  }
+
+  Future<TrainingResult> trainModel() async {
+    try {
+      final response = await http.post(
+        Uri.parse('$baseUrl$endpoint/train'),
+        headers: createHeaders(),
+      );
+
+      if (response.statusCode == 200) {
+        final json = jsonDecode(response.body);
+        return TrainingResult.fromJson(json);
+      } else {
+        final error = jsonDecode(response.body);
+        throw Exception(error['message'] ?? 'Failed to train model');
+      }
+    } catch (e) {
+      throw Exception('Error training model: $e');
+    }
+  }
+
+  Future<WorkshopPrediction> predictForNewWorkshop({
+    required String name,
+    required String description,
+    required String workshopType,
+    required DateTime date,
+    required double? price,
+    required int? maxParticipants,
+  }) async {
+    try {
+      final workshopData = {
+        'name': name,
+        'description': description,
+        'workshopType': workshopType,
+        'date': date.toIso8601String(),
+        'price': price,
+        'maxParticipants': maxParticipants,
+      };
+
+      final response = await http.post(
+        Uri.parse('$baseUrl$endpoint/predict'),
+        headers: createHeaders(),
+        body: jsonEncode(workshopData),
+      );
+
+      if (response.statusCode == 200) {
+        final json = jsonDecode(response.body);
+        return WorkshopPrediction(
+          workshopId: 0,
+          workshopName: name,
+          predictedParticipants: (json['predictedParticipants'] ?? 0)
+              .toDouble(),
+          maxParticipants: maxParticipants,
+          utilizationPercentage: json['utilizationPercentage']?.toDouble(),
+          recommendation: json['recommendation'],
+        );
+      } else {
+        final error = jsonDecode(response.body);
+        throw Exception(error['message'] ?? 'Failed to predict');
+      }
+    } catch (e) {
+      throw Exception('Error predicting for new workshop: $e');
+    }
+  }
+
+  Future<bool> isModelTrained() async {
+    try {
+      final testWorkshop = {
+        'name': 'Test',
+        'description': 'Test',
+        'workshopType': 'Parents',
+        'date': DateTime.now().add(Duration(days: 7)).toIso8601String(),
+        'price': 50.0,
+        'maxParticipants': 30,
+        'modifiedDate': DateTime.now().toIso8601String(),
+      };
+
+      final response = await http.post(
+        Uri.parse('$baseUrl$endpoint/predict'),
+        headers: createHeaders(),
+
+        body: jsonEncode(testWorkshop),
+      );
+
+      return response.statusCode == 200;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  Future<Map<String, dynamic>> getModelStatus() async {
+    try {
+      final isModelReady = await isModelTrained();
+
+      return {
+        'isTrained': isModelReady,
+        'status': isModelReady ? 'Ready' : 'Not Trained',
+        'message': isModelReady
+            ? 'Model is trained and ready for predictions'
+            : 'Model needs to be trained before making predictions',
+      };
+    } catch (e) {
+      return {
+        'isTrained': false,
+        'status': 'Error',
+        'message': 'Error checking model status: $e',
+      };
     }
   }
 }

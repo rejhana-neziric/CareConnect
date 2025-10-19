@@ -22,6 +22,7 @@ using Stripe;
 using System.Reflection;
 using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.SignalR;
+using CareConnect.Services.WorkshopML;
 
 var envFilePath = Path.Combine(Directory.GetParent(Directory.GetCurrentDirectory())!.FullName, ".env");
 Env.Load(envFilePath);
@@ -98,6 +99,16 @@ builder.Services.AddSingleton<IBus>(provider =>
 
 builder.Services.AddHostedService<CareConnect.Services.BackgroundTasks.AppointmentStatusUpdater>();
 
+builder.Services.AddSingleton<IWorkshopMLService>(sp =>
+{
+    var env = sp.GetRequiredService<IWebHostEnvironment>();
+    var logger = sp.GetRequiredService<ILogger<WorkshopMLService>>();
+    var modelPath = Path.Combine(env.ContentRootPath, "MLModels", "workshop_model.zip");
+    Directory.CreateDirectory(Path.GetDirectoryName(modelPath)!);
+
+    return new WorkshopMLService(logger, modelPath);
+});
+
 builder.Services.AddControllers(x =>
 {
     x.Filters.Add<ExceptionFilter>();
@@ -136,6 +147,7 @@ builder.Services.AddSwaggerGen(options =>
         }
     });
 
+    options.CustomSchemaIds(type => type.FullName);
 });
 
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");

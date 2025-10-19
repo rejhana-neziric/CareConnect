@@ -19,6 +19,7 @@ using CareConnect.Models.Enums;
 using static Permissions;
 using Stripe;
 
+
 namespace CareConnect.Services
 {
     public class WorkshopService : BaseCRUDService<Models.Responses.Workshop, WorkshopSearchObject, WorkshopAdditionalData, Database.Workshop, WorkshopInsertRequest, WorkshopUpdateRequest>, IWorkshopService
@@ -34,7 +35,7 @@ namespace CareConnect.Services
             IMapper mapper, 
             BaseWorkshopState baseWorkshopState, 
             ILogger<WorkshopService> logger, 
-            IPaymentService paymentService) 
+            IPaymentService paymentService)
             : base(context, mapper) 
         {
             BaseWorkshopState = baseWorkshopState;
@@ -57,34 +58,19 @@ namespace CareConnect.Services
                 query = query.Where(x => x.Status == search.Status);
             }
 
-            if (search?.StartDateGTE.HasValue == true)
+            if (search?.DateGTE.HasValue == true)
             {
-                query = query.Where(x => x.StartDate >= search.StartDateGTE);
+                query = query.Where(x => x.Date >= search.DateGTE);
             }
 
-            if (search?.StartDateLTE.HasValue == true)
+            if (search?.DateLTE.HasValue == true)
             {
-                query = query.Where(x => x.StartDate <= search.StartDateLTE);
-            }
-
-            if (search?.EndDateGTE.HasValue == true)
-            {
-                query = query.Where(x => x.EndDate >= search.EndDateGTE);
-            }
-
-            if (search?.EndDateLTE.HasValue == true)
-            {
-                query = query.Where(x => x.EndDate <= search.EndDateLTE);
+                query = query.Where(x => x.Date <= search.DateLTE);
             }
 
             if (search?.Price.HasValue == true)
             {
                 query = query.Where(x => x.Price == search.Price);
-            }
-
-            if (search?.MemberPrice.HasValue == true)
-            {
-                query = query.Where(x => x.MemberPrice == search.MemberPrice);
             }
 
             if (search?.MaxParticipants.HasValue == true)
@@ -114,8 +100,7 @@ namespace CareConnect.Services
                 {
                     "name" => search.SortAscending ? query.OrderBy(x => x.Name) : query.OrderByDescending(x => x.Name),
                     "price" => search.SortAscending ? query.OrderBy(x => x.Price) : query.OrderByDescending(x => x.Price),
-                    "memberPrice" => search.SortAscending ? query.OrderBy(x => x.MemberPrice) : query.OrderByDescending(x => x.MemberPrice),
-                    "startDate" => search.SortAscending ? query.OrderBy(x => x.StartDate) : query.OrderByDescending(x => x.StartDate),
+                    "date" => search.SortAscending ? query.OrderBy(x => x.Date) : query.OrderByDescending(x => x.Date),
                     "maxParticipants" => search.SortAscending ? query.OrderBy(x => x.MaxParticipants) : query.OrderByDescending(x => x.MaxParticipants),
                     "participants" => search.SortAscending ? query.OrderBy(x => x.Participants) : query.OrderByDescending(x => x.Participants),
                     _ => query
@@ -145,8 +130,8 @@ namespace CareConnect.Services
 
         public override void BeforeDelete(Database.Workshop entity)
         {
-            foreach (var session in entity.Sessions)
-                Context.Remove(session);
+            //foreach (var session in entity.Sessions)
+            //    Context.Remove(session);
 
             base.BeforeDelete(entity);
         }
@@ -217,7 +202,6 @@ namespace CareConnect.Services
                 return state.AllowedActions(entity);
             }
         }
-
 
         public WorkshopStatistics GetStatistics()
         {

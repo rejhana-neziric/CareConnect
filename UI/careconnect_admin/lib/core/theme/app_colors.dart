@@ -94,7 +94,7 @@ class AppTheme {
     onPrimary: AppColors.black,
     primaryContainer: AppColors.deepMauve,
     onPrimaryContainer: AppColors.white,
-    secondary: AppColors.softLavender,
+    secondary: AppColors.dustyRose,
     onSecondary: AppColors.black,
     secondaryContainer: AppColors.mauveGray,
     onSecondaryContainer: AppColors.white,

@@ -12,20 +12,13 @@ WorkshopSearchObject _$WorkshopSearchObjectFromJson(
   fts: json['fts'] as String?,
   nameGTE: json['nameGTE'] as String?,
   status: json['status'] as String?,
-  startDateGTE: json['startDateGTE'] == null
+  dateGTE: json['dateGTE'] == null
       ? null
-      : DateTime.parse(json['startDateGTE'] as String),
-  startDateLTE: json['startDateLTE'] == null
+      : DateTime.parse(json['dateGTE'] as String),
+  dateLTE: json['dateLTE'] == null
       ? null
-      : DateTime.parse(json['startDateLTE'] as String),
-  endDateGTE: json['endDateGTE'] == null
-      ? null
-      : DateTime.parse(json['endDateGTE'] as String),
-  endDateLTE: json['endDateLTE'] == null
-      ? null
-      : DateTime.parse(json['endDateLTE'] as String),
+      : DateTime.parse(json['dateLTE'] as String),
   price: (json['price'] as num?)?.toDouble(),
-  memberPrice: (json['memberPrice'] as num?)?.toDouble(),
   maxParticipants: (json['maxParticipants'] as num?)?.toInt(),
   participants: (json['participants'] as num?)?.toInt(),
   workshopType: json['workshopType'] as String?,
@@ -42,12 +35,9 @@ Map<String, dynamic> _$WorkshopSearchObjectToJson(
   'fts': instance.fts,
   'nameGTE': instance.nameGTE,
   'status': instance.status,
-  'startDateGTE': instance.startDateGTE?.toIso8601String(),
-  'startDateLTE': instance.startDateLTE?.toIso8601String(),
-  'endDateGTE': instance.endDateGTE?.toIso8601String(),
-  'endDateLTE': instance.endDateLTE?.toIso8601String(),
+  'dateGTE': instance.dateGTE?.toIso8601String(),
+  'dateLTE': instance.dateLTE?.toIso8601String(),
   'price': instance.price,
-  'memberPrice': instance.memberPrice,
   'maxParticipants': instance.maxParticipants,
   'participants': instance.participants,
   'workshopType': instance.workshopType,

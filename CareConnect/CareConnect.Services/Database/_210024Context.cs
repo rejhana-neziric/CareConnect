@@ -534,11 +534,6 @@ public partial class CareConnectContext : DbContext
             entity.HasOne(d => d.Instructor).WithMany(p => p.Sessions)
                 .HasForeignKey(d => d.InstructorId)
                 .HasConstraintName("FK_Sessions_Instructors");
-
-            entity.HasOne(d => d.Workshop).WithMany(p => p.Sessions)
-                .HasForeignKey(d => d.WorkshopId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK_Sessions_Workshops");
         });
 
         modelBuilder.Entity<User>(entity =>
@@ -591,15 +586,13 @@ public partial class CareConnectContext : DbContext
 
             entity.Property(e => e.WorkshopId).HasColumnName("WorkshopID");
             entity.Property(e => e.Description).HasColumnType("text");
-            entity.Property(e => e.EndDate).HasColumnType("datetime");
-            entity.Property(e => e.MemberPrice).HasColumnType("decimal(18, 2)");
             entity.Property(e => e.ModifiedDate)
                 .HasDefaultValueSql("(getdate())")
                 .HasColumnType("datetime");
             entity.Property(e => e.Name).HasMaxLength(200);
             entity.Property(e => e.Notes).HasColumnType("text");
             entity.Property(e => e.Price).HasColumnType("decimal(18, 2)");
-            entity.Property(e => e.StartDate).HasColumnType("datetime");
+            entity.Property(e => e.Date).HasColumnType("datetime");
             entity.Property(e => e.Status).HasMaxLength(50);
             entity.Property(e => e.WorkshopType).HasMaxLength(50);
         });

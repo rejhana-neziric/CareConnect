@@ -43,8 +43,7 @@ class _WorkshopsListScreenState extends State<WorkshopsListScreen> {
     'Not sorted': null,
     'Workshop Name': 'name',
     'Price': 'price',
-    'Member Price': 'memberPrice',
-    'Start Date': 'startDate',
+    'Start Date': 'date',
     'Max Participants': 'maxParticipants',
     'Participants': 'participants',
   };
@@ -91,15 +90,10 @@ class _WorkshopsListScreenState extends State<WorkshopsListScreen> {
       fts: _ftsController.text,
       nameGTE: null,
       status: selectedStatusOption,
-      startDateGTE: null,
-      startDateLTE: null,
-      endDateGTE: null,
-      endDateLTE: null,
+      dateGTE: null,
+      dateLTE: null,
       price: _priceController.text.isNotEmpty
           ? double.tryParse(_priceController.text)
-          : null,
-      memberPrice: _memberPriceController.text.isNotEmpty
-          ? double.tryParse(_memberPriceController.text)
           : null,
       maxParticipants: null,
       participants: null,
@@ -278,28 +272,28 @@ class _WorkshopsListScreenState extends State<WorkshopsListScreen> {
           ),
         ),
         SizedBox(width: 32),
-        ConstrainedBox(
-          constraints: BoxConstraints(maxWidth: 150),
-          child: Container(
-            padding: EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-            decoration: BoxDecoration(
-              border: Border.all(color: Colors.grey),
-              borderRadius: BorderRadius.circular(8),
-              color: colorScheme.surfaceContainerLowest,
-            ),
-            child: TextField(
-              controller: _memberPriceController,
-              decoration: InputDecoration(
-                labelText: "Member Price",
-                border: InputBorder.none,
-                filled: true,
-                fillColor: colorScheme.surfaceContainerLowest,
-              ),
-              onChanged: (value) => loadData(),
-            ),
-          ),
-        ),
-        SizedBox(width: 32),
+        // ConstrainedBox(
+        //   constraints: BoxConstraints(maxWidth: 150),
+        //   child: Container(
+        //     padding: EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+        //     decoration: BoxDecoration(
+        //       border: Border.all(color: Colors.grey),
+        //       borderRadius: BorderRadius.circular(8),
+        //       color: colorScheme.surfaceContainerLowest,
+        //     ),
+        //     child: TextField(
+        //       controller: _memberPriceController,
+        //       decoration: InputDecoration(
+        //         labelText: "Member Price",
+        //         border: InputBorder.none,
+        //         filled: true,
+        //         fillColor: colorScheme.surfaceContainerLowest,
+        //       ),
+        //       onChanged: (value) => loadData(),
+        //     ),
+        //   ),
+        // ),
+        // SizedBox(width: 32),
         ConstrainedBox(
           constraints: BoxConstraints(maxWidth: 250),
           child: Container(
@@ -587,11 +581,7 @@ class _WorkshopCardState extends State<WorkshopCard> {
                           Icon(Icons.date_range),
                           SizedBox(width: 8),
                           Text(
-                            widget.workshop.endDate == null
-                                ? DateFormat(
-                                    'd. M. y.',
-                                  ).format(widget.workshop.startDate)
-                                : "${DateFormat('d. M. y.').format(widget.workshop.startDate)} - ${DateFormat('d. M. y.').format(widget.workshop.endDate!)} ",
+                            DateFormat('d. M. y.').format(widget.workshop.date),
                           ),
                         ],
                       ),
@@ -624,23 +614,23 @@ class _WorkshopCardState extends State<WorkshopCard> {
                                   ),
                                 ),
                               SizedBox(width: 15),
-                              if (widget.workshop.memberPrice != null)
-                                Container(
-                                  decoration: BoxDecoration(
-                                    color: colorScheme.primaryContainer,
+                              // if (widget.workshop.memberPrice != null)
+                              //   Container(
+                              //     decoration: BoxDecoration(
+                              //       color: colorScheme.primaryContainer,
 
-                                    borderRadius: BorderRadius.circular(4),
-                                  ),
-                                  child: Padding(
-                                    padding: const EdgeInsets.all(4.0),
-                                    child: Text(
-                                      "Member price: ${widget.workshop.memberPrice}",
-                                      style: TextStyle(
-                                        fontWeight: FontWeight.w500,
-                                      ),
-                                    ),
-                                  ),
-                                ),
+                              //       borderRadius: BorderRadius.circular(4),
+                              //     ),
+                              //     child: Padding(
+                              //       padding: const EdgeInsets.all(4.0),
+                              //       child: Text(
+                              //         "Member price: ${widget.workshop.memberPrice}",
+                              //         style: TextStyle(
+                              //           fontWeight: FontWeight.w500,
+                              //         ),
+                              //       ),
+                              //     ),
+                              //   ),
                             ],
                           ),
                         ],

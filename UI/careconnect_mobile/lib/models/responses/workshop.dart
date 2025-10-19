@@ -8,10 +8,8 @@ class Workshop {
   final String name;
   final String description;
   final String status;
-  final DateTime startDate;
-  final DateTime? endDate;
+  final DateTime date;
   final double? price;
-  final double? memberPrice;
   final int? maxParticipants;
   final int? participants;
   final String? notes;
@@ -23,10 +21,8 @@ class Workshop {
     required this.name,
     required this.description,
     required this.status,
-    required this.startDate,
-    this.endDate,
+    required this.date,
     this.price,
-    this.memberPrice,
     this.maxParticipants,
     this.participants,
     this.notes,

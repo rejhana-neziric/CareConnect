@@ -148,14 +148,14 @@ class _WorkshopDetailsScreenState extends State<WorkshopDetailsScreen> {
                 Icons.attach_money,
                 colorScheme,
               ),
-              const SizedBox(width: 12),
-              if (widget.workshop.memberPrice != null)
-                _buildPriceCard(
-                  'Member price',
-                  widget.workshop.memberPrice,
-                  Icons.card_membership,
-                  colorScheme,
-                ),
+              // const SizedBox(width: 12),
+              // if (widget.workshop.memberPrice != null)
+              //   _buildPriceCard(
+              //     'Member price',
+              //     widget.workshop.memberPrice,
+              //     Icons.card_membership,
+              //     colorScheme,
+              //   ),
             ],
           ),
           const SizedBox(height: 20),
@@ -234,8 +234,8 @@ class _WorkshopDetailsScreenState extends State<WorkshopDetailsScreen> {
   }
 
   Widget _buildDateTimeCard(ColorScheme colorScheme) {
-    final startDate = widget.workshop.startDate;
-    final endDate = widget.workshop.endDate;
+    final startDate = widget.workshop.date;
+    // final endDate = widget.workshop.endDate;
 
     return Container(
       padding: const EdgeInsets.all(24),
@@ -255,10 +255,10 @@ class _WorkshopDetailsScreenState extends State<WorkshopDetailsScreen> {
       child: Column(
         children: [
           _buildDateInfo(colorScheme, 'Start date', startDate),
-          if (endDate != null) ...[
-            const Divider(height: 32),
-            _buildDateInfo(colorScheme, 'End date', endDate),
-          ],
+          // if (endDate != null) ...[
+          //   const Divider(height: 32),
+          //   _buildDateInfo(colorScheme, 'End date', endDate),
+          // ],
         ],
       ),
     );

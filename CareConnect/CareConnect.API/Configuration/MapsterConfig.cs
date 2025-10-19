@@ -56,7 +56,7 @@ namespace CareConnect.API.Configuration
                 .PreserveReference(true)
                 .IgnoreNullValues(true)
                 .Ignore(dest => dest.ModifiedDate)
-                .Ignore(dest => dest.StartDate); 
+                .Ignore(dest => dest.Date); 
 
             TypeAdapterConfig<SessionUpdateRequest, Session>
                 .NewConfig()

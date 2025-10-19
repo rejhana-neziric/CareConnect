@@ -2,6 +2,7 @@ import 'package:careconnect_admin/core/layouts/master_screen.dart';
 import 'package:careconnect_admin/models/enums/workshop_status.dart';
 import 'package:careconnect_admin/models/responses/search_result.dart';
 import 'package:careconnect_admin/models/responses/workshop.dart';
+import 'package:careconnect_admin/models/workshopML/workshop_prediction.dart';
 import 'package:careconnect_admin/providers/workshop_form_provider.dart';
 import 'package:careconnect_admin/providers/workshop_provider.dart';
 import 'package:careconnect_admin/core/theme/app_colors.dart';
@@ -33,6 +34,10 @@ class _WorkshopDetailsScreenState extends State<WorkshopDetailsScreen> {
   bool isLoading = true;
   Workshop? _currentWorkshop;
 
+  WorkshopPrediction? _prediction;
+  bool isLoadingPrediction = false;
+  String? _errorMessage;
+
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
@@ -60,14 +65,10 @@ class _WorkshopDetailsScreenState extends State<WorkshopDetailsScreen> {
         "status": _currentWorkshop?.status,
         "description": _currentWorkshop?.description,
         "workshopType": _currentWorkshop?.workshopType,
-        "startDate": _currentWorkshop?.startDate,
-        "endDate": _currentWorkshop?.endDate,
+        "date": _currentWorkshop?.date,
         "price": _currentWorkshop?.price == null
             ? ""
             : _currentWorkshop?.price.toString(),
-        "memberPrice": _currentWorkshop?.memberPrice == null
-            ? ""
-            : _currentWorkshop?.memberPrice.toString(),
         "maxParticipants": _currentWorkshop?.maxParticipants == null
             ? ""
             : _currentWorkshop?.maxParticipants.toString(),
@@ -107,13 +108,22 @@ class _WorkshopDetailsScreenState extends State<WorkshopDetailsScreen> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    if (!isLoading) _buildForm(),
-                    const SizedBox(height: 20),
-                    _actionButtons(),
-                  ],
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      if (!isLoading) Center(child: _buildForm()),
+                      const SizedBox(height: 10),
+                      _buildInfoCard(),
+                      if (_prediction != null) ...[
+                        SizedBox(height: 20),
+                        _buildPredictionCard(),
+                      ],
+
+                      const SizedBox(height: 40),
+                      _actionButtons(),
+                    ],
+                  ),
                 ),
               ],
             ),
@@ -158,7 +168,7 @@ class _WorkshopDetailsScreenState extends State<WorkshopDetailsScreen> {
                   children: [
                     if (_currentWorkshop != null)
                       SizedBox(
-                        width: 600,
+                        width: 800,
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.end,
                           children:
@@ -219,7 +229,7 @@ class _WorkshopDetailsScreenState extends State<WorkshopDetailsScreen> {
                       ),
                     SizedBox(height: 10),
                     CustomTextField(
-                      width: 600,
+                      width: 1000,
                       name: 'name',
                       label: 'Workshop Name',
                       validator: (value) => workshopFormProvider
@@ -228,14 +238,14 @@ class _WorkshopDetailsScreenState extends State<WorkshopDetailsScreen> {
                     ),
                     if (_currentWorkshop != null)
                       CustomTextField(
-                        width: 600,
+                        width: 1000,
                         name: 'status',
                         label: 'Workshop Status',
                         required: true,
                         enabled: false,
                       ),
                     CustomTextField(
-                      width: 600,
+                      width: 1000,
                       name: 'description',
                       label: 'Description',
                       maxLines: 5,
@@ -246,55 +256,37 @@ class _WorkshopDetailsScreenState extends State<WorkshopDetailsScreen> {
                     Row(
                       children: [
                         CustomDateField(
-                          width: 290,
-                          name: 'startDate',
-                          label: 'Start Date',
+                          width: 1000,
+                          name: 'date',
+                          label: 'Date',
                           required: true,
-                        ),
-                        SizedBox(width: 20),
-                        CustomDateField(
-                          width: 290,
-                          name: 'endDate',
-                          label: 'End Date',
+                          timePicker: true,
+                          validator: workshopFormProvider.validateDate,
                         ),
                       ],
                     ),
                     Row(
                       children: [
                         CustomTextField(
-                          width: 290,
+                          width: 1000,
                           name: 'price',
                           label: 'Price',
                           validator: workshopFormProvider.validatePrice,
                         ),
-                        SizedBox(width: 20),
-                        CustomTextField(
-                          width: 290,
-                          name: 'memberPrice',
-                          label: 'Member Price',
-                          validator: workshopFormProvider.validatePrice,
-                        ),
                       ],
                     ),
                     Row(
                       children: [
                         CustomTextField(
-                          width: 290,
+                          width: 1000,
                           name: 'maxParticipants',
                           label: 'Max Participants',
-                          validator: workshopFormProvider.validatePrice,
-                        ),
-                        SizedBox(width: 20),
-                        CustomTextField(
-                          width: 290,
-                          name: 'participants',
-                          label: 'Participants',
                           validator: workshopFormProvider.validatePrice,
                         ),
                       ],
                     ),
                     CustomDropdownField<String>(
-                      width: 600,
+                      width: 1000,
                       name: 'workshopType',
                       label: 'Workshop Type',
                       items: [
@@ -311,16 +303,16 @@ class _WorkshopDetailsScreenState extends State<WorkshopDetailsScreen> {
                       required: true,
                     ),
                     CustomTextField(
-                      width: 600,
+                      width: 1000,
                       name: 'notes',
                       label: 'Notes',
                       maxLines: 3,
                       hintText: 'Write a short and clear description...',
-                      validator: workshopFormProvider.validateDescription,
+                      validator: workshopFormProvider.validateNotes,
                     ),
                     if (workshopFormProvider.isUpdate)
                       CustomDateField(
-                        width: 600,
+                        width: 1000,
                         name: 'modifiedDate',
                         label: 'Last Edited',
                         enabled: false,
@@ -336,12 +328,193 @@ class _WorkshopDetailsScreenState extends State<WorkshopDetailsScreen> {
     );
   }
 
+  Widget _buildInfoCard() {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
+    return Card(
+      color: AppColors.dustyRose,
+      child: Padding(
+        padding: EdgeInsets.all(16),
+        child: Row(
+          children: [
+            Icon(Icons.info_outline, color: colorScheme.primary),
+            SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                'Get AI-powered predictions for workshop attendance based on historical data.',
+                style: TextStyle(color: AppColors.darkBackground),
+              ),
+            ),
+            SizedBox(width: 12),
+            PrimaryButton(onPressed: _getPrediction, label: 'Get prediction'),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPredictionCard() {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
+    final utilizationColor = _getPredictionColor(
+      _prediction!.utilizationPercentage ?? 0,
+    );
+
+    return Card(
+      elevation: 4,
+      child: Padding(
+        padding: EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Icon(Icons.insights, size: 32, color: colorScheme.primary),
+                SizedBox(width: 12),
+                Text(
+                  'Prediction Results',
+                  style: Theme.of(context).textTheme.headlineSmall,
+                ),
+              ],
+            ),
+            Divider(height: 24),
+
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: [
+                _buildStatItem(
+                  'Predicted',
+                  '${_prediction!.predictedParticipants.round()}',
+                  Icons.people,
+                  Colors.blue,
+                ),
+                _buildStatItem(
+                  'Capacity',
+                  '${_prediction!.maxParticipants ?? "Not set"}',
+                  Icons.event_seat,
+                  Colors.green,
+                ),
+                _buildStatItem(
+                  'Utilization',
+                  _prediction!.utilizationPercentage != null
+                      ? "${_prediction!.utilizationPercentage!.toStringAsFixed(1)}%"
+                      : "Cannot be calculated, add max paricipant",
+                  Icons.percent,
+                  utilizationColor,
+                ),
+              ],
+            ),
+
+            if (_prediction!.recommendation != null) ...[
+              SizedBox(height: 20),
+              Container(
+                padding: EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: utilizationColor.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: utilizationColor.withOpacity(0.3)),
+                ),
+                child: Row(
+                  children: [
+                    Icon(Icons.lightbulb_outline, color: utilizationColor),
+                    SizedBox(width: 12),
+                    Expanded(
+                      child: Text(
+                        _prediction!.recommendation!,
+                        style: TextStyle(color: utilizationColor),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+
+  Color _getPredictionColor(double utilization) {
+    if (utilization >= 90) return Colors.red;
+    if (utilization >= 70) return Colors.green;
+    if (utilization >= 50) return Colors.orange;
+    return Colors.red;
+  }
+
+  Widget _buildStatItem(
+    String label,
+    String value,
+    IconData icon,
+    Color color,
+  ) {
+    return Column(
+      children: [
+        Icon(icon, size: 32, color: color),
+        SizedBox(height: 8),
+        Text(
+          value,
+          style: TextStyle(
+            fontSize: 24,
+            fontWeight: FontWeight.bold,
+            color: color,
+          ),
+        ),
+        Text(label, style: TextStyle(color: Colors.grey.shade600)),
+      ],
+    );
+  }
+
+  Future<void> _getPrediction() async {
+    final formState = workshopFormProvider.formKey.currentState;
+
+    if (formState == null || !formState.saveAndValidate()) {
+      debugPrint('Form is not valid or state is null');
+      return;
+    }
+    setState(() {
+      isLoadingPrediction = true;
+      _errorMessage = null;
+      _prediction = null;
+    });
+
+    try {
+      final formData = workshopFormProvider.formKey.currentState?.value;
+
+      if (formData == null) {
+        return;
+      }
+
+      final prediction = await workshopProvider.predictForNewWorkshop(
+        name: formData['name'],
+        description: formData['description'],
+        workshopType: formData['workshopType'],
+        date: formData['date'],
+        price: formData['price'] == null || formData['price'].toString().isEmpty
+            ? null
+            : double.tryParse(formData['price']),
+        maxParticipants:
+            formData['maxParticipants'] == null ||
+                formData['maxParticipants'].toString().isEmpty
+            ? null
+            : int.tryParse(formData['maxParticipants']),
+      );
+
+      setState(() => _prediction = prediction);
+    } catch (e) {
+      setState(() => _errorMessage = e.toString());
+    } finally {
+      setState(() => isLoadingPrediction = false);
+    }
+  }
+
   Widget _actionButtons() {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
 
     return SizedBox(
-      width: 600,
+      width: 1000,
       child: Row(
         children: [
           if (_currentWorkshop != null)

@@ -41,9 +41,19 @@ class WorkshopFormProvider
   }
 
   String? validateDescription(String? value) {
-    if (value != null && value.trim().isNotEmpty) {
+    if (value == null || value.trim().isEmpty) return 'This fiels is required.';
+    if (value.trim().isNotEmpty) {
       if (value.length > 300) {
         return 'Description must not exceed 300 characters.';
+      }
+    }
+    return null;
+  }
+
+  String? validateNotes(String? value) {
+    if (value != null && value.trim().isNotEmpty) {
+      if (value.length > 300) {
+        return 'Notes must not exceed 300 characters.';
       }
     }
     return null;
@@ -67,17 +77,11 @@ class WorkshopFormProvider
           name: formData['name'],
           description: formData['description'],
           workshopType: formData['workshopType'],
-          startDate: formData['startDate'],
-          endDate: formData['endDate'],
+          date: formData['date'],
           price:
               formData['price'] == null || formData['price'].toString().isEmpty
               ? null
               : double.tryParse(formData['price']),
-          memberPrice:
-              formData['memberPrice'] == null ||
-                  formData['memberPrice'].toString().isEmpty
-              ? null
-              : double.tryParse(formData['memberPrice']),
           maxParticipants:
               formData['maxParticipants'] == null ||
                   formData['maxParticipants'].toString().isEmpty
@@ -97,17 +101,11 @@ class WorkshopFormProvider
           name: formData['name'],
           description: formData['description'],
           workshopType: formData['workshopType'],
-          startDate: formData['startDate'],
-          endDate: formData['endDate'],
+          date: formData['date'],
           price:
               formData['price'] == null || formData['price'].toString().isEmpty
               ? null
               : double.tryParse(formData['price']),
-          memberPrice:
-              formData['memberPrice'] == null ||
-                  formData['memberPrice'].toString().isEmpty
-              ? null
-              : double.tryParse(formData['memberPrice']),
           maxParticipants:
               formData['maxParticipants'] == null ||
                   formData['maxParticipants'].toString().isEmpty

@@ -46,7 +46,7 @@ namespace CareConnect.Services
                             .Count();
 
                         var workshops = Context.Workshops
-                            .Where(w => w.StartDate.Date == date && w.Status != "Canceled")
+                            .Where(w => w.Date.Date == date && w.Status != "Canceled")
                             .Count();
 
                         if (appointments > 0 || newClients > 0 || workshops > 0)
@@ -78,7 +78,7 @@ namespace CareConnect.Services
                             .Count();
 
                         var workshops = Context.Workshops
-                            .Where(w => w.StartDate >= weekStart && w.StartDate <= weekEnd && w.Status != "Canceled")
+                            .Where(w => w.Date >= weekStart && w.Date <= weekEnd && w.Status != "Canceled")
                             .Count();
 
                         if (appointments > 0 || newClients > 0 || workshops > 0)
@@ -117,7 +117,7 @@ namespace CareConnect.Services
                             .Count();
 
                         var workshops = Context.Workshops
-                            .Where(w => w.StartDate >= monthStart && w.StartDate <= actualEnd && w.Status != "Canceled")
+                            .Where(w => w.Date >= monthStart && w.Date <= actualEnd && w.Status != "Canceled")
                             .Count();
 
                         if (appointments > 0 || newClients > 0 || workshops > 0)
@@ -144,8 +144,8 @@ namespace CareConnect.Services
                             .Where(c => c.CreatedDate >= start && c.CreatedDate <= end)
                             .Select(c => c.CreatedDate.Date))
                         .Union(Context.Workshops
-                            .Where(w => w.StartDate >= start && w.StartDate <= end && w.Status != "Canceled")
-                            .Select(w => w.StartDate.Date))
+                            .Where(w => w.Date >= start && w.Date <= end && w.Status != "Canceled")
+                            .Select(w => w.Date.Date))
                         .Distinct()
                         .OrderBy(d => d)
                         .ToList();
@@ -161,7 +161,7 @@ namespace CareConnect.Services
                             .Count();
 
                         var workshops = Context.Workshops
-                            .Where(w => w.StartDate.Date == date && w.Status != "Canceled")
+                            .Where(w => w.Date.Date == date && w.Status != "Canceled")
                             .Count();
 
                         result.Add(new ReportData
@@ -189,7 +189,7 @@ namespace CareConnect.Services
                 .Count();
 
             var currentWorkshops = Context.Workshops
-                .Where(w => w.StartDate >= start && w.StartDate <= end && w.Status != "Canceled")
+                .Where(w => w.Date >= start && w.Date <= end && w.Status != "Canceled")
                 .Count();
 
             var (prevStart, prevEnd) = PeriodHelper.GetPreviousPeriod(start, end, period);
@@ -203,7 +203,7 @@ namespace CareConnect.Services
                 .Count();
 
             var previousWorkshops = Context.Workshops
-                .Where(w => w.StartDate >= prevStart && w.StartDate <= prevEnd && w.Status != "Canceled")
+                .Where(w => w.Date >= prevStart && w.Date <= prevEnd && w.Status != "Canceled")
                 .Count();
 
             var newClientsChange = PeriodHelper.CalculatePercentageChange(currentNewClients, previousNewClients);
