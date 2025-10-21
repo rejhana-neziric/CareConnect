@@ -9,6 +9,7 @@ import 'package:careconnect_admin/screens/employee_availability/employee_availab
 import 'package:careconnect_admin/screens/employee_list_screen.dart';
 import 'package:careconnect_admin/screens/login_screen.dart';
 import 'package:careconnect_admin/screens/notifications_screen.dart';
+import 'package:careconnect_admin/screens/profile_screen.dart';
 import 'package:careconnect_admin/screens/report_screen.dart';
 import 'package:careconnect_admin/screens/review_list_screen.dart';
 import 'package:careconnect_admin/screens/services_list_screen.dart';
@@ -216,7 +217,7 @@ class _MasterScreenState extends State<MasterScreen> {
                         title: Text("Profile"),
                         onTap: () => Navigator.of(context).push(
                           MaterialPageRoute(
-                            builder: (context) => ClientListScreen(),
+                            builder: (context) => ProfileScreen(),
                           ),
                         ),
                       ),

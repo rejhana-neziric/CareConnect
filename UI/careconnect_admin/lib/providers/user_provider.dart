@@ -60,4 +60,29 @@ class UserProvider extends BaseProvider<User> {
       throw new Exception("Unknown error");
     }
   }
+
+  Future<bool> changePassword({
+    required int userId,
+    required String oldPassword,
+    required String newPassword,
+  }) async {
+    final url = Uri.parse('$baseUrl$endpoint/change-password');
+
+    final body = jsonEncode({
+      'userId': userId,
+      'oldPassword': oldPassword,
+      'newPassword': newPassword,
+    });
+
+    var headers = createHeaders();
+
+    final response = await http.post(url, headers: headers, body: body);
+
+    if (isValidResponse(response)) {
+      var data = jsonDecode(response.body);
+      return data;
+    } else {
+      return false;
+    }
+  }
 }

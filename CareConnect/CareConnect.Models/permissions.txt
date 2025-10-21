@@ -17,5 +17,5 @@ UsersRole: Get, GetById, Insert, Update, Delete
 Service: Get, GetById, Insert, Update, Delete, GetStatistics, GetEmployeesForService
 ServiceType: Get, GetById, Insert, Update, Delete
 Session: Get, GetById, Insert, Update, Delete
-User: Login, GetPermission
+User: Login, GetPermission, Get, GetById, Insert, Update, Delete, ChangePassword
 Workshop: Get, GetById, Insert, Update, Delete, Publish, Cancel, Close, AllowedActions, GetStatistics, Enroll, GetWorkshopEnrollmentStatus, TrainModel, PredictForNewWorkshop

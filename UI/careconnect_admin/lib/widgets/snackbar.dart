@@ -44,7 +44,7 @@ class CustomSnackbar {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         behavior: SnackBarBehavior.floating,
-        backgroundColor: Colors.white, //bgColor,
+        backgroundColor: bgColor,
         elevation: elevation,
         duration: duration,
         shape: RoundedRectangleBorder(
@@ -52,10 +52,10 @@ class CustomSnackbar {
         ),
         content: Row(
           children: [
-            Icon(icon ?? defaultIcon, color: bgColor),
+            Icon(icon ?? defaultIcon, color: Colors.white),
             const SizedBox(width: 12),
             Expanded(
-              child: Text(message, style: TextStyle(color: bgColor)),
+              child: Text(message, style: TextStyle(color: Colors.white)),
             ),
           ],
         ),

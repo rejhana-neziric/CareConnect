@@ -18,6 +18,7 @@ import 'package:careconnect_admin/providers/service_form_provider.dart';
 import 'package:careconnect_admin/providers/service_provider.dart';
 import 'package:careconnect_admin/providers/service_type_from_provider.dart';
 import 'package:careconnect_admin/providers/service_type_provider.dart';
+import 'package:careconnect_admin/providers/user_form_provider.dart';
 import 'package:careconnect_admin/providers/user_provider.dart';
 import 'package:careconnect_admin/providers/workshop_form_provider.dart';
 import 'package:careconnect_admin/providers/workshop_provider.dart';
@@ -87,6 +88,9 @@ void main() async {
         ),
         ChangeNotifierProvider<ChildProvider>(create: (_) => ChildProvider()),
         ChangeNotifierProvider<UserProvider>(create: (_) => UserProvider()),
+        ChangeNotifierProvider<UserFormProvider>(
+          create: (_) => UserFormProvider(),
+        ),
         ChangeNotifierProvider<AuthProvider>(create: (_) => AuthProvider()),
         ChangeNotifierProvider<ReportProvider>(create: (_) => ReportProvider()),
         ChangeNotifierProvider(

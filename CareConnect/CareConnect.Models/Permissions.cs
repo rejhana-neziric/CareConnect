@@ -182,6 +182,12 @@ public static class Permissions
     {
         public const string Login = "Permissions.User.Login";
         public const string GetPermission = "Permissions.User.GetPermission";
+        public const string Get = "Permissions.User.Get";
+        public const string GetById = "Permissions.User.GetById";
+        public const string Insert = "Permissions.User.Insert";
+        public const string Update = "Permissions.User.Update";
+        public const string Delete = "Permissions.User.Delete";
+        public const string ChangePassword = "Permissions.User.ChangePassword";
     }
     public static class Workshop
     {

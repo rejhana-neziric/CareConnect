@@ -125,7 +125,10 @@ class CustomDateField extends StatelessWidget {
                                       'dd. MM. yyyy.',
                                     ).format(field.value!)
                             : '',
-                        style: const TextStyle(fontSize: 16),
+                        style: TextStyle(
+                          fontSize: 16,
+                          color: enabled ? colorScheme.onSurface : Colors.grey,
+                        ),
                       ),
                     ),
                   ),

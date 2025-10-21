@@ -50,8 +50,6 @@ abstract class BaseProvider<T> with ChangeNotifier {
     if (isValidResponse(response)) {
       var data = jsonDecode(response.body);
 
-      print('Decoded data: $data');
-
       var result = SearchResult<T>();
 
       result.totalCount = data['totalCount'];
@@ -85,10 +83,7 @@ abstract class BaseProvider<T> with ChangeNotifier {
     var response = await http.get(uri, headers: headers);
 
     if (isValidResponse(response)) {
-      print("Response body: '${response.body}'");
       var data = jsonDecode(response.body);
-
-      print('Decoded data: $data');
 
       T result = fromJson(data);
 
@@ -181,7 +176,6 @@ abstract class BaseProvider<T> with ChangeNotifier {
     } else if (response.statusCode == 401) {
       throw new Exception("Unauthorized");
     } else {
-      print(response.body);
       throw new Exception("Something bad happened please try again");
     }
   }

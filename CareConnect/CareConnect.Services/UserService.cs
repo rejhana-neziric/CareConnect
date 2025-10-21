@@ -1,25 +1,23 @@
-﻿using CareConnect.Models.Responses;
+﻿using CareConnect.Models.Requests;
+using CareConnect.Models.Responses;
+using CareConnect.Models.SearchObjects;
 using CareConnect.Services.Database;
+using CareConnect.Services.Helpers;
 using MapsterMapper;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace CareConnect.Services
 {
-    public class UserService : IUserService
+    public class UserService : BaseCRUDService<Models.Responses.User, BaseSearchObject<BaseAdditionalSearchRequestData>, BaseAdditionalSearchRequestData, Database.User, UserInsertRequest, UserUpdateRequest>, IUserService
     {
-        public CareConnectContext Context { get; set; }
-
-        public IMapper Mapper { get; }
-
-        public UserService(CareConnectContext context, IMapper mapper)
+        public UserService(CareConnectContext context, IMapper mapper) : base(context, mapper)
         {
-            Context = context; 
-            Mapper = mapper;    
         }
 
         public Models.Responses.User Login(string username, string password)
@@ -54,6 +52,39 @@ namespace CareConnect.Services
             }
 
             return permissions;
+        }
+
+        public override void BeforeInsert(UserInsertRequest request, Database.User entity)
+        {
+            if (request.Password != request.ConfirmationPassword)
+                throw new Exception("Password and confirmation password must be same.");
+
+            entity.PasswordSalt = SecurityHelper.GenerateSalt();
+            entity.PasswordHash = SecurityHelper.GenerateHash(entity.PasswordSalt, request.Password);
+
+            base.BeforeInsert(request, entity);
+        }
+
+        public bool ChangePassword(ChangePasswordRequest request)
+        {
+            var user = Context.Users.FirstOrDefault(x => x.UserId == request.UserId); 
+
+            if (user == null) return false;
+
+            var oldHash = SecurityHelper.GenerateHash(user.PasswordSalt, request.OldPassword);
+
+            if (oldHash != user.PasswordHash) return false; 
+
+            var newSalt = SecurityHelper.GenerateSalt();
+            var newHash = SecurityHelper.GenerateHash(newSalt, request.NewPassword);
+
+            user.PasswordSalt = newSalt;
+            user.PasswordHash = newHash;
+            user.ModifiedDate = DateTime.Now;
+
+            Context.SaveChanges();
+
+            return true;
         }
     }
 }

@@ -15,6 +15,7 @@ class User {
   final String? address;
   final bool status;
   final List<String> roles;
+
   //final List<UserRoleResponse> usersRoles;
 
   User({
