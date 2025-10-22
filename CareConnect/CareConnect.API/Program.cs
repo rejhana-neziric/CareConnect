@@ -57,6 +57,7 @@ builder.Services.AddTransient<IParticipantService, ParticipantService>();
 builder.Services.AddTransient<IPaymentService, PaymentService>();
 builder.Services.AddTransient<IReviewService, CareConnect.Services.ReviewService>();
 builder.Services.AddTransient<IRoleService, RoleService>();
+builder.Services.AddTransient<IRolePermissionsService, RolePermissionsService>();
 builder.Services.AddTransient<IUsersRoleService, UsersRoleService>();
 builder.Services.AddTransient<ISessionService, SessionService>();
 builder.Services.AddTransient<IServiceService, ServiceService>();

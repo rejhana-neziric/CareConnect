@@ -12,6 +12,7 @@ import 'package:careconnect_admin/screens/notifications_screen.dart';
 import 'package:careconnect_admin/screens/profile_screen.dart';
 import 'package:careconnect_admin/screens/report_screen.dart';
 import 'package:careconnect_admin/screens/review_list_screen.dart';
+import 'package:careconnect_admin/screens/role_permissions_screen.dart';
 import 'package:careconnect_admin/screens/services_list_screen.dart';
 import 'package:careconnect_admin/screens/workshops_list_screen.dart';
 import 'package:careconnect_admin/core/theme/theme_notifier.dart';
@@ -212,15 +213,6 @@ class _MasterScreenState extends State<MasterScreen> {
                           );
                         },
                       ),
-                      ListTile(
-                        leading: Icon(Icons.account_circle),
-                        title: Text("Profile"),
-                        onTap: () => Navigator.of(context).push(
-                          MaterialPageRoute(
-                            builder: (context) => ProfileScreen(),
-                          ),
-                        ),
-                      ),
 
                       ListTile(
                         leading: Icon(Icons.notifications),
@@ -233,9 +225,13 @@ class _MasterScreenState extends State<MasterScreen> {
                       ),
 
                       ListTile(
-                        leading: Icon(Icons.logout_outlined),
-                        title: Text("Logout"),
-                        onTap: () => _handleLogout(),
+                        leading: Icon(Icons.security),
+                        title: Text("Roles and Permission"),
+                        onTap: () => Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (context) => RolePermissionsScreen(),
+                          ),
+                        ),
                       ),
 
                       Padding(
@@ -246,6 +242,22 @@ class _MasterScreenState extends State<MasterScreen> {
                         child: Divider(
                           color: colorScheme.outline.withOpacity(0.3),
                         ),
+                      ),
+
+                      ListTile(
+                        leading: Icon(Icons.account_circle),
+                        title: Text("Profile"),
+                        onTap: () => Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (context) => ProfileScreen(),
+                          ),
+                        ),
+                      ),
+
+                      ListTile(
+                        leading: Icon(Icons.logout_outlined),
+                        title: Text("Logout"),
+                        onTap: () => _handleLogout(),
                       ),
 
                       _buildThemeToggleTile(context, themeNotifier),

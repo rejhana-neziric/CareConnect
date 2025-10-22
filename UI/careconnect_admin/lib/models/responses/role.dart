@@ -7,8 +7,16 @@ class Role {
   final int roleId;
   final String name;
   final String? description;
+  final int userCount;
+  final List<int> permissionIds;
 
-  Role({required this.roleId, required this.name, this.description});
+  Role({
+    required this.roleId,
+    required this.name,
+    this.description,
+    required this.userCount,
+    required this.permissionIds,
+  });
 
   factory Role.fromJson(Map<String, dynamic> json) => _$RoleFromJson(json);
 

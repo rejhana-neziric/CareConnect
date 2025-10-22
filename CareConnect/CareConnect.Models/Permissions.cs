@@ -144,6 +144,14 @@ public static class Permissions
         public const string Delete = "Permissions.Role.Delete";
         public const string AssignPermission = "Permissions.Role.AssignPermission";
     }
+    public static class RolePermissions
+    {
+        public const string GetAllRoles = "Permissions.RolePermissions.GetAllRoles";
+        public const string GetAllPermissions = "Permissions.RolePermissions.GetAllPermissions";
+        public const string GetGroupedPermissions = "Permissions.RolePermissions.GetGroupedPermissions";
+        public const string GetRolePermissions = "Permissions.RolePermissions.GetRolePermissions";
+        public const string UpdateRolePermissions = "Permissions.RolePermissions.UpdateRolePermissions";
+    }
     public static class UsersRole
     {
         public const string Get = "Permissions.UsersRole.Get";

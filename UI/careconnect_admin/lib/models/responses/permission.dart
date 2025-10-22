@@ -6,8 +6,17 @@ part 'permission.g.dart';
 class Permission {
   final int permissionId;
   final String name;
+  final String category;
+  final String action;
+  final String resource;
 
-  Permission({required this.permissionId, required this.name});
+  Permission({
+    required this.permissionId,
+    required this.name,
+    required this.category,
+    required this.action,
+    required this.resource,
+  });
 
   factory Permission.fromJson(Map<String, dynamic> json) =>
       _$PermissionFromJson(json);

@@ -7,11 +7,13 @@ namespace CareConnect.Models.Responses
     public class Role
     {
         public int RoleId { get; set; }
-
+        
         public string Name { get; set; } = null!;
-
+        
         public string? Description { get; set; }
-
-        public virtual ICollection<Permission> Permissions { get; set; } = new List<Permission>();
+        
+        public int UserCount { get; set; }
+        
+        public List<int> PermissionIds { get; set; } = new List<int>();
     }
 }
