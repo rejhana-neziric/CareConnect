@@ -1,12 +1,14 @@
 import 'package:careconnect_admin/core/layouts/master_screen.dart';
 import 'package:careconnect_admin/models/responses/employee.dart';
+import 'package:careconnect_admin/models/responses/role.dart';
 import 'package:careconnect_admin/models/responses/search_result.dart';
 import 'package:careconnect_admin/providers/employee_form_provider.dart';
 import 'package:careconnect_admin/providers/employee_provider.dart';
 import 'package:careconnect_admin/core/theme/app_colors.dart';
 import 'package:careconnect_admin/core/utils.dart';
+import 'package:careconnect_admin/providers/role_permissions_provider.dart';
+import 'package:careconnect_admin/providers/user_provider.dart';
 import 'package:careconnect_admin/widgets/confirm_dialog.dart';
-import 'package:careconnect_admin/widgets/custom_checkbox_field.dart';
 import 'package:careconnect_admin/widgets/custom_date_field.dart';
 import 'package:careconnect_admin/widgets/custom_dropdown_field.dart';
 import 'package:careconnect_admin/widgets/custom_text_field.dart';
@@ -28,9 +30,16 @@ class EmployeeDetailsScreen extends StatefulWidget {
 class _EmployeeDetailsScreenState extends State<EmployeeDetailsScreen> {
   Map<String, dynamic> _initialValue = {};
   SearchResult<Employee>? result;
+  List<Role> userRoles = [];
+  List<Role> roles = [];
   late EmployeeProvider employeeProvider;
   late EmployeeFormProvider employeeFormProvider;
+  late UserProvider userProvider;
+  late RolePermissionsProvider rolePermissionsProvider;
+
   bool isLoading = true;
+
+  bool isAccessAllowed = false;
 
   @override
   void didChangeDependencies() {
@@ -43,6 +52,12 @@ class _EmployeeDetailsScreenState extends State<EmployeeDetailsScreen> {
 
     employeeProvider = context.read<EmployeeProvider>();
     employeeFormProvider = context.read<EmployeeFormProvider>();
+    userProvider = context.read<UserProvider>();
+    rolePermissionsProvider = context.read<RolePermissionsProvider>();
+
+    if (widget.employee != null) {
+      getRoles();
+    }
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       initForm();
@@ -72,6 +87,8 @@ class _EmployeeDetailsScreenState extends State<EmployeeDetailsScreen> {
         "birthDate": widget.employee?.user?.birthDate,
         "gender": widget.employee?.user?.gender,
       });
+
+      isAccessAllowed = widget.employee!.user!.status;
     }
 
     setState(() {
@@ -90,10 +107,30 @@ class _EmployeeDetailsScreenState extends State<EmployeeDetailsScreen> {
     setState(() {});
   }
 
+  void getRoles() async {
+    setState(() {
+      isLoading = true;
+    });
+
+    final response = await userProvider.getRoles(
+      userId: widget.employee!.user!.userId,
+    );
+
+    final allRoles = await rolePermissionsProvider.getRoles();
+
+    userRoles = response;
+    roles = allRoles;
+
+    setState(() {
+      isLoading = false;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return MasterScreen(
       "Employee Details",
+      currentScreen: "Employees",
       SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Center(
@@ -234,19 +271,14 @@ class _EmployeeDetailsScreenState extends State<EmployeeDetailsScreen> {
                         password,
                       );
                     },
-                    enabled: !employeeFormProvider.isUpdate,
                   ),
-                  if (employeeFormProvider.isUpdate)
-                    CustomCheckboxField(
-                      width: 400,
-                      name: 'status',
-                      label: "Is Employee Active",
-                    ),
                 ],
               ),
             ],
           ),
+
           const SizedBox(width: 40, height: 80),
+
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -277,6 +309,7 @@ class _EmployeeDetailsScreenState extends State<EmployeeDetailsScreen> {
                 ],
               ),
               const SizedBox(width: 60),
+
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -306,9 +339,161 @@ class _EmployeeDetailsScreenState extends State<EmployeeDetailsScreen> {
               ),
             ],
           ),
+          const SizedBox(width: 40, height: 40),
+
+          if (employeeFormProvider.isUpdate)
+            Row(
+              children: [
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Checkbox(
+                          value: isAccessAllowed,
+                          onChanged: (value) {
+                            setState(() {
+                              isAccessAllowed = value!;
+                            });
+                          },
+                        ),
+                        const Text(
+                          'Allow access to application',
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 20,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      'If unchecked, the user will not be able to log in. This action is reversible and can be undone at any time.',
+                      style: TextStyle(
+                        fontSize: 16,
+                        color: colorScheme.onSurface,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+
+          if (widget.employee != null) ...[
+            const SizedBox(width: 40, height: 40),
+
+            buildSectionTitle("Roles", colorScheme),
+
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                ...userRoles.map((role) {
+                  return InputChip(
+                    label: Text(role.name),
+                    onDeleted: () async {
+                      final shouldProceed = await CustomConfirmDialog.show(
+                        context,
+                        icon: Icons.error,
+                        title: 'Remove role',
+                        content:
+                            'Are you sure you want to remove from this user?',
+                        confirmText: 'Remove',
+                        cancelText: 'Cancel',
+                      );
+
+                      if (shouldProceed != true) return;
+
+                      if (shouldProceed == true) {
+                        final success = await userProvider.removeRole(
+                          widget.employee!.user!.userId,
+                          role.roleId,
+                        );
+                        if (success) {
+                          setState(() {
+                            getRoles();
+                          });
+                          CustomSnackbar.show(
+                            context,
+                            message: 'Role removed successfully.',
+                            type: SnackbarType.success,
+                          );
+                        } else {
+                          CustomSnackbar.show(
+                            context,
+                            message: 'Failed to remove role. Please try again.',
+                            type: SnackbarType.error,
+                          );
+                        }
+                      }
+                    },
+                    deleteIcon: const Icon(Icons.close, size: 18),
+                    backgroundColor: colorScheme.surfaceContainerLowest,
+                  );
+                }),
+
+                PrimaryButton(
+                  onPressed: () async {
+                    await _showAddRoleDialog(context);
+                  },
+                  label: 'Add Role',
+                  icon: Icons.add,
+                ),
+              ],
+            ),
+
+            const SizedBox(width: 40, height: 80),
+          ],
         ],
       ),
     );
+  }
+
+  Future<void> _showAddRoleDialog(BuildContext context) async {
+    final selectedRoleId = await showDialog<int>(
+      context: context,
+      builder: (ctx) {
+        return AlertDialog(
+          title: const Text('Assign Role'),
+          content: SizedBox(
+            width: 400,
+            child: DropdownButtonFormField<int>(
+              decoration: const InputDecoration(labelText: 'Select Role'),
+              items: roles.map((r) {
+                return DropdownMenuItem<int>(
+                  value: r.roleId,
+                  child: Text(r.name),
+                );
+              }).toList(),
+              onChanged: (value) {
+                Navigator.pop(ctx, value);
+              },
+            ),
+          ),
+        );
+      },
+    );
+
+    if (selectedRoleId != null && widget.employee != null) {
+      final success = await userProvider.addRole(
+        widget.employee!.user!.userId,
+        selectedRoleId,
+      );
+      if (success) {
+        CustomSnackbar.show(
+          context,
+          message: 'Role successfully added.',
+          type: SnackbarType.success,
+        );
+        getRoles();
+      } else {
+        CustomSnackbar.show(
+          context,
+          message: 'Failed to add role. Please try again.',
+          type: SnackbarType.error,
+        );
+      }
+    }
   }
 
   Widget _actionButtons() {
@@ -407,10 +592,11 @@ class _EmployeeDetailsScreenState extends State<EmployeeDetailsScreen> {
 
     if (shouldProceed != true) return;
 
-    final success = await employeeFormProvider.saveOrUpdate(
+    final success = await employeeFormProvider.saveOrUpdateCustom(
       employeeFormProvider,
       employeeProvider,
       id,
+      isAccessAllowed,
     );
 
     if (!mounted) return;

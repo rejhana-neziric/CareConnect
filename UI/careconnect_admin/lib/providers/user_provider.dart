@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:careconnect_admin/models/auth_credentials.dart';
+import 'package:careconnect_admin/models/responses/role.dart';
 import 'package:careconnect_admin/models/responses/user.dart';
 import 'package:careconnect_admin/providers/base_provider.dart';
 import 'package:http/http.dart' as http;
@@ -46,15 +47,11 @@ class UserProvider extends BaseProvider<User> {
 
       List<String> result = [];
 
-      // result = data;
-
       for (var item in data) {
         result.add(item as String);
-        // _items = result;
       }
 
       notifyListeners();
-      print(result);
       return result;
     } else {
       throw new Exception("Unknown error");
@@ -81,6 +78,50 @@ class UserProvider extends BaseProvider<User> {
     if (isValidResponse(response)) {
       var data = jsonDecode(response.body);
       return data;
+    } else {
+      return false;
+    }
+  }
+
+  Future<List<Role>> getRoles({required int userId}) async {
+    final url = Uri.parse('$baseUrl$endpoint/$userId/roles');
+
+    var headers = createHeaders();
+
+    final response = await http.get(url, headers: headers);
+
+    if (isValidResponse(response)) {
+      final List<dynamic> data = jsonDecode(response.body);
+
+      final roles = data.map((item) => Role.fromJson(item)).toList();
+
+      return roles;
+    } else {
+      throw new Exception("Unknown error");
+    }
+  }
+
+  Future<bool> addRole(int userId, int roleId) async {
+    final url = Uri.parse('$baseUrl$endpoint/$userId/roles/$roleId');
+    final headers = createHeaders();
+
+    final response = await http.post(url, headers: headers);
+
+    if (isValidResponse(response)) {
+      return true;
+    } else {
+      return false;
+    }
+  }
+
+  Future<bool> removeRole(int userId, int roleId) async {
+    final url = Uri.parse('$baseUrl$endpoint/$userId/roles/$roleId');
+    final headers = createHeaders();
+
+    final response = await http.delete(url, headers: headers);
+
+    if (isValidResponse(response)) {
+      return true;
     } else {
       return false;
     }

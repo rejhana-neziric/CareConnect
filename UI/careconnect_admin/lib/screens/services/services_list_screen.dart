@@ -7,13 +7,14 @@ import 'package:careconnect_admin/providers/service_form_provider.dart';
 import 'package:careconnect_admin/providers/service_provider.dart';
 import 'package:careconnect_admin/providers/service_type_from_provider.dart';
 import 'package:careconnect_admin/providers/service_type_provider.dart';
-import 'package:careconnect_admin/screens/service_details_screen.dart';
+import 'package:careconnect_admin/screens/services/service_details_screen.dart';
 import 'package:careconnect_admin/core/theme/app_colors.dart';
 import 'package:careconnect_admin/widgets/confirm_dialog.dart';
 import 'package:careconnect_admin/widgets/custom_dropdown_fliter.dart';
 import 'package:careconnect_admin/widgets/custom_text_field.dart';
 import 'package:careconnect_admin/widgets/no_results.dart';
 import 'package:careconnect_admin/widgets/primary_button.dart';
+import 'package:careconnect_admin/widgets/shimmer_stat_card.dart';
 import 'package:careconnect_admin/widgets/snackbar.dart';
 import 'package:careconnect_admin/widgets/stat_card.dart';
 import 'package:flutter/material.dart';
@@ -32,6 +33,8 @@ class _ServicesListScreenState extends State<ServicesListScreen> {
   late ServiceProvider serviceProvider;
   late ServiceTypeProvider serviceTypeProvider;
   late ServiceTypeFromProvider serviceTypeFromProvider;
+
+  bool isLoading = false;
 
   SearchResult<Service>? services;
   int currentPage = 0;
@@ -82,6 +85,9 @@ class _ServicesListScreenState extends State<ServicesListScreen> {
   }
 
   Future<SearchResult<Service>?> loadData() async {
+    setState(() {
+      isLoading = true;
+    });
     final serviceProvider = Provider.of<ServiceProvider>(
       context,
       listen: false,
@@ -105,7 +111,9 @@ class _ServicesListScreenState extends State<ServicesListScreen> {
     loadServiceTypes();
 
     if (mounted) {
-      setState(() {});
+      setState(() {
+        isLoading = false;
+      });
     }
 
     return services;
@@ -139,6 +147,7 @@ class _ServicesListScreenState extends State<ServicesListScreen> {
 
     return MasterScreen(
       "Services",
+      currentScreen: "Services",
       Row(
         children: [
           Expanded(
@@ -348,34 +357,39 @@ class _ServicesListScreenState extends State<ServicesListScreen> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          statCard(
-            context,
-            'Total Services',
-            statistics?.totalServices,
-            Icons.groups,
-            Colors.teal,
-            // width: 300,
-          ),
+          isLoading || statistics?.totalServices == null
+              ? shimmerStatCard(context)
+              : statCard(
+                  context,
+                  'Total Services',
+                  statistics?.totalServices,
+                  Icons.groups,
+                  Colors.teal,
+                ),
+
           SizedBox(width: 20),
-          statCard(
-            context,
-            'Average Price',
-            statistics?.averagePrice == null
-                ? 0
-                : statistics?.averagePrice?.round(),
-            Icons.attach_money,
-            Colors.green,
-          ),
+
+          isLoading || statistics?.averagePrice == null
+              ? shimmerStatCard(context)
+              : statCard(
+                  context,
+                  'Average Price',
+                  statistics?.averagePrice?.round(),
+                  Icons.attach_money,
+                  Colors.green,
+                ),
+
           SizedBox(width: 20),
-          statCard(
-            context,
-            "Average Member Price",
-            statistics?.averageMemberPrice == null
-                ? 0
-                : statistics?.averageMemberPrice?.round(),
-            Icons.attach_money,
-            Colors.orange,
-          ),
+
+          isLoading || statistics?.averageMemberPrice == null
+              ? shimmerStatCard(context)
+              : statCard(
+                  context,
+                  "Average Member Price",
+                  statistics?.averageMemberPrice?.round(),
+                  Icons.attach_money,
+                  Colors.orange,
+                ),
         ],
       ),
     );
@@ -443,7 +457,7 @@ class _ServicesListScreenState extends State<ServicesListScreen> {
         SizedBox(width: 8),
         SizedBox(
           width: 280,
-          child: CustomDropdownFliter(
+          child: CustomDropdownFilter(
             selectedValue: selectedServiceType?.name,
             options: serviceTypeOptions,
             name: "Service Type: ",
@@ -466,7 +480,7 @@ class _ServicesListScreenState extends State<ServicesListScreen> {
           child: Container(
             color: colorScheme.surfaceContainerLowest,
             width: 180,
-            child: CustomDropdownFliter(
+            child: CustomDropdownFilter(
               selectedValue: selectedIsActiveOption,
               options: isActiveOptions,
               name: "Status: ",
@@ -492,7 +506,7 @@ class _ServicesListScreenState extends State<ServicesListScreen> {
           child: Container(
             color: colorScheme.surfaceContainerLowest,
             width: 200,
-            child: CustomDropdownFliter(
+            child: CustomDropdownFilter(
               selectedValue: selectedSortingOption,
               options: sortingOptions,
               name: "Sort by: ",
@@ -674,9 +688,13 @@ class _ServicesListScreenState extends State<ServicesListScreen> {
   }
 
   Map<String, dynamic> _initialValue = {};
-  bool isLoading = true;
+  // bool isLoading = true;
 
   Future<void> initServiceTypeForm(ServiceType? serviceType) async {
+    setState(() {
+      isLoading = true;
+    });
+
     if (serviceType == null) {
       serviceTypeFromProvider.setForInsert();
     } else {
@@ -699,7 +717,9 @@ class _ServicesListScreenState extends State<ServicesListScreen> {
       }
     });
 
-    setState(() {});
+    setState(() {
+      isLoading = false;
+    });
   }
 
   Future<bool> deleteServiceType(ServiceType serviceType) async {

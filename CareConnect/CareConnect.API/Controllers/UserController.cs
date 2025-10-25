@@ -39,5 +39,39 @@ namespace CareConnect.API.Controllers
         {
             return (_service as IUserService)!.ChangePassword(request); 
         }
+
+        [HttpGet("{userId}/roles")]
+        [PermissionAuthorize("GetRolesForUser")]
+        public async Task<IActionResult> GetRolesForUser(int userId)
+        { 
+
+            var roles = await (_service as IUserService)!.GetRolesForUser(userId);    
+
+            return Ok(roles);
+        }
+
+        [HttpPost("{userId}/roles/{roleId}")]
+        [PermissionAuthorize("AddRoleToUser")]
+        public async Task<IActionResult> AddRoleToUser(int userId, int roleId)
+        {
+            var result = await (_service as IUserService)!.AddRoleToUserAsync(userId, roleId);
+
+            if (!result.Success)
+                return BadRequest(new { message = result.Message });
+
+            return Ok(result.Message);
+        }
+
+        [HttpDelete("{userId}/roles/{roleId}")]
+        [PermissionAuthorize("RemoveRoleFromUser")]
+        public async Task<IActionResult> RemoveRoleFromUser(int userId, int roleId)
+        {
+            var result = await (_service as IUserService)!.RemoveRoleFromUserAsync(userId, roleId);
+
+            if (!result.Success)
+                return BadRequest(new { message = result.Message });
+
+            return Ok(new { message = result.Message });
+        }
     }
 }

@@ -100,6 +100,7 @@ class _WorkshopDetailsScreenState extends State<WorkshopDetailsScreen> {
   Widget build(BuildContext context) {
     return MasterScreen(
       "Workshop Details",
+      currentScreen: "Workshops",
       SingleChildScrollView(
         padding: const EdgeInsets.all(64),
         child: Center(

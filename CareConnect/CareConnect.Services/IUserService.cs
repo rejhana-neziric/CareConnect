@@ -15,5 +15,11 @@ namespace CareConnect.Services
         public List<string> GetPermissions(string username);
 
         public bool ChangePassword(ChangePasswordRequest request);
+
+        public Task<List<Models.Responses.Role>?> GetRolesForUser(int userId);
+
+        public Task<(bool Success, string Message)> AddRoleToUserAsync(int userId, int roleId);
+
+        Task<(bool Success, string Message)> RemoveRoleFromUserAsync(int userId, int roleId);
     }
 }

@@ -17,6 +17,7 @@ class Appointment {
   final String? description;
   final String? note;
   final String? stateMachine;
+  final bool paid;
   final DateTime modifiedDate;
   final AttendanceStatus? attendanceStatus;
   final EmployeeAvailability? employeeAvailability;
@@ -33,6 +34,7 @@ class Appointment {
     this.description,
     this.note,
     this.stateMachine,
+    required this.paid,
     required this.modifiedDate,
     this.attendanceStatus,
     this.employeeAvailability,

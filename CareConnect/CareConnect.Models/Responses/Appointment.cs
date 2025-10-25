@@ -1,4 +1,5 @@
 ﻿using System;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace CareConnect.Models.Responses
 {
@@ -25,6 +26,11 @@ namespace CareConnect.Models.Responses
         public DateTime ModifiedDate { get; set; }
 
         public string? StateMachine { get; set; }
+
+        public string? PaymentIntentId { get; set; }
+
+        [NotMapped] 
+        public bool Paid => PaymentIntentId != null;
 
         public virtual AttendanceStatus AttendanceStatus { get; set; } = null!;
 

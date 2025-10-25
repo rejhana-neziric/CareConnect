@@ -126,6 +126,7 @@ class _ReviewListScreenState extends State<ReviewListScreen> {
           ],
         ),
       ),
+      currentScreen: "Reviews",
     );
   }
 
@@ -188,7 +189,7 @@ class _ReviewListScreenState extends State<ReviewListScreen> {
               // Visibility Dropdown
               SizedBox(
                 width: 180,
-                child: CustomDropdownFliter(
+                child: CustomDropdownFilter(
                   selectedValue: selectedVisibilityOption,
                   options: visibilityOptions,
                   name: "Visibility: ",
@@ -209,7 +210,7 @@ class _ReviewListScreenState extends State<ReviewListScreen> {
               //Sort By Dropdown
               SizedBox(
                 width: 220,
-                child: CustomDropdownFliter(
+                child: CustomDropdownFilter(
                   selectedValue: selectedSortingOption,
                   options: sortingOptions,
                   name: "Sort by: ",

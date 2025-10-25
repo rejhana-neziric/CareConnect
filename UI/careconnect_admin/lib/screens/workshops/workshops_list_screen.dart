@@ -5,15 +5,17 @@ import 'package:careconnect_admin/models/responses/workshop.dart';
 import 'package:careconnect_admin/models/responses/workshop_statistics.dart';
 import 'package:careconnect_admin/providers/workshop_form_provider.dart';
 import 'package:careconnect_admin/providers/workshop_provider.dart';
-import 'package:careconnect_admin/screens/workshop_details_screen.dart';
+import 'package:careconnect_admin/screens/workshops/workshop_details_screen.dart';
 import 'package:careconnect_admin/core/theme/app_colors.dart';
 import 'package:careconnect_admin/widgets/confirm_dialog.dart';
 import 'package:careconnect_admin/widgets/custom_dropdown_fliter.dart';
 import 'package:careconnect_admin/widgets/no_results.dart';
 import 'package:careconnect_admin/widgets/primary_button.dart';
+import 'package:careconnect_admin/widgets/shimmer_stat_card.dart';
 import 'package:careconnect_admin/widgets/snackbar.dart';
 import 'package:careconnect_admin/widgets/stat_card.dart';
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
@@ -29,6 +31,7 @@ class _WorkshopsListScreenState extends State<WorkshopsListScreen> {
 
   SearchResult<Workshop>? workshops;
   int currentPage = 0;
+  bool isLoading = false;
 
   final _ftsController = TextEditingController();
   final _priceController = TextEditingController();
@@ -81,6 +84,10 @@ class _WorkshopsListScreenState extends State<WorkshopsListScreen> {
   }
 
   Future<SearchResult<Workshop>?> loadData() async {
+    setState(() {
+      isLoading = true;
+    });
+
     final workshopProvider = Provider.of<WorkshopProvider>(
       context,
       listen: false,
@@ -107,7 +114,9 @@ class _WorkshopsListScreenState extends State<WorkshopsListScreen> {
     loadStats();
 
     if (mounted) {
-      setState(() {});
+      setState(() {
+        isLoading = false;
+      });
     }
 
     return workshops;
@@ -134,6 +143,7 @@ class _WorkshopsListScreenState extends State<WorkshopsListScreen> {
 
     return MasterScreen(
       "Workshops",
+      currentScreen: "Workshops",
       SingleChildScrollView(
         scrollDirection: Axis.vertical,
         child: Column(
@@ -183,32 +193,44 @@ class _WorkshopsListScreenState extends State<WorkshopsListScreen> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          statCard(
-            context,
-            'Total Workshops',
-            statistics?.totalWorkshops,
-            Icons.group,
-            Colors.teal,
-            width: 300,
-          ),
+          isLoading || statistics?.totalWorkshops == null
+              ? shimmerStatCard(context)
+              : statCard(
+                  context,
+                  'Total Workshops',
+                  statistics?.totalWorkshops,
+                  FontAwesomeIcons.puzzlePiece,
+                  Colors.teal,
+                  width: 300,
+                ),
+
           SizedBox(width: 10),
-          statCard(
-            context,
-            'Upcoming',
-            statistics?.upcoming == 0 ? 'No upcoming' : statistics?.upcoming,
-            Icons.upcoming,
-            Colors.teal,
-            width: 300,
-          ),
+
+          isLoading || statistics?.upcoming == null
+              ? shimmerStatCard(context)
+              : statCard(
+                  context,
+                  'Upcoming',
+                  statistics?.upcoming == 0
+                      ? 'No upcoming'
+                      : statistics?.upcoming,
+                  Icons.upcoming,
+                  Colors.orange,
+                  width: 300,
+                ),
+
           SizedBox(width: 10),
-          statCard(
-            context,
-            'Average Participants',
-            statistics?.averageParticipants,
-            Icons.people,
-            Colors.green,
-            width: 300,
-          ),
+
+          isLoading || statistics?.averageParticipants == null
+              ? shimmerStatCard(context)
+              : statCard(
+                  context,
+                  'Average Participants',
+                  statistics?.averageParticipants,
+                  Icons.people,
+                  Colors.green,
+                  width: 300,
+                ),
         ],
       ),
     );
@@ -272,34 +294,12 @@ class _WorkshopsListScreenState extends State<WorkshopsListScreen> {
           ),
         ),
         SizedBox(width: 32),
-        // ConstrainedBox(
-        //   constraints: BoxConstraints(maxWidth: 150),
-        //   child: Container(
-        //     padding: EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-        //     decoration: BoxDecoration(
-        //       border: Border.all(color: Colors.grey),
-        //       borderRadius: BorderRadius.circular(8),
-        //       color: colorScheme.surfaceContainerLowest,
-        //     ),
-        //     child: TextField(
-        //       controller: _memberPriceController,
-        //       decoration: InputDecoration(
-        //         labelText: "Member Price",
-        //         border: InputBorder.none,
-        //         filled: true,
-        //         fillColor: colorScheme.surfaceContainerLowest,
-        //       ),
-        //       onChanged: (value) => loadData(),
-        //     ),
-        //   ),
-        // ),
-        // SizedBox(width: 32),
         ConstrainedBox(
           constraints: BoxConstraints(maxWidth: 250),
           child: Container(
             color: colorScheme.surfaceContainerLowest,
             width: 180,
-            child: CustomDropdownFliter(
+            child: CustomDropdownFilter(
               selectedValue: selectedWorkshopTypeOption,
               options: workshopTypeOptions,
               name: "Type: ",
@@ -318,7 +318,7 @@ class _WorkshopsListScreenState extends State<WorkshopsListScreen> {
           child: Container(
             color: colorScheme.surfaceContainerLowest,
             width: 180,
-            child: CustomDropdownFliter(
+            child: CustomDropdownFilter(
               selectedValue: selectedStatusOption,
               options: statusOptions,
               name: "Status: ",
@@ -337,7 +337,7 @@ class _WorkshopsListScreenState extends State<WorkshopsListScreen> {
           child: Container(
             color: colorScheme.surfaceContainerLowest,
             width: 200,
-            child: CustomDropdownFliter(
+            child: CustomDropdownFilter(
               selectedValue: selectedSortingOption,
               options: sortingOptions,
               name: "Sort by: ",
@@ -493,8 +493,7 @@ class _WorkshopCardState extends State<WorkshopCard> {
                 child: SingleChildScrollView(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisSize:
-                        MainAxisSize.min, // important: shrink to fit content
+                    mainAxisSize: MainAxisSize.min,
                     children: [
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -679,15 +678,17 @@ class _WorkshopCardState extends State<WorkshopCard> {
                                           context,
                                         );
 
-                                    CustomSnackbar.show(
-                                      context,
-                                      message: result
-                                          ? 'Workshop successfully changed.'
-                                          : 'Something went wrong. Please try again.',
-                                      type: result
-                                          ? SnackbarType.success
-                                          : SnackbarType.error,
-                                    );
+                                    if (action != "View Participants") {
+                                      CustomSnackbar.show(
+                                        context,
+                                        message: result
+                                            ? 'Workshop successfully changed.'
+                                            : 'Something went wrong. Please try again.',
+                                        type: result
+                                            ? SnackbarType.success
+                                            : SnackbarType.error,
+                                      );
+                                    }
 
                                     if (result == true) widget.loadData();
                                   },

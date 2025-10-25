@@ -132,6 +132,7 @@ class _ChildDetailsScreenState extends State<ChildDetailsScreen> {
   Widget build(BuildContext context) {
     return MasterScreen(
       "Child Details",
+      currentScreen: "Clients",
       SingleChildScrollView(
         padding: const EdgeInsets.all(64),
         scrollDirection: Axis.vertical,

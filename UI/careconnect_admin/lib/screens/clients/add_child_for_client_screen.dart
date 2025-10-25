@@ -63,6 +63,7 @@ class _AddChildForClientScreenState extends State<AddChildForClientScreen> {
   Widget build(BuildContext context) {
     return MasterScreen(
       "Clients Details",
+      currentScreen: "Clients",
       SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Center(

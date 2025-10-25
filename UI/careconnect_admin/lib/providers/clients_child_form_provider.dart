@@ -16,6 +16,7 @@ class ClientsChildFormProvider
     ClientsChildProvider clientsChildProvider,
     int? clientId,
     int? childId,
+    bool isAccessAllowed,
   ) async {
     try {
       final formData = clientsChildFormProvider.formKey.currentState?.value;
@@ -59,7 +60,7 @@ class ClientsChildFormProvider
               lastName: formData['lastName'],
               phoneNumber: formData['phoneNumber'],
               username: formData['username'],
-              status: formData['status'],
+              status: isAccessAllowed,
               address: formData['address'],
               password: formData['password'],
               confirmationPassword: formData['confirmationPassword'],

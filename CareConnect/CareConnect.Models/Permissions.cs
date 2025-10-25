@@ -196,6 +196,9 @@ public static class Permissions
         public const string Update = "Permissions.User.Update";
         public const string Delete = "Permissions.User.Delete";
         public const string ChangePassword = "Permissions.User.ChangePassword";
+        public const string GetRolesForUser = "Permissions.User.GetRolesForUser";
+        public const string AddRoleToUser = "Permissions.User.AddRoleToUser";
+        public const string RemoveRoleFromUser = "Permissions.User.RemoveRoleFromUser";
     }
     public static class Workshop
     {

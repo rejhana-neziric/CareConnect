@@ -3,11 +3,12 @@ import 'package:careconnect_admin/models/responses/employee.dart';
 import 'package:careconnect_admin/models/responses/search_result.dart';
 import 'package:careconnect_admin/providers/employee_form_provider.dart';
 import 'package:careconnect_admin/providers/employee_provider.dart';
-import 'package:careconnect_admin/screens/employee_details_screen.dart';
+import 'package:careconnect_admin/screens/employees/employee_details_screen.dart';
 import 'package:careconnect_admin/widgets/confirm_dialog.dart';
 import 'package:careconnect_admin/widgets/custom_dropdown_fliter.dart';
 import 'package:careconnect_admin/widgets/no_results.dart';
 import 'package:careconnect_admin/widgets/primary_button.dart';
+import 'package:careconnect_admin/widgets/shimmer_stat_card.dart';
 import 'package:careconnect_admin/widgets/snackbar.dart';
 import 'package:careconnect_admin/widgets/stat_card.dart';
 
@@ -135,7 +136,7 @@ class _EmployeeListScreenState extends State<EmployeeListScreen> {
 
     return MasterScreen(
       "Employees",
-
+      currentScreen: "Employees",
       Column(
         children: [
           _buildOverview(),
@@ -179,29 +180,38 @@ class _EmployeeListScreenState extends State<EmployeeListScreen> {
         scrollDirection: Axis.horizontal,
         child: Row(
           children: [
-            statCard(
-              context,
-              'Total Employees',
-              totalEmployees,
-              Icons.groups,
-              Colors.teal,
-            ),
+            isLoading
+                ? shimmerStatCard(context)
+                : statCard(
+                    context,
+                    'Total Employees',
+                    totalEmployees,
+                    Icons.groups,
+                    Colors.teal,
+                  ),
             const SizedBox(width: 8),
-            statCard(
-              context,
-              'Currently Employed',
-              currentlyEmployeed,
-              Icons.verified_user,
-              Colors.orange,
-            ),
+
+            isLoading
+                ? shimmerStatCard(context)
+                : statCard(
+                    context,
+                    'Currently Employed',
+                    currentlyEmployeed,
+                    Icons.verified_user,
+                    Colors.orange,
+                  ),
+
             const SizedBox(width: 8),
-            statCard(
-              context,
-              'New This Month',
-              newThisMonth,
-              Icons.person_add,
-              Colors.red,
-            ),
+
+            isLoading
+                ? shimmerStatCard(context)
+                : statCard(
+                    context,
+                    'New This Month',
+                    newThisMonth,
+                    Icons.person_add,
+                    Colors.red,
+                  ),
           ],
         ),
       ),
@@ -273,7 +283,7 @@ class _EmployeeListScreenState extends State<EmployeeListScreen> {
               // Employment Status Dropdown
               SizedBox(
                 width: 280,
-                child: CustomDropdownFliter(
+                child: CustomDropdownFilter(
                   selectedValue: selectedEmploymentStatusOption,
                   options: employmentStatusOptions,
                   name: "Employment Status: ",
@@ -296,7 +306,7 @@ class _EmployeeListScreenState extends State<EmployeeListScreen> {
               // Sort By Dropdown
               SizedBox(
                 width: 180,
-                child: CustomDropdownFliter(
+                child: CustomDropdownFilter(
                   selectedValue: selectedSortingOption,
                   options: sortingOptions,
                   name: "Sort by: ",
@@ -513,6 +523,9 @@ class _EmployeeTableState extends State<EmployeeTable> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     final employees = widget.result?.result ?? [];
     //final totalCount = widget.result?.totalCount ?? 0;
 
@@ -535,7 +548,7 @@ class _EmployeeTableState extends State<EmployeeTable> {
             DataColumn2(label: Text('Email')),
             DataColumn2(label: Text('Phone Number')),
             DataColumn2(
-              label: Text('Status'),
+              label: Text('Employment Status'),
               size: ColumnSize.M,
               fixedWidth: 200,
             ),
@@ -564,7 +577,9 @@ class _EmployeeTableState extends State<EmployeeTable> {
         if (isLoading)
           Positioned.fill(
             child: Container(
-              color: Colors.white.withAlpha((0.7 * 255).toInt()),
+              color: colorScheme.surfaceContainerLowest.withAlpha(
+                (0.9 * 255).toInt(),
+              ), //Colors.white.withAlpha((0.7 * 255).toInt()),
               child: const Center(child: CircularProgressIndicator()),
             ),
           ),
@@ -611,8 +626,8 @@ class EmployeeDataSource extends DataTableSource {
           Text("${employee.user?.firstName} ${employee.user?.lastName}"),
         ),
         DataCell(Text(employee.jobTitle.toString())),
-        DataCell(Text(employee.user?.email ?? " ")),
-        DataCell(Text(employee.user?.phoneNumber ?? "")),
+        DataCell(Text(employee.user?.email ?? "Not provided")),
+        DataCell(Text(employee.user?.phoneNumber ?? "Not provided")),
         DataCell(
           Container(
             padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),

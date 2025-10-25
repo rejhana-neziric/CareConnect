@@ -135,4 +135,27 @@ class AppointmentProvider extends BaseProvider<Appointment> {
       actionPath: 'reschedule',
     );
   }
+
+  Future<List<String>> getAppoinmentTypes() async {
+    var url = "$baseUrl$endpoint/appointment-types";
+
+    var uri = Uri.parse(url);
+    var headers = createHeaders();
+
+    var response = await http.get(uri, headers: headers);
+
+    if (isValidResponse(response)) {
+      var data = jsonDecode(response.body);
+
+      List<String> result = [];
+
+      for (var item in data) {
+        result.add(item.toString());
+      }
+
+      return result;
+    } else {
+      throw new Exception("Unknown error");
+    }
+  }
 }

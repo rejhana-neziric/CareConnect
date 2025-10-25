@@ -88,6 +88,7 @@ class _EmployeeAvailabilityDetailsScreenState
 
     return MasterScreen(
       "Employee Availability",
+      currentScreen: "Employee Availability",
       Padding(
         padding: const EdgeInsets.all(8.0),
         child: FormBuilder(

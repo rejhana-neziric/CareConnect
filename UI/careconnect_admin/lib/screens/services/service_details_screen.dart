@@ -108,6 +108,7 @@ class _ServiceDetailsScreenState extends State<ServiceDetailsScreen> {
   Widget build(BuildContext context) {
     return MasterScreen(
       "Service Details",
+      currentScreen: "Services",
       SingleChildScrollView(
         padding: const EdgeInsets.all(64),
         child: Center(

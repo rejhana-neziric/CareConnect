@@ -1,7 +1,7 @@
 import 'package:careconnect_admin/core/layouts/master_screen.dart';
 import 'package:careconnect_admin/models/messages/appointment_notification.dart';
 import 'package:careconnect_admin/providers/notification_provider.dart';
-import 'package:careconnect_admin/screens/appointment_list_screen.dart';
+import 'package:careconnect_admin/screens/appointments/appointment_list_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -56,6 +56,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
           );
         },
       ),
+      currentScreen: "Notifications",
     );
   }
 }

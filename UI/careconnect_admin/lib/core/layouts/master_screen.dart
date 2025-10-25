@@ -2,23 +2,23 @@ import 'dart:async';
 import 'package:careconnect_admin/models/auth_credentials.dart';
 import 'package:careconnect_admin/providers/auth_provider.dart';
 import 'package:careconnect_admin/providers/notification_provider.dart';
-import 'package:careconnect_admin/screens/appointment_list_screen.dart';
-import 'package:careconnect_admin/screens/client_list_screen.dart';
+import 'package:careconnect_admin/screens/appointments/appointment_list_screen.dart';
+import 'package:careconnect_admin/screens/clients/client_list_screen.dart';
 import 'package:careconnect_admin/screens/employee_availability/employee_availability_details_screen.dart';
-import 'package:careconnect_admin/screens/employee_availability/employee_availability_list_screen.dart';
-import 'package:careconnect_admin/screens/employee_list_screen.dart';
+import 'package:careconnect_admin/screens/employees/employee_list_screen.dart';
 import 'package:careconnect_admin/screens/login_screen.dart';
 import 'package:careconnect_admin/screens/notifications_screen.dart';
 import 'package:careconnect_admin/screens/profile_screen.dart';
 import 'package:careconnect_admin/screens/report_screen.dart';
 import 'package:careconnect_admin/screens/review_list_screen.dart';
 import 'package:careconnect_admin/screens/role_permissions_screen.dart';
-import 'package:careconnect_admin/screens/services_list_screen.dart';
-import 'package:careconnect_admin/screens/workshops_list_screen.dart';
+import 'package:careconnect_admin/screens/services/services_list_screen.dart';
+import 'package:careconnect_admin/screens/workshops/workshops_list_screen.dart';
 import 'package:careconnect_admin/core/theme/theme_notifier.dart';
 import 'package:careconnect_admin/services/singalr_service.dart';
 import 'package:careconnect_admin/widgets/notification_bell.dart';
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:provider/provider.dart';
 
 class MasterScreen extends StatefulWidget {
@@ -28,12 +28,14 @@ class MasterScreen extends StatefulWidget {
     super.key,
     this.button,
     this.onBackPressed,
+    required this.currentScreen,
   });
 
   final String title;
   final Widget child;
   final Widget? button;
   final Future<bool> Function()? onBackPressed;
+  final String currentScreen;
 
   @override
   State<MasterScreen> createState() => _MasterScreenState();
@@ -91,16 +93,9 @@ class _MasterScreenState extends State<MasterScreen> {
                     padding: EdgeInsets.zero,
                     children: [
                       ListTile(
-                        leading: Icon(
-                          Icons.arrow_back,
-                          //color: colorScheme.surfaceContainerLowest,
-                        ),
-                        title: Text(
-                          "Back",
-                          //style: TextStyle(color: colorScheme.onSurface),
-                        ),
+                        leading: Icon(Icons.arrow_back),
+                        title: Text("Back"),
 
-                        //onTap: () => Navigator.pop(context),
                         onTap: () async {
                           if (widget.onBackPressed != null) {
                             final shouldPop = await widget.onBackPressed!();
@@ -115,8 +110,12 @@ class _MasterScreenState extends State<MasterScreen> {
 
                       ListTile(
                         leading: Icon(Icons.badge),
-                        title: Text("Employees"),
-                        selectedTileColor: colorScheme.surfaceContainerHighest,
+                        title: Text(
+                          "Employees",
+                          style: TextStyle(fontWeight: FontWeight.w500),
+                        ),
+                        selected: widget.currentScreen == "Employees",
+                        selectedTileColor: colorScheme.primary,
                         onTap: () {
                           Navigator.of(context).push(
                             MaterialPageRoute(
@@ -125,31 +124,34 @@ class _MasterScreenState extends State<MasterScreen> {
                           );
                         },
                       ),
-                      // if (auth.user?.roles.contains('Superadmin') ?? false)
+
                       ListTile(
                         leading: Icon(Icons.badge),
-                        title: Text("Employee Availability"),
-                        onTap: () => Navigator.of(context).push(
-                          MaterialPageRoute(
-                            builder: (context) =>
-                                EmployeeAvailabilityListScreen(),
-                          ),
+                        title: Text(
+                          "Employee Availability",
+                          style: TextStyle(fontWeight: FontWeight.w500),
                         ),
+                        selected:
+                            widget.currentScreen == "Employee Availability",
+                        selectedTileColor: colorScheme.primary,
+                        onTap: () {
+                          Navigator.of(context).push(
+                            MaterialPageRoute(
+                              builder: (context) =>
+                                  EmployeeAvailabilityDetailsScreen(),
+                            ),
+                          );
+                        },
                       ),
-                      ListTile(
-                        leading: Icon(Icons.badge),
-                        title: Text("Employee Availability Details"),
-                        onTap: () => Navigator.of(context).push(
-                          MaterialPageRoute(
-                            builder: (context) =>
-                                EmployeeAvailabilityDetailsScreen(),
-                          ),
-                        ),
-                      ),
+
                       ListTile(
                         leading: Icon(Icons.group),
-                        title: Text("Clients"),
-                        selectedTileColor: colorScheme.surfaceContainerHighest,
+                        title: Text(
+                          "Clients",
+                          style: TextStyle(fontWeight: FontWeight.w500),
+                        ),
+                        selected: widget.currentScreen == "Clients",
+                        selectedTileColor: colorScheme.primary,
                         onTap: () {
                           Navigator.of(context).push(
                             MaterialPageRoute(
@@ -158,9 +160,15 @@ class _MasterScreenState extends State<MasterScreen> {
                           );
                         },
                       ),
+
                       ListTile(
-                        leading: Icon(Icons.miscellaneous_services),
-                        title: Text("Services"),
+                        leading: Icon(FontAwesomeIcons.handHoldingHeart),
+                        title: Text(
+                          "Services",
+                          style: TextStyle(fontWeight: FontWeight.w500),
+                        ),
+                        selected: widget.currentScreen == "Services",
+                        selectedTileColor: colorScheme.primary,
                         onTap: () {
                           Navigator.of(context).push(
                             MaterialPageRoute(
@@ -169,9 +177,15 @@ class _MasterScreenState extends State<MasterScreen> {
                           );
                         },
                       ),
+
                       ListTile(
                         leading: Icon(Icons.event),
-                        title: Text("Appointments"),
+                        title: Text(
+                          "Appointments",
+                          style: TextStyle(fontWeight: FontWeight.w500),
+                        ),
+                        selected: widget.currentScreen == "Appointments",
+                        selectedTileColor: colorScheme.primary,
                         onTap: () {
                           Navigator.of(context).push(
                             MaterialPageRoute(
@@ -180,9 +194,15 @@ class _MasterScreenState extends State<MasterScreen> {
                           );
                         },
                       ),
+
                       ListTile(
-                        leading: Icon(Icons.school),
-                        title: Text("Workshops"),
+                        leading: Icon(FontAwesomeIcons.puzzlePiece),
+                        title: Text(
+                          "Workshops",
+                          style: TextStyle(fontWeight: FontWeight.w500),
+                        ),
+                        selected: widget.currentScreen == "Workshops",
+                        selectedTileColor: colorScheme.primary,
                         onTap: () {
                           Navigator.of(context).push(
                             MaterialPageRoute(
@@ -191,9 +211,15 @@ class _MasterScreenState extends State<MasterScreen> {
                           );
                         },
                       ),
+
                       ListTile(
                         leading: Icon(Icons.reviews),
-                        title: Text("Reviews"),
+                        title: Text(
+                          "Reviews",
+                          style: TextStyle(fontWeight: FontWeight.w500),
+                        ),
+                        selected: widget.currentScreen == "Reviews",
+                        selectedTileColor: colorScheme.primary,
                         onTap: () {
                           Navigator.of(context).push(
                             MaterialPageRoute(
@@ -202,9 +228,15 @@ class _MasterScreenState extends State<MasterScreen> {
                           );
                         },
                       ),
+
                       ListTile(
                         leading: Icon(Icons.insert_chart_outlined),
-                        title: Text("Report"),
+                        title: Text(
+                          "Report",
+                          style: TextStyle(fontWeight: FontWeight.w500),
+                        ),
+                        selected: widget.currentScreen == "Report",
+                        selectedTileColor: colorScheme.primary,
                         onTap: () {
                           Navigator.of(context).push(
                             MaterialPageRoute(
@@ -216,7 +248,12 @@ class _MasterScreenState extends State<MasterScreen> {
 
                       ListTile(
                         leading: Icon(Icons.notifications),
-                        title: Text("Notifications"),
+                        title: Text(
+                          "Notifications",
+                          style: TextStyle(fontWeight: FontWeight.w500),
+                        ),
+                        selected: widget.currentScreen == "Notifications",
+                        selectedTileColor: colorScheme.primary,
                         onTap: () => Navigator.of(context).push(
                           MaterialPageRoute(
                             builder: (context) => NotificationsScreen(),
@@ -226,7 +263,13 @@ class _MasterScreenState extends State<MasterScreen> {
 
                       ListTile(
                         leading: Icon(Icons.security),
-                        title: Text("Roles and Permission"),
+                        title: Text(
+                          "Roles and Permissions",
+                          style: TextStyle(fontWeight: FontWeight.w500),
+                        ),
+                        selected:
+                            widget.currentScreen == "Roles and Permissions",
+                        selectedTileColor: colorScheme.primary,
                         onTap: () => Navigator.of(context).push(
                           MaterialPageRoute(
                             builder: (context) => RolePermissionsScreen(),
@@ -246,7 +289,12 @@ class _MasterScreenState extends State<MasterScreen> {
 
                       ListTile(
                         leading: Icon(Icons.account_circle),
-                        title: Text("Profile"),
+                        title: Text(
+                          "Profile",
+                          style: TextStyle(fontWeight: FontWeight.w500),
+                        ),
+                        selected: widget.currentScreen == "Profile",
+                        selectedTileColor: colorScheme.primary,
                         onTap: () => Navigator.of(context).push(
                           MaterialPageRoute(
                             builder: (context) => ProfileScreen(),
@@ -256,7 +304,10 @@ class _MasterScreenState extends State<MasterScreen> {
 
                       ListTile(
                         leading: Icon(Icons.logout_outlined),
-                        title: Text("Logout"),
+                        title: Text(
+                          "Logout",
+                          style: TextStyle(fontWeight: FontWeight.w500),
+                        ),
                         onTap: () => _handleLogout(),
                       ),
 
@@ -322,15 +373,6 @@ class _MasterScreenState extends State<MasterScreen> {
                         ),
                       ],
                     ),
-
-                    // child: Text(
-                    //   widget.title,
-                    //   style: TextStyle(
-                    //     color: AppColors.mauveGray,
-                    //     fontSize: 25,
-                    //     fontWeight: FontWeight.w700,
-                    //   ),
-                    // ),
                   ),
                   Expanded(
                     child: Container(
@@ -379,22 +421,6 @@ class _MasterScreenState extends State<MasterScreen> {
       );
     }
   }
-
-  // Widget _buildNavTile(
-  //   BuildContext context,
-  //   IconData icon,
-  //   String title,
-  //   VoidCallback onTap,
-  // ) {
-  //   final colorScheme = Theme.of(context).colorScheme;
-
-  //   return ListTile(
-  //     leading: Icon(icon, color: colorScheme.onSurface),
-  //     title: Text(title, style: TextStyle(color: colorScheme.onSurface)),
-  //     onTap: onTap,
-  //     hoverColor: colorScheme.primary.withOpacity(0.1),
-  //   );
-  // }
 
   Widget _buildThemeToggleTile(
     BuildContext context,

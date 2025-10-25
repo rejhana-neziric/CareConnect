@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
-class CustomDropdownFliter extends StatelessWidget {
-  const CustomDropdownFliter({
+class CustomDropdownFilter extends StatelessWidget {
+  const CustomDropdownFilter({
     super.key,
     required this.name,
     required this.selectedValue,
@@ -24,10 +24,13 @@ class CustomDropdownFliter extends StatelessWidget {
         color: colorScheme.surfaceContainerLowest,
         border: Border.all(color: Colors.grey.shade300),
         borderRadius: BorderRadius.circular(8),
+        //border: Border.all(color: colorScheme.primaryContainer, width: 2),
       ),
       child: DropdownButtonHideUnderline(
         child: DropdownButton<String>(
           value: selectedValue,
+          borderRadius: BorderRadius.circular(8),
+
           icon: Icon(Icons.keyboard_arrow_down, color: Colors.grey.shade600),
           isExpanded: true,
           style: TextStyle(color: colorScheme.onPrimaryContainer, fontSize: 14),

@@ -15,6 +15,7 @@ Appointment _$AppointmentFromJson(Map<String, dynamic> json) => Appointment(
   description: json['description'] as String?,
   note: json['note'] as String?,
   stateMachine: json['stateMachine'] as String?,
+  paid: json['paid'] as bool,
   modifiedDate: DateTime.parse(json['modifiedDate'] as String),
   attendanceStatus: json['attendanceStatus'] == null
       ? null
@@ -43,6 +44,7 @@ Map<String, dynamic> _$AppointmentToJson(Appointment instance) =>
       'description': instance.description,
       'note': instance.note,
       'stateMachine': instance.stateMachine,
+      'paid': instance.paid,
       'modifiedDate': instance.modifiedDate.toIso8601String(),
       'attendanceStatus': instance.attendanceStatus?.toJson(),
       'employeeAvailability': instance.employeeAvailability?.toJson(),

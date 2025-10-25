@@ -8,6 +8,7 @@ import 'package:careconnect_admin/models/responses/search_result.dart';
 import 'package:careconnect_admin/providers/appointment_provider.dart';
 import 'package:careconnect_admin/providers/child_provider.dart';
 import 'package:careconnect_admin/providers/employee_provider.dart';
+import 'package:careconnect_admin/screens/appointments/appointment_details_screen.dart';
 import 'package:careconnect_admin/widgets/confirm_dialog.dart';
 import 'package:careconnect_admin/widgets/custom_dropdown_fliter.dart';
 import 'package:careconnect_admin/widgets/no_results.dart';
@@ -197,6 +198,7 @@ class _AppointmentListScreenState extends State<AppointmentListScreen> {
         ),
       ),
       button: PrimaryButton(onPressed: () {}, label: 'Add Appointment'),
+      currentScreen: "Appointments",
     );
   }
 
@@ -218,7 +220,7 @@ class _AppointmentListScreenState extends State<AppointmentListScreen> {
               // Employee
               SizedBox(
                 width: 220,
-                child: CustomDropdownFliter(
+                child: CustomDropdownFilter(
                   selectedValue: selectedEmployee,
                   options: employeesOption,
                   name: "Employee: ",
@@ -236,7 +238,7 @@ class _AppointmentListScreenState extends State<AppointmentListScreen> {
               // Child
               SizedBox(
                 width: 220,
-                child: CustomDropdownFliter(
+                child: CustomDropdownFilter(
                   selectedValue: selectedChild,
                   options: childrenOption,
                   name: "Child: ",
@@ -257,7 +259,7 @@ class _AppointmentListScreenState extends State<AppointmentListScreen> {
                 child: Container(
                   color: colorScheme.surfaceContainerLowest,
                   width: 270,
-                  child: CustomDropdownFliter(
+                  child: CustomDropdownFilter(
                     selectedValue: selectedStatusOption,
                     options: statusOptions,
                     name: "Status: ",
@@ -276,7 +278,7 @@ class _AppointmentListScreenState extends State<AppointmentListScreen> {
               // Sort By Dropdown
               SizedBox(
                 width: 220,
-                child: CustomDropdownFliter(
+                child: CustomDropdownFilter(
                   selectedValue: selectedSortingOption,
                   options: sortingOptions,
                   name: "Sort by: ",
@@ -335,9 +337,9 @@ class _AppointmentListScreenState extends State<AppointmentListScreen> {
   }
 
   Widget _buildResultView() {
-    if (isLoading) {
-      return const Expanded(child: Center(child: CircularProgressIndicator()));
-    }
+    // if (isLoading) {
+    //   return const Expanded(child: Center(child: CircularProgressIndicator()));
+    // }
 
     if (result != null && result?.result.isEmpty == false) {
       return Expanded(
@@ -553,26 +555,40 @@ class _AppointmentTableState extends State<AppointmentTable> {
   }
 
   Future<void> _fetchPage(int page) async {
-    if (isLoading) return;
-
-    setState(() => isLoading = true);
+    setState(() {
+      isLoading = true;
+      currentPage = page;
+    });
 
     try {
       await widget.onPageChanged(page: page);
-      if (!mounted) return;
 
-      // Only update after data has arrived
-      setState(() {
-        currentPage = page;
-        _updateDataSource();
-      });
-    } finally {
-      if (mounted) setState(() => isLoading = false);
+      if (mounted) {
+        setState(() {
+          currentPage = page;
+          _updateDataSource();
+          isLoading = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          isLoading = false;
+          currentPage = currentPage > 0 ? currentPage - 1 : 0;
+        });
+      }
+
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Error loading data: $e')));
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     final appointments = widget.result?.result ?? [];
 
     if (isLoading && appointments.isEmpty) {
@@ -588,7 +604,7 @@ class _AppointmentTableState extends State<AppointmentTable> {
         PaginatedDataTable2(
           key: ValueKey('${widget.result?.result.hashCode}_$currentPage'),
           wrapInCard: false,
-          renderEmptyRowsInTheEnd: true,
+          renderEmptyRowsInTheEnd: false,
           columns: [
             DataColumn2(label: Text('Client'), size: ColumnSize.M),
             DataColumn2(label: Text('Child'), size: ColumnSize.M),
@@ -598,6 +614,7 @@ class _AppointmentTableState extends State<AppointmentTable> {
             DataColumn2(label: Text('Time'), size: ColumnSize.S),
             DataColumn2(label: Text('Status'), size: ColumnSize.L),
             DataColumn2(label: Text('Actions'), size: ColumnSize.S),
+            DataColumn2(label: Text('Details'), size: ColumnSize.S),
           ],
           source: _dataSource!,
           rowsPerPage: _pageSize,
@@ -617,7 +634,9 @@ class _AppointmentTableState extends State<AppointmentTable> {
         if (isLoading)
           Positioned.fill(
             child: Container(
-              color: Colors.white.withAlpha((0.7 * 255).toInt()),
+              color: colorScheme.surfaceContainerLowest.withAlpha(
+                (0.9 * 255).toInt(),
+              ), //Colors.white.withAlpha((0.7 * 255).toInt()),
               child: const Center(child: CircularProgressIndicator()),
             ),
           ),
@@ -724,6 +743,35 @@ class AppointmentDataSource extends DataTableSource {
                 }
               },
             ),
+          ),
+        ),
+
+        DataCell(
+          Row(
+            children: [
+              IconButton(
+                icon: const Icon(Icons.visibility),
+                tooltip: 'View Details',
+                onPressed: () async {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => ChangeNotifierProvider(
+                        create: (_) => AppointmentProvider(),
+                        child: AppointmentDetailsScreen(
+                          appointment: appointment,
+                        ),
+                      ),
+                    ),
+                  ).then((result) async {
+                    if (result == true && onPageChanged != null) {
+                      await onPageChanged!(currentPage);
+                    }
+                  });
+                },
+              ),
+              // other action buttons if needed
+            ],
           ),
         ),
       ],

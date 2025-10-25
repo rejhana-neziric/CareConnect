@@ -3,7 +3,7 @@ import 'package:careconnect_admin/models/auth_user.dart';
 import 'package:careconnect_admin/providers/auth_provider.dart';
 import 'package:careconnect_admin/providers/notification_provider.dart';
 import 'package:careconnect_admin/providers/user_provider.dart';
-import 'package:careconnect_admin/screens/employee_list_screen.dart';
+import 'package:careconnect_admin/screens/employees/employee_list_screen.dart';
 import 'package:careconnect_admin/services/singalr_service.dart';
 import 'package:careconnect_admin/widgets/snackbar.dart';
 import 'package:flutter/material.dart';

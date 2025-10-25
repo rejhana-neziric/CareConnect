@@ -305,6 +305,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 ],
               ),
             ),
+      currentScreen: "Profile",
     );
   }
 

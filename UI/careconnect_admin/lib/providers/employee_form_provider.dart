@@ -10,11 +10,11 @@ import 'package:flutter/material.dart';
 
 class EmployeeFormProvider
     extends BaseFormProvider<EmployeeFormProvider, EmployeeProvider> {
-  @override
-  Future<bool> saveOrUpdate(
+  Future<bool> saveOrUpdateCustom(
     EmployeeFormProvider formProvider,
     EmployeeProvider entitiyProvider,
     int? id,
+    bool isAccessAllowed,
   ) async {
     try {
       final formData = formProvider.formKey.currentState?.value;
@@ -54,7 +54,7 @@ class EmployeeFormProvider
           user: UserUpdateRequest(
             phoneNumber: formData['phoneNumber'],
             username: formData['username'],
-            status: formData['status'],
+            status: isAccessAllowed,
             address: formData['address'],
             password: formData['password'],
             confirmationPassword: formData['confirmationPassword'],

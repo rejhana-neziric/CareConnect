@@ -5,6 +5,7 @@ using CareConnect.Services.Database;
 using CareConnect.Services.Helpers;
 using MapsterMapper;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.ML;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -85,6 +86,88 @@ namespace CareConnect.Services
             Context.SaveChanges();
 
             return true;
+        }
+
+        public async Task<List<Models.Responses.Role>?> GetRolesForUser(int userId)
+        {
+            var user = await Context.Users.Include(x => x.UsersRoles).ThenInclude(x => x.Role).FirstOrDefaultAsync(x => x.UserId== userId);
+
+            if (user == null) return null;
+
+            //var roles = user.UsersRoles
+            //                  .Select(x => new
+            //                  {
+            //                      x.Role.RoleId,
+            //                      x.Role.Name,
+            //                      x.Role.Description
+            //                  })
+            //                  .ToList<object>();
+
+            var roles = await Context.Roles
+                .Include(r => r.Permissions)
+                .Include(r => r.UsersRoles)
+                .Where(r => r.UsersRoles.Any(ur => ur.UserId == userId)) 
+                .Select(r => new Models.Responses.Role
+                {
+                    RoleId = r.RoleId,
+                    Name = r.Name,
+                    Description = r.Description,
+                    UserCount = r.UsersRoles.Count,
+                    PermissionIds = r.Permissions.Select(p => p.PermissionId).ToList()
+                })
+                .OrderBy(r => r.Name)
+                .ToListAsync();
+
+
+            return roles;
+        }
+
+        public async Task<(bool Success, string Message)> AddRoleToUserAsync(int userId, int roleId)
+        {
+            var user = await Context.Users
+                .Include(u => u.UsersRoles)
+                .FirstOrDefaultAsync(u => u.UserId == userId);
+
+            if (user == null)
+                return (false, $"User with ID {userId} not found");
+
+            var role = await Context.Roles.FirstOrDefaultAsync(r => r.RoleId == roleId);
+            if (role == null)
+                return (false, $"Role with ID {roleId} not found");
+
+            var alreadyHasRole = user.UsersRoles.Any(ur => ur.RoleId == roleId);
+            if (alreadyHasRole)
+                return (false, "User already has this role");
+
+            user.UsersRoles.Add(new Database.UsersRole
+            {
+                UserId = userId,
+                RoleId = roleId
+            });
+
+            await Context.SaveChangesAsync();
+
+            return (true, $"Role '{role.Name}' added to user successfully");
+        }
+
+        public async Task<(bool Success, string Message)> RemoveRoleFromUserAsync(int userId, int roleId)
+        {
+            var user = await Context.Users
+                .Include(u => u.UsersRoles)
+                .FirstOrDefaultAsync(u => u.UserId == userId);
+
+            if (user == null)
+                return (false, $"User with ID {userId} not found");
+
+            var userRole = user.UsersRoles.FirstOrDefault(ur => ur.RoleId == roleId);
+
+            if (userRole == null)
+                return (false, "User does not have this role");
+
+            Context.UsersRoles.Remove(userRole);
+            await Context.SaveChangesAsync();
+
+            return (true, $"Role removed from user successfully");
         }
     }
 }

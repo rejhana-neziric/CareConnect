@@ -5,19 +5,19 @@ import 'package:careconnect_admin/models/responses/search_result.dart';
 import 'package:careconnect_admin/providers/client_provider.dart';
 import 'package:careconnect_admin/providers/clients_child_form_provider.dart';
 import 'package:careconnect_admin/providers/clients_child_provider.dart';
-import 'package:careconnect_admin/screens/child_details_screen.dart';
-import 'package:careconnect_admin/screens/client_details_screen.dart';
+import 'package:careconnect_admin/screens/clients/child_details_screen.dart';
+import 'package:careconnect_admin/screens/clients/client_details_screen.dart';
 import 'package:careconnect_admin/core/theme/app_colors.dart';
 import 'package:careconnect_admin/widgets/custom_dropdown_fliter.dart';
 import 'package:careconnect_admin/widgets/no_results.dart';
 import 'package:careconnect_admin/widgets/primary_button.dart';
+import 'package:careconnect_admin/widgets/shimmer_stat_card.dart';
 import 'package:careconnect_admin/widgets/stat_card.dart';
 import 'package:data_table_2/data_table_2.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
-import 'package:shimmer/shimmer.dart';
 
 class ClientListScreen extends StatefulWidget {
   const ClientListScreen({super.key});
@@ -206,6 +206,8 @@ class _ClientListScreenState extends State<ClientListScreen> {
 
     return MasterScreen(
       "Clients",
+      currentScreen: "Clients",
+
       // SingleChildScrollView(
       //   padding: const EdgeInsets.all(16),
       //child:
@@ -257,40 +259,52 @@ class _ClientListScreenState extends State<ClientListScreen> {
               children: [
                 Row(
                   children: [
-                    statCard(
-                      context,
-                      'Total Parents',
-                      statistics?.totalParents,
-                      Icons.groups,
-                      Colors.teal,
-                    ),
+                    isLoading || statistics?.totalParents == null
+                        ? shimmerStatCard(context)
+                        : statCard(
+                            context,
+                            'Total Parents',
+                            statistics?.totalParents,
+                            Icons.groups,
+                            Colors.teal,
+                          ),
+
                     SizedBox(width: 20),
-                    statCard(
-                      context,
-                      'Total Children',
-                      statistics?.totalChildren,
-                      Icons.groups,
-                      Colors.teal,
-                    ),
+
+                    isLoading || statistics?.totalChildren == null
+                        ? shimmerStatCard(context)
+                        : statCard(
+                            context,
+                            'Total Children',
+                            statistics?.totalChildren,
+                            Icons.groups,
+                            Colors.teal,
+                          ),
                   ],
                 ),
                 Row(
                   children: [
-                    statCard(
-                      context,
-                      "Employed Parents",
-                      statistics?.employedParents,
-                      Icons.work,
-                      Colors.orange,
-                    ),
+                    isLoading || statistics?.employedParents == null
+                        ? shimmerStatCard(context)
+                        : statCard(
+                            context,
+                            "Employed Parents",
+                            statistics?.employedParents,
+                            Icons.work,
+                            Colors.orange,
+                          ),
+
                     SizedBox(width: 20),
-                    statCard(
-                      context,
-                      "New Clients (${DateFormat.MMMM().format(DateTime.now())} ${DateTime.now().year})",
-                      statistics?.newClientsThisMonth,
-                      Icons.trending_up,
-                      Colors.green,
-                    ),
+
+                    isLoading || statistics?.newClientsThisMonth == null
+                        ? shimmerStatCard(context)
+                        : statCard(
+                            context,
+                            "New Clients (${DateFormat.MMMM().format(DateTime.now())} ${DateTime.now().year})",
+                            statistics?.newClientsThisMonth,
+                            Icons.trending_up,
+                            Colors.green,
+                          ),
                   ],
                 ),
               ],
@@ -309,7 +323,10 @@ class _ClientListScreenState extends State<ClientListScreen> {
                           statistics != null &&
                               statistics!.childrenPerAgeGroup.isNotEmpty
                           ? _buildChildrenPerAgeGroupBarChart()
-                          : buildShimmerBarChartPlaceholder(),
+                          : shimmerStatCard(
+                              context,
+                              width: 280,
+                            ), //shimmerBarChartPlaceholder(context),
                     ),
                   ),
                 ],
@@ -327,63 +344,11 @@ class _ClientListScreenState extends State<ClientListScreen> {
                     statistics != null &&
                         statistics!.childrenPerGender.isNotEmpty
                     ? _buildChildrenPerGenderPieChart(maleCount, femaleCount)
-                    : buildShimmerBarChartPlaceholder(),
+                    : shimmerStatCard(
+                        context,
+                        width: 280,
+                      ), //shimmerBarChartPlaceholder(context),
               ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  // Widget _buildShimmerBar({required double height}) {
-  //   return Column(
-  //     children: [
-  //       Container(
-  //         height: 16,
-  //         width: 20,
-  //         color: Colors.white,
-  //         margin: const EdgeInsets.only(bottom: 8),
-  //       ),
-  //       Container(width: 20, height: height, color: Colors.white),
-  //       Container(
-  //         height: 16,
-  //         width: 30,
-  //         margin: const EdgeInsets.only(top: 8),
-  //         color: Colors.white,
-  //       ),
-  //     ],
-  //   );
-  // }
-
-  Widget buildShimmerBarChartPlaceholder() {
-    return Shimmer.fromColors(
-      baseColor: Colors.grey[300]!,
-      highlightColor: Colors.grey[100]!,
-      child: Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Naslov
-            Container(
-              height: 20,
-              width: 120,
-              color: Colors.white,
-              margin: const EdgeInsets.only(bottom: 24),
-            ),
-            // "Stubci" grafa
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: [
-                // _buildShimmerBar(height: 60),
-                // _buildShimmerBar(height: 40),
-                // _buildShimmerBar(height: 100),
-              ],
             ),
           ],
         ),
@@ -586,7 +551,7 @@ class _ClientListScreenState extends State<ClientListScreen> {
               // Employment Status
               Container(
                 width: 270,
-                child: CustomDropdownFliter(
+                child: CustomDropdownFilter(
                   selectedValue: selectedEmploymentStatusOption,
                   options: employmentStatusOptions,
                   name: "Employment Status: ",
@@ -609,7 +574,7 @@ class _ClientListScreenState extends State<ClientListScreen> {
               // Employment Status
               SizedBox(
                 width: 200,
-                child: CustomDropdownFliter(
+                child: CustomDropdownFilter(
                   selectedValue: selectedGenderOption,
                   options: genderOptions,
                   name: "Child Gender: ",
@@ -626,7 +591,7 @@ class _ClientListScreenState extends State<ClientListScreen> {
               // Employment Status
               SizedBox(
                 width: 150,
-                child: CustomDropdownFliter(
+                child: CustomDropdownFilter(
                   selectedValue: selectedAgeGroupOption,
                   options: ageGroupOptions,
                   name: "Child Age: ",
@@ -643,7 +608,7 @@ class _ClientListScreenState extends State<ClientListScreen> {
               // Sort by
               SizedBox(
                 width: 200,
-                child: CustomDropdownFliter(
+                child: CustomDropdownFilter(
                   selectedValue: selectedSortingOption,
                   options: sortingOptions,
                   name: "Sort by: ",

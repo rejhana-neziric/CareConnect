@@ -226,6 +226,7 @@ class _RolePermissionsScreenState extends State<RolePermissionsScreen> {
                 ],
               ),
       ),
+      currentScreen: "Roles and Permissions",
     );
   }
 

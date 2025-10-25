@@ -1,12 +1,15 @@
 import 'package:careconnect_admin/core/layouts/master_screen.dart';
 import 'package:careconnect_admin/models/responses/child.dart';
 import 'package:careconnect_admin/models/responses/clients_child.dart';
+import 'package:careconnect_admin/models/responses/role.dart';
 import 'package:careconnect_admin/models/responses/search_result.dart';
 import 'package:careconnect_admin/providers/client_provider.dart';
 import 'package:careconnect_admin/providers/clients_child_form_provider.dart';
 import 'package:careconnect_admin/providers/clients_child_provider.dart';
-import 'package:careconnect_admin/screens/add_child_for_client_screen.dart';
-import 'package:careconnect_admin/screens/child_details_screen.dart';
+import 'package:careconnect_admin/providers/role_permissions_provider.dart';
+import 'package:careconnect_admin/providers/user_provider.dart';
+import 'package:careconnect_admin/screens/clients/add_child_for_client_screen.dart';
+import 'package:careconnect_admin/screens/clients/child_details_screen.dart';
 import 'package:careconnect_admin/core/theme/app_colors.dart';
 import 'package:careconnect_admin/core/utils.dart';
 import 'package:careconnect_admin/widgets/confirm_dialog.dart';
@@ -33,9 +36,14 @@ class _ClientDetailsScreenState extends State<ClientDetailsScreen> {
   Map<String, dynamic> _initialValue = {};
   SearchResult<ClientsChild>? result;
   List<Child>? otherChildren;
+  List<Role> userRoles = [];
+  List<Role> roles = [];
+  bool isAccessAllowed = false;
   late ClientsChildProvider clientsChildProvider;
   late ClientsChildFormProvider clientsChildFormProvider;
   late ClientProvider clientProvider;
+  late UserProvider userProvider;
+  late RolePermissionsProvider rolePermissionsProvider;
   bool isLoading = true;
 
   @override
@@ -50,6 +58,12 @@ class _ClientDetailsScreenState extends State<ClientDetailsScreen> {
     clientsChildProvider = context.read<ClientsChildProvider>();
     clientsChildFormProvider = context.read<ClientsChildFormProvider>();
     clientProvider = context.read<ClientProvider>();
+    userProvider = context.read<UserProvider>();
+    rolePermissionsProvider = context.read<RolePermissionsProvider>();
+
+    if (widget.clientsChild != null) {
+      getRoles();
+    }
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       initForm();
@@ -80,6 +94,8 @@ class _ClientDetailsScreenState extends State<ClientDetailsScreen> {
         "childBirthDate": null,
         "childGender": null,
       });
+
+      isAccessAllowed = widget.clientsChild!.client.user!.status;
     }
 
     // dynamic children;
@@ -125,10 +141,31 @@ class _ClientDetailsScreenState extends State<ClientDetailsScreen> {
     });
   }
 
+  void getRoles() async {
+    setState(() {
+      isLoading = true;
+    });
+
+    final response = await userProvider.getRoles(
+      userId: widget.clientsChild!.client.user!.userId,
+    );
+
+    final allRoles = await rolePermissionsProvider.getRoles();
+
+    userRoles = response;
+    roles = allRoles;
+
+    setState(() {
+      isLoading = false;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return MasterScreen(
       "Clients Details",
+      currentScreen: "Clients",
+
       SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Center(
@@ -307,24 +344,6 @@ class _ClientDetailsScreenState extends State<ClientDetailsScreen> {
                             },
                             enabled: !clientsChildFormProvider.isUpdate,
                           ),
-                          if (clientsChildFormProvider.isUpdate)
-                            CustomDropdownField<bool>(
-                              width: 400,
-                              name: 'status',
-                              label: 'Status',
-                              items: [
-                                DropdownMenuItem(
-                                  value: true,
-                                  child: Text('Active'),
-                                ),
-                                DropdownMenuItem(
-                                  value: false,
-                                  child: Text('Inactive'),
-                                ),
-                              ],
-                              validator:
-                                  clientsChildFormProvider.validateNonEmptyBool,
-                            ),
                         ],
                       ),
                     ],
@@ -346,6 +365,112 @@ class _ClientDetailsScreenState extends State<ClientDetailsScreen> {
                       ),
                     ],
                   ),
+
+                  const SizedBox(width: 40, height: 40),
+
+                  if (clientsChildFormProvider.isUpdate)
+                    Row(
+                      children: [
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                Checkbox(
+                                  value: isAccessAllowed,
+                                  onChanged: (value) {
+                                    setState(() {
+                                      isAccessAllowed = value!;
+                                    });
+                                  },
+                                ),
+                                const Text(
+                                  'Allow access to application',
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 20,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              'If unchecked, the user will not be able to log in. This action is reversible and can be undone at any time.',
+                              style: TextStyle(
+                                fontSize: 16,
+                                color: colorScheme.onSurface,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+
+                  if (widget.clientsChild != null) ...[
+                    const SizedBox(width: 40, height: 40),
+
+                    buildSectionTitle("Roles", colorScheme),
+
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: [
+                        ...userRoles.map((role) {
+                          return InputChip(
+                            label: Text(role.name),
+                            onDeleted: () async {
+                              final shouldProceed = await CustomConfirmDialog.show(
+                                context,
+                                icon: Icons.error,
+                                title: 'Remove role',
+                                content:
+                                    'Are you sure you want to remove from this user?',
+                                confirmText: 'Remove',
+                                cancelText: 'Cancel',
+                              );
+
+                              if (shouldProceed != true) return;
+
+                              if (shouldProceed == true) {
+                                final success = await userProvider.removeRole(
+                                  widget.clientsChild!.client.user!.userId,
+                                  role.roleId,
+                                );
+                                if (success) {
+                                  setState(() {
+                                    getRoles();
+                                  });
+                                  CustomSnackbar.show(
+                                    context,
+                                    message: 'Role removed successfully.',
+                                    type: SnackbarType.success,
+                                  );
+                                } else {
+                                  CustomSnackbar.show(
+                                    context,
+                                    message:
+                                        'Failed to remove role. Please try again.',
+                                    type: SnackbarType.error,
+                                  );
+                                }
+                              }
+                            },
+                            deleteIcon: const Icon(Icons.close, size: 18),
+                            backgroundColor: colorScheme.surfaceContainerLowest,
+                          );
+                        }),
+
+                        PrimaryButton(
+                          onPressed: () async {
+                            await _showAddRoleDialog(context);
+                          },
+                          label: 'Add Role',
+                          icon: Icons.add,
+                        ),
+                      ],
+                    ),
+                  ],
+
                   const SizedBox(width: 40, height: 20),
                   if (clientsChildFormProvider.isUpdate)
                     Row(
@@ -649,6 +774,53 @@ class _ClientDetailsScreenState extends State<ClientDetailsScreen> {
     );
   }
 
+  Future<void> _showAddRoleDialog(BuildContext context) async {
+    final selectedRoleId = await showDialog<int>(
+      context: context,
+      builder: (ctx) {
+        return AlertDialog(
+          title: const Text('Assign Role'),
+          content: SizedBox(
+            width: 400,
+            child: DropdownButtonFormField<int>(
+              decoration: const InputDecoration(labelText: 'Select Role'),
+              items: roles.map((r) {
+                return DropdownMenuItem<int>(
+                  value: r.roleId,
+                  child: Text(r.name),
+                );
+              }).toList(),
+              onChanged: (value) {
+                Navigator.pop(ctx, value);
+              },
+            ),
+          ),
+        );
+      },
+    );
+
+    if (selectedRoleId != null && widget.clientsChild != null) {
+      final success = await userProvider.addRole(
+        widget.clientsChild!.client.user!.userId,
+        selectedRoleId,
+      );
+      if (success) {
+        CustomSnackbar.show(
+          context,
+          message: 'Role successfully added.',
+          type: SnackbarType.success,
+        );
+        getRoles();
+      } else {
+        CustomSnackbar.show(
+          context,
+          message: 'Failed to add role. Please try again.',
+          type: SnackbarType.error,
+        );
+      }
+    }
+  }
+
   Widget _saveRow() {
     return Padding(
       padding: const EdgeInsets.all(8.0),
@@ -695,6 +867,7 @@ class _ClientDetailsScreenState extends State<ClientDetailsScreen> {
                 clientsChildProvider,
                 clientId,
                 childId,
+                isAccessAllowed,
               );
 
               if (!mounted) return;

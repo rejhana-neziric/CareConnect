@@ -121,6 +121,7 @@ class _ParticipantListScreeenState extends State<ParticipantListScreeen> {
 
     return MasterScreen(
       "Participants",
+      currentScreen: "Workshops",
       Center(
         child: Column(
           mainAxisSize: MainAxisSize.max,
@@ -186,7 +187,7 @@ class _ParticipantListScreeenState extends State<ParticipantListScreeen> {
               //Sort By Attendance Status
               SizedBox(
                 width: 220,
-                child: CustomDropdownFliter(
+                child: CustomDropdownFilter(
                   selectedValue: selectedAttendanceStatus?.name,
                   options: attendanceOptions,
                   name: "Attendance Status: ",
@@ -207,7 +208,7 @@ class _ParticipantListScreeenState extends State<ParticipantListScreeen> {
               //Sort By Dropdown
               SizedBox(
                 width: 220,
-                child: CustomDropdownFliter(
+                child: CustomDropdownFilter(
                   selectedValue: selectedSortingOption,
                   options: sortingOptions,
                   name: "Sort by: ",

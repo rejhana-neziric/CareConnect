@@ -181,6 +181,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
                 ),
               ),
       ),
+      currentScreen: "Report",
     );
   }
 

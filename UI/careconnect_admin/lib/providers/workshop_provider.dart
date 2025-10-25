@@ -6,7 +6,7 @@ import 'package:careconnect_admin/models/search_objects/workshop_search_object.d
 import 'package:careconnect_admin/models/workshopML/training_result.dart';
 import 'package:careconnect_admin/models/workshopML/workshop_prediction.dart';
 import 'package:careconnect_admin/providers/base_provider.dart';
-import 'package:careconnect_admin/screens/participant_list_screeen.dart';
+import 'package:careconnect_admin/screens/workshops/participant_list_screeen.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
@@ -102,7 +102,7 @@ class WorkshopProvider extends BaseProvider<Workshop> {
         return await cancelWorkshop(workshop);
       case 'View Participants':
         viewWorkshopParticipants(workshop, context);
-        break;
+        return true;
     }
     return false;
   }
