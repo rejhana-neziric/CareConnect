@@ -5,10 +5,10 @@ import 'package:careconnect_mobile/models/responses/workshop.dart';
 import 'package:careconnect_mobile/providers/appointment_provider.dart';
 import 'package:careconnect_mobile/providers/auth_provider.dart';
 import 'package:careconnect_mobile/providers/workshop_provider.dart';
-import 'package:careconnect_mobile/screens/appointment_details_screen.dart';
-import 'package:careconnect_mobile/screens/my_appointments_screen.dart';
-import 'package:careconnect_mobile/screens/my_workshops_screen.dart';
-import 'package:careconnect_mobile/screens/workshop_details_screen.dart';
+import 'package:careconnect_mobile/screens/appointments/appointment_details_screen.dart';
+import 'package:careconnect_mobile/screens/appointments/my_appointments_screen.dart';
+import 'package:careconnect_mobile/screens/workshops/my_workshops_screen.dart';
+import 'package:careconnect_mobile/screens/workshops/workshop_details_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
@@ -149,7 +149,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      "Here’s a quick look at your appointments and workshops.",
+                      "Here is a quick look at your appointments and workshops.",
                       style: TextStyle(fontSize: 16, color: Colors.white),
                     ),
                   ],
@@ -261,10 +261,10 @@ class _HomeScreenState extends State<HomeScreen> {
 
     if (appointments.isEmpty) {
       return SizedBox(
-        height: 100,
+        height: 200,
         child: Center(
           child: Text(
-            "No upcoming appointments",
+            "No upcoming appointments.",
             style: TextStyle(color: Colors.grey),
           ),
         ),
@@ -294,14 +294,20 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Widget _buildWorkshopsSection(ColorScheme colorScheme) {
     if (isLoadingWorkshops) {
-      return const Center(child: CircularProgressIndicator());
+      return const SizedBox(
+        height: 200,
+        child: Center(child: CircularProgressIndicator()),
+      );
     }
 
     if (workshops.isEmpty) {
-      return const Center(
-        child: Text(
-          "No workshops available",
-          style: TextStyle(color: Colors.grey),
+      return SizedBox(
+        height: 200,
+        child: const Center(
+          child: Text(
+            "You have not enroll in workshops yet.",
+            style: TextStyle(color: Colors.grey),
+          ),
         ),
       );
     }
@@ -311,7 +317,7 @@ class _HomeScreenState extends State<HomeScreen> {
       child: workshops.isEmpty
           ? const Center(
               child: Text(
-                "No upcoming appointments",
+                "You have not enroll in workshops yet.",
                 style: TextStyle(color: Colors.grey),
               ),
             )

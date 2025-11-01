@@ -6,12 +6,14 @@ import 'package:careconnect_admin/models/responses/search_result.dart';
 import 'package:careconnect_admin/providers/client_provider.dart';
 import 'package:careconnect_admin/providers/clients_child_form_provider.dart';
 import 'package:careconnect_admin/providers/clients_child_provider.dart';
+import 'package:careconnect_admin/providers/permission_provider.dart';
 import 'package:careconnect_admin/providers/role_permissions_provider.dart';
 import 'package:careconnect_admin/providers/user_provider.dart';
 import 'package:careconnect_admin/screens/clients/add_child_for_client_screen.dart';
 import 'package:careconnect_admin/screens/clients/child_details_screen.dart';
 import 'package:careconnect_admin/core/theme/app_colors.dart';
 import 'package:careconnect_admin/core/utils.dart';
+import 'package:careconnect_admin/screens/no_permission_screen.dart';
 import 'package:careconnect_admin/widgets/confirm_dialog.dart';
 import 'package:careconnect_admin/widgets/custom_checkbox_field.dart';
 import 'package:careconnect_admin/widgets/custom_date_field.dart';
@@ -45,6 +47,7 @@ class _ClientDetailsScreenState extends State<ClientDetailsScreen> {
   late UserProvider userProvider;
   late RolePermissionsProvider rolePermissionsProvider;
   bool isLoading = true;
+  late PermissionProvider permissionProvider;
 
   @override
   void didChangeDependencies() {
@@ -60,12 +63,14 @@ class _ClientDetailsScreenState extends State<ClientDetailsScreen> {
     clientProvider = context.read<ClientProvider>();
     userProvider = context.read<UserProvider>();
     rolePermissionsProvider = context.read<RolePermissionsProvider>();
-
-    if (widget.clientsChild != null) {
-      getRoles();
-    }
+    permissionProvider = context.read<PermissionProvider>();
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (widget.clientsChild != null) {
+        if (permissionProvider.canViewRolesForUser()) getUserRoles();
+        if (permissionProvider.canGetAllRoles()) getRoles();
+      }
+
       initForm();
     });
   }
@@ -85,10 +90,6 @@ class _ClientDetailsScreenState extends State<ClientDetailsScreen> {
         "gender": widget.clientsChild?.client.user?.gender,
         "address": widget.clientsChild?.client.user?.address,
         "employmentStatus": widget.clientsChild?.client.employmentStatus,
-        // "childFirstName": widget.clientsChild?.child.firstName,
-        // "childLastName": widget.clientsChild?.child.lastName,
-        // "childBirthDate": widget.clientsChild?.child.birthDate,
-        // "childGender": widget.clientsChild?.child.gender,
         "childFirstName": null,
         "childLastName": null,
         "childBirthDate": null,
@@ -98,22 +99,13 @@ class _ClientDetailsScreenState extends State<ClientDetailsScreen> {
       isAccessAllowed = widget.clientsChild!.client.user!.status;
     }
 
-    // dynamic children;
-
-    // if (widget.clientsChild?.client.user != null) {
-    //   children = await clientsChildProvider.getChildren(
-    //     widget.clientsChild!.client.user!.userId,
-    //   );
-    // }
-
     setState(() {
       _initialValue = Map<String, dynamic>.from(
         clientsChildFormProvider.initialData,
       );
       isLoading = false;
 
-      getChildren();
-      // otherChildren = children;
+      if (permissionProvider.canViewClientsChildren()) getChildren();
     });
 
     WidgetsBinding.instance.addPostFrameCallback((_) async {
@@ -141,7 +133,7 @@ class _ClientDetailsScreenState extends State<ClientDetailsScreen> {
     });
   }
 
-  void getRoles() async {
+  void getUserRoles() async {
     setState(() {
       isLoading = true;
     });
@@ -150,9 +142,20 @@ class _ClientDetailsScreenState extends State<ClientDetailsScreen> {
       userId: widget.clientsChild!.client.user!.userId,
     );
 
+    userRoles = response;
+
+    setState(() {
+      isLoading = false;
+    });
+  }
+
+  void getRoles() async {
+    setState(() {
+      isLoading = true;
+    });
+
     final allRoles = await rolePermissionsProvider.getRoles();
 
-    userRoles = response;
     roles = allRoles;
 
     setState(() {
@@ -162,6 +165,20 @@ class _ClientDetailsScreenState extends State<ClientDetailsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final permissionProvider = context.watch<PermissionProvider>();
+
+    // !permissionProvider.canViewClientDetails()
+
+    if (!permissionProvider.canViewClientDetails() &&
+        !(permissionProvider.canInsertClient() &&
+            widget.clientsChild == null)) {
+      return MasterScreen(
+        'Clients Details',
+        NoPermissionScreen(),
+        currentScreen: "Clients Details",
+      );
+    }
+
     return MasterScreen(
       "Clients Details",
       currentScreen: "Clients",
@@ -181,7 +198,11 @@ class _ClientDetailsScreenState extends State<ClientDetailsScreen> {
                     },
                   ),
                 const SizedBox(height: 20),
-                _saveRow(),
+                if ((permissionProvider.canUpdateClientChild() &&
+                        widget.clientsChild != null) ||
+                    (permissionProvider.canInsertClient() &&
+                        widget.clientsChild == null))
+                  _saveRow(),
               ],
             ),
           ),
@@ -195,6 +216,8 @@ class _ClientDetailsScreenState extends State<ClientDetailsScreen> {
     final clientsChildFormProvider = Provider.of<ClientsChildFormProvider>(
       context,
     );
+
+    final permissionProvider = context.watch<PermissionProvider>();
 
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
@@ -213,7 +236,7 @@ class _ClientDetailsScreenState extends State<ClientDetailsScreen> {
               child: Padding(
                 padding: const EdgeInsets.all(8.0),
                 child: Text(
-                  "Client/Parent Information",
+                  "Parent Information",
                   style: TextStyle(
                     color: AppColors.white,
                     fontSize: 18,
@@ -406,7 +429,9 @@ class _ClientDetailsScreenState extends State<ClientDetailsScreen> {
                       ],
                     ),
 
-                  if (widget.clientsChild != null) ...[
+                  if (widget.clientsChild != null &&
+                      permissionProvider.canViewRolesForUser() &&
+                      isLoading == false) ...[
                     const SizedBox(width: 40, height: 40),
 
                     buildSectionTitle("Roles", colorScheme),
@@ -415,64 +440,76 @@ class _ClientDetailsScreenState extends State<ClientDetailsScreen> {
                       spacing: 8,
                       runSpacing: 8,
                       children: [
+                        //  if (userRoles.isEmpty && isLoading == false)
+                        //     Text('This user does not have assigned roles yet.')
+                        //   else
                         ...userRoles.map((role) {
                           return InputChip(
                             label: Text(role.name),
                             onDeleted: () async {
-                              final shouldProceed = await CustomConfirmDialog.show(
-                                context,
-                                icon: Icons.error,
-                                title: 'Remove role',
-                                content:
-                                    'Are you sure you want to remove from this user?',
-                                confirmText: 'Remove',
-                                cancelText: 'Cancel',
-                              );
+                              if (permissionProvider.canRemoveRoleFromUser()) {
+                                final shouldProceed =
+                                    await CustomConfirmDialog.show(
+                                      context,
+                                      icon: Icons.error,
+                                      title: 'Remove role',
+                                      content:
+                                          'Are you sure you want to remove from this user?',
+                                      confirmText: 'Remove',
+                                      cancelText: 'Cancel',
+                                    );
 
-                              if (shouldProceed != true) return;
+                                if (shouldProceed != true) return;
 
-                              if (shouldProceed == true) {
-                                final success = await userProvider.removeRole(
-                                  widget.clientsChild!.client.user!.userId,
-                                  role.roleId,
-                                );
-                                if (success) {
-                                  setState(() {
-                                    getRoles();
-                                  });
-                                  CustomSnackbar.show(
-                                    context,
-                                    message: 'Role removed successfully.',
-                                    type: SnackbarType.success,
+                                if (shouldProceed == true) {
+                                  final success = await userProvider.removeRole(
+                                    widget.clientsChild!.client.user!.userId,
+                                    role.roleId,
                                   );
-                                } else {
-                                  CustomSnackbar.show(
-                                    context,
-                                    message:
-                                        'Failed to remove role. Please try again.',
-                                    type: SnackbarType.error,
-                                  );
+                                  if (success) {
+                                    setState(() {
+                                      getRoles();
+                                    });
+                                    CustomSnackbar.show(
+                                      context,
+                                      message: 'Role removed successfully.',
+                                      type: SnackbarType.success,
+                                    );
+                                  } else {
+                                    CustomSnackbar.show(
+                                      context,
+                                      message:
+                                          'Failed to remove role. Please try again.',
+                                      type: SnackbarType.error,
+                                    );
+                                  }
                                 }
                               }
                             },
-                            deleteIcon: const Icon(Icons.close, size: 18),
+                            deleteIcon:
+                                permissionProvider.canRemoveRoleFromUser() ==
+                                    true
+                                ? const Icon(Icons.close, size: 18)
+                                : null,
                             backgroundColor: colorScheme.surfaceContainerLowest,
                           );
                         }),
 
-                        PrimaryButton(
-                          onPressed: () async {
-                            await _showAddRoleDialog(context);
-                          },
-                          label: 'Add Role',
-                          icon: Icons.add,
-                        ),
+                        if (permissionProvider.canAddRoleToUser())
+                          PrimaryButton(
+                            onPressed: () async {
+                              await _showAddRoleDialog(context);
+                            },
+                            label: 'Add Role',
+                            icon: Icons.add,
+                          ),
                       ],
                     ),
                   ],
 
                   const SizedBox(width: 40, height: 20),
-                  if (clientsChildFormProvider.isUpdate)
+                  if (clientsChildFormProvider.isUpdate &&
+                      permissionProvider.canAddChildToClient())
                     Row(
                       mainAxisAlignment: MainAxisAlignment.end,
 
@@ -596,7 +633,8 @@ class _ClientDetailsScreenState extends State<ClientDetailsScreen> {
               ],
             ),
           const SizedBox(height: 16),
-          if (clientsChildFormProvider.isUpdate)
+          if (clientsChildFormProvider.isUpdate &&
+              permissionProvider.canViewClientsChildren())
             ExpansionTile(
               title: Container(
                 color: colorScheme.secondary,
@@ -649,116 +687,153 @@ class _ClientDetailsScreenState extends State<ClientDetailsScreen> {
                           trailing: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              IconButton(
-                                icon: Icon(
-                                  Icons.visibility,
-                                  color: Colors.blue,
-                                ),
-                                tooltip: "View details",
-                                onPressed: () {
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (_) => ChangeNotifierProvider(
-                                        create: (_) =>
-                                            ClientsChildFormProvider()
-                                              ..setForInsert(),
-                                        child: ChildDetailsScreen(
-                                          client: widget.clientsChild!.client,
-                                          child: child,
-                                        ),
-                                      ),
+                              Center(
+                                child: PopupMenuButton<String>(
+                                  onSelected: (value) async {
+                                    if (value == 'details') {
+                                      if (!permissionProvider
+                                          .canViewChildDetails()) {
+                                        CustomSnackbar.show(
+                                          context,
+                                          message:
+                                              'You do not have permission to perform this action.',
+                                          type: SnackbarType.error,
+                                        );
+                                      } else {
+                                        final result = await Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                            builder: (_) =>
+                                                ChangeNotifierProvider(
+                                                  create: (_) =>
+                                                      ClientsChildFormProvider()
+                                                        ..setForInsert(),
+                                                  child: ChildDetailsScreen(
+                                                    client: widget
+                                                        .clientsChild!
+                                                        .client,
+                                                    child: child,
+                                                  ),
+                                                ),
+                                          ),
+                                        );
+
+                                        // if i add edit child option fix this
+                                        // if (result == true &&
+                                        //     onPageChanged != null) {
+                                        //   onPageChanged!(currentPage);
+                                        // }
+                                      }
+                                    } else if (value == 'delete') {
+                                      if (!permissionProvider
+                                          .canRemoveChildFromClient()) {
+                                        CustomSnackbar.show(
+                                          context,
+                                          message:
+                                              'You do not have permission to perform this action.',
+                                          type: SnackbarType.error,
+                                        );
+                                      } else {
+                                        // Confirm delete
+                                        final clientId = widget
+                                            .clientsChild
+                                            ?.client
+                                            .user
+                                            ?.userId;
+                                        final childId = child.childId;
+
+                                        if (clientId == null) {
+                                          return;
+                                        }
+
+                                        if (otherChildren?.length != 1) {
+                                          final shouldProceed =
+                                              await CustomConfirmDialog.show(
+                                                context,
+                                                icon: Icons.info,
+
+                                                title: 'Delete Child',
+                                                content:
+                                                    'Are you sure you want to delete this child?',
+                                                confirmText: 'Delete',
+                                                cancelText: 'Cancel',
+                                              );
+
+                                          if (shouldProceed != true) return;
+
+                                          final success =
+                                              await clientsChildProvider
+                                                  .removeChildFromClient(
+                                                    clientId,
+                                                    childId,
+                                                  );
+
+                                          if (!mounted) return;
+
+                                          CustomSnackbar.show(
+                                            context,
+                                            message: success
+                                                ? 'Child successfully deleted.'
+                                                : 'Something went wrong. Please try again.',
+                                            type: success
+                                                ? SnackbarType.success
+                                                : SnackbarType.error,
+                                          );
+
+                                          if (success) {
+                                            setState(() {
+                                              getChildren();
+                                            });
+                                          }
+                                        } else {
+                                          final shouldProceed =
+                                              await CustomConfirmDialog.show(
+                                                context,
+                                                icon: Icons.info,
+
+                                                title: 'Delete Child',
+                                                content:
+                                                    'Are you sure you want to delete this child? Deleting this child will also delete information about parent!',
+                                                confirmText: 'Delete',
+                                                cancelText: 'Cancel',
+                                              );
+
+                                          if (shouldProceed != true) return;
+
+                                          final success = await clientProvider
+                                              .delete(clientId);
+
+                                          if (!mounted) return;
+
+                                          CustomSnackbar.show(
+                                            context,
+                                            message: success
+                                                ? 'Client and child successfully deleted.'
+                                                : 'Something went wrong. Please try again.',
+                                            type: success
+                                                ? SnackbarType.success
+                                                : SnackbarType.error,
+                                          );
+
+                                          if (success) {
+                                            Navigator.of(context).pop(success);
+                                          }
+                                        }
+                                      }
+                                    }
+                                  },
+                                  itemBuilder: (context) => [
+                                    const PopupMenuItem(
+                                      value: 'details',
+                                      child: Text('View child details'),
                                     ),
-                                  );
-                                },
-                              ),
-                              IconButton(
-                                icon: Icon(Icons.delete, color: Colors.red),
-                                tooltip: "Delete child",
-                                onPressed: () async {
-                                  // Confirm delete
-                                  final clientId =
-                                      widget.clientsChild?.client.user?.userId;
-                                  final childId = child.childId;
-
-                                  if (clientId == null) {
-                                    return;
-                                  }
-
-                                  if (otherChildren?.length != 1) {
-                                    final shouldProceed =
-                                        await CustomConfirmDialog.show(
-                                          context,
-                                          icon: Icons.info,
-
-                                          title: 'Delete Child',
-                                          content:
-                                              'Are you sure you want to delete this child?',
-                                          confirmText: 'Delete',
-                                          cancelText: 'Cancel',
-                                        );
-
-                                    if (shouldProceed != true) return;
-
-                                    final success = await clientsChildProvider
-                                        .removeChildFromClient(
-                                          clientId,
-                                          childId,
-                                        );
-
-                                    if (!mounted) return;
-
-                                    CustomSnackbar.show(
-                                      context,
-                                      message: success
-                                          ? 'Child successfully deleted.'
-                                          : 'Something went wrong. Please try again.',
-                                      type: success
-                                          ? SnackbarType.success
-                                          : SnackbarType.error,
-                                    );
-
-                                    if (success) {
-                                      setState(() {
-                                        getChildren();
-                                      });
-                                    }
-                                  } else {
-                                    final shouldProceed =
-                                        await CustomConfirmDialog.show(
-                                          context,
-                                          icon: Icons.info,
-
-                                          title: 'Delete Child',
-                                          content:
-                                              'Are you sure you want to delete this child? Deleting this child will also delete information about parent!',
-                                          confirmText: 'Delete',
-                                          cancelText: 'Cancel',
-                                        );
-
-                                    if (shouldProceed != true) return;
-
-                                    final success = await clientProvider.delete(
-                                      clientId,
-                                    );
-
-                                    if (!mounted) return;
-
-                                    CustomSnackbar.show(
-                                      context,
-                                      message: success
-                                          ? 'Client and child successfully deleted.'
-                                          : 'Something went wrong. Please try again.',
-                                      type: success
-                                          ? SnackbarType.success
-                                          : SnackbarType.error,
-                                    );
-
-                                    if (success) {
-                                      Navigator.of(context).pop(success);
-                                    }
-                                  }
-                                },
+                                    const PopupMenuItem(
+                                      value: 'delete',
+                                      child: Text('Delete child details'),
+                                    ),
+                                  ],
+                                  child: const Icon(Icons.more_vert),
+                                ),
                               ),
                             ],
                           ),

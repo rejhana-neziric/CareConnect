@@ -8,7 +8,9 @@ import 'package:careconnect_admin/models/responses/search_result.dart';
 import 'package:careconnect_admin/providers/appointment_provider.dart';
 import 'package:careconnect_admin/providers/child_provider.dart';
 import 'package:careconnect_admin/providers/employee_provider.dart';
+import 'package:careconnect_admin/providers/permission_provider.dart';
 import 'package:careconnect_admin/screens/appointments/appointment_details_screen.dart';
+import 'package:careconnect_admin/screens/no_permission_screen.dart';
 import 'package:careconnect_admin/widgets/confirm_dialog.dart';
 import 'package:careconnect_admin/widgets/custom_dropdown_fliter.dart';
 import 'package:careconnect_admin/widgets/no_results.dart';
@@ -30,6 +32,7 @@ class _AppointmentListScreenState extends State<AppointmentListScreen> {
   late AppointmentProvider appointmentProvider;
   late EmployeeProvider employeeProvider;
   late ChildProvider childProvider;
+  late PermissionProvider permissionProvider;
 
   SearchResult<Appointment>? result;
   int currentPage = 0;
@@ -90,6 +93,11 @@ class _AppointmentListScreenState extends State<AppointmentListScreen> {
     appointmentProvider = context.read<AppointmentProvider>();
     employeeProvider = context.read<EmployeeProvider>();
     childProvider = context.read<ChildProvider>();
+    permissionProvider = Provider.of<PermissionProvider>(
+      context,
+      listen: false,
+    );
+
     loadData();
     loadEmployees();
     loadChildren();
@@ -182,6 +190,16 @@ class _AppointmentListScreenState extends State<AppointmentListScreen> {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
 
+    // authProvider.user?.permissions.add(AppPermissions.appointmentView);
+
+    if (!permissionProvider.canViewAppointmentScreen()) {
+      return MasterScreen(
+        'Appointments',
+        NoPermissionScreen(),
+        currentScreen: "Appointments",
+      );
+    }
+
     return MasterScreen(
       'Appointments',
       Center(
@@ -197,7 +215,10 @@ class _AppointmentListScreenState extends State<AppointmentListScreen> {
           ],
         ),
       ),
-      button: PrimaryButton(onPressed: () {}, label: 'Add Appointment'),
+
+      button: permissionProvider.canInsertAppointment()
+          ? PrimaryButton(onPressed: () {}, label: 'Add Appointment')
+          : null,
       currentScreen: "Appointments",
     );
   }
@@ -218,6 +239,8 @@ class _AppointmentListScreenState extends State<AppointmentListScreen> {
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               // Employee
+
+              // if(permissionProvider.cangetempl)
               SizedBox(
                 width: 220,
                 child: CustomDropdownFilter(
@@ -337,9 +360,9 @@ class _AppointmentListScreenState extends State<AppointmentListScreen> {
   }
 
   Widget _buildResultView() {
-    // if (isLoading) {
-    //   return const Expanded(child: Center(child: CircularProgressIndicator()));
-    // }
+    if (isLoading && (result == null || result!.result.isEmpty)) {
+      return const Expanded(child: Center(child: CircularProgressIndicator()));
+    }
 
     if (result != null && result?.result.isEmpty == false) {
       return Expanded(
@@ -356,19 +379,43 @@ class _AppointmentListScreenState extends State<AppointmentListScreen> {
                 onActionSelected: (appointment, action) {
                   switch (action) {
                     case 'Cancel':
-                      _cancelAppointment(appointment);
+                      if (permissionProvider.canCancelAppointment()) {
+                        _cancelAppointment(appointment);
+                      } else {
+                        _showNoPermission();
+                      }
                       break;
                     case 'Confirm':
-                      _confirmAppointment(appointment);
+                      if (permissionProvider.canConfirmAppointment()) {
+                        _confirmAppointment(appointment);
+                      } else {
+                        _showNoPermission();
+                      }
                       break;
                     case 'Reschedule':
-                      _rescheduleAppointment(appointment);
+                      if (permissionProvider.canRescheduleAppointment()) {
+                        _rescheduleAppointment(appointment);
+                      } else {
+                        _showNoPermission();
+                      }
                     case 'Request Reschedule':
-                      _requestRescheduleAppointment(appointment);
+                      if (permissionProvider.canRescheduleAppointment()) {
+                        _requestRescheduleAppointment(appointment);
+                      } else {
+                        _showNoPermission();
+                      }
                     case 'Start':
-                      _startAppointment(appointment);
+                      if (permissionProvider.canStartAppointment()) {
+                        _startAppointment(appointment);
+                      } else {
+                        _showNoPermission();
+                      }
                     case 'Complete':
-                      _completeAppointment(appointment);
+                      if (permissionProvider.canCompleteAppointment()) {
+                        _completeAppointment(appointment);
+                      } else {
+                        _showNoPermission();
+                      }
                       break;
                     default:
                       print('Unknown action: $action');
@@ -395,6 +442,14 @@ class _AppointmentListScreenState extends State<AppointmentListScreen> {
     );
   }
 
+  void _showNoPermission() {
+    CustomSnackbar.show(
+      context,
+      message: 'You do not have permission to perform this action.',
+      type: SnackbarType.error,
+    );
+  }
+
   Future<void> _handleAppointmentAction({
     required Appointment appointment,
     required String title,
@@ -418,6 +473,22 @@ class _AppointmentListScreenState extends State<AppointmentListScreen> {
     final success = await action(appointmentId: appointment.appointmentId);
 
     if (!mounted) return;
+
+    if (success) {
+      final updatedAppointment = appointmentProvider.item.result.firstWhere(
+        (a) => a.appointmentId == appointment.appointmentId,
+      );
+
+      final index = tableKey.currentState?._dataSource?.appointments.indexWhere(
+        (a) => a.appointmentId == updatedAppointment.appointmentId,
+      );
+
+      if (index != null && index != -1) {
+        tableKey.currentState!._dataSource!.appointments[index] =
+            updatedAppointment;
+        tableKey.currentState!._dataSource!.notifyListeners();
+      }
+    }
 
     CustomSnackbar.show(
       context,
@@ -511,6 +582,7 @@ class _AppointmentTableState extends State<AppointmentTable> {
   bool isLoading = false;
   AppointmentDataSource? _dataSource;
   late AppointmentProvider appointmentProvider;
+  // late PermissionProvider permissionProvider;
 
   bool isHoveredParent = false;
   bool isHoveredChild = false;
@@ -519,6 +591,11 @@ class _AppointmentTableState extends State<AppointmentTable> {
   void initState() {
     super.initState();
     _updateDataSource();
+    // permissionProvider = Provider.of<PermissionProvider>(
+    //   context,
+    //   listen: false,
+    // );
+
     appointmentProvider = context.read<AppointmentProvider>();
   }
 
@@ -535,6 +612,13 @@ class _AppointmentTableState extends State<AppointmentTable> {
     final appointments = widget.result?.result ?? [];
     final totalCount = widget.result?.totalCount ?? 0;
 
+    final permissionProvider = Provider.of<PermissionProvider>(
+      context,
+      listen: false,
+    );
+
+    final canViewDetails = permissionProvider.canGetByIdAppointment();
+
     _dataSource = AppointmentDataSource(
       appointments,
       context,
@@ -543,6 +627,7 @@ class _AppointmentTableState extends State<AppointmentTable> {
       pageSize: _pageSize,
       currentPage: currentPage,
       onActionSelected: widget.onActionSelected,
+      canViewDetails: canViewDetails,
     );
   }
 
@@ -589,6 +674,11 @@ class _AppointmentTableState extends State<AppointmentTable> {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
 
+    final permissionProvider = Provider.of<PermissionProvider>(
+      context,
+      listen: false,
+    );
+
     final appointments = widget.result?.result ?? [];
 
     if (isLoading && appointments.isEmpty) {
@@ -614,7 +704,8 @@ class _AppointmentTableState extends State<AppointmentTable> {
             DataColumn2(label: Text('Time'), size: ColumnSize.S),
             DataColumn2(label: Text('Status'), size: ColumnSize.L),
             DataColumn2(label: Text('Actions'), size: ColumnSize.S),
-            DataColumn2(label: Text('Details'), size: ColumnSize.S),
+            if (permissionProvider.canGetByIdAppointment())
+              DataColumn2(label: Text('Details'), size: ColumnSize.S),
           ],
           source: _dataSource!,
           rowsPerPage: _pageSize,
@@ -634,9 +725,7 @@ class _AppointmentTableState extends State<AppointmentTable> {
         if (isLoading)
           Positioned.fill(
             child: Container(
-              color: colorScheme.surfaceContainerLowest.withAlpha(
-                (0.9 * 255).toInt(),
-              ), //Colors.white.withAlpha((0.7 * 255).toInt()),
+              color: Colors.transparent,
               child: const Center(child: CircularProgressIndicator()),
             ),
           ),
@@ -653,6 +742,7 @@ class AppointmentDataSource extends DataTableSource {
   final int pageSize;
   final int currentPage;
   final void Function(Appointment appointment, String action) onActionSelected;
+  final bool canViewDetails;
 
   AppointmentDataSource(
     this.appointments,
@@ -662,6 +752,7 @@ class AppointmentDataSource extends DataTableSource {
     this.pageSize = 10,
     this.currentPage = 0,
     required this.onActionSelected,
+    required this.canViewDetails,
   });
 
   final ValueNotifier<int?> hoveredRowNotifier = ValueNotifier(null);
@@ -745,35 +836,35 @@ class AppointmentDataSource extends DataTableSource {
             ),
           ),
         ),
-
-        DataCell(
-          Row(
-            children: [
-              IconButton(
-                icon: const Icon(Icons.visibility),
-                tooltip: 'View Details',
-                onPressed: () async {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => ChangeNotifierProvider(
-                        create: (_) => AppointmentProvider(),
-                        child: AppointmentDetailsScreen(
-                          appointment: appointment,
+        if (canViewDetails)
+          DataCell(
+            Row(
+              children: [
+                IconButton(
+                  icon: const Icon(Icons.visibility),
+                  tooltip: 'View Details',
+                  onPressed: () async {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => ChangeNotifierProvider(
+                          create: (_) => AppointmentProvider(),
+                          child: AppointmentDetailsScreen(
+                            appointment: appointment,
+                          ),
                         ),
                       ),
-                    ),
-                  ).then((result) async {
-                    if (result == true && onPageChanged != null) {
-                      await onPageChanged!(currentPage);
-                    }
-                  });
-                },
-              ),
-              // other action buttons if needed
-            ],
+                    ).then((result) async {
+                      if (result == true && onPageChanged != null) {
+                        await onPageChanged!(currentPage);
+                      }
+                    });
+                  },
+                ),
+                // other action buttons if needed
+              ],
+            ),
           ),
-        ),
       ],
     );
   }

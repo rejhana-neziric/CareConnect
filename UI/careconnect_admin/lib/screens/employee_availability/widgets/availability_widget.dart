@@ -1,5 +1,6 @@
 import 'package:careconnect_admin/models/responses/service.dart';
 import 'package:careconnect_admin/models/time_slot.dart';
+import 'package:careconnect_admin/providers/permission_provider.dart';
 import 'package:careconnect_admin/providers/service_provider.dart';
 import 'package:careconnect_admin/screens/employee_availability/widgets/add_slot_dialog.dart';
 import 'package:careconnect_admin/screens/employee_availability/widgets/edit_slot_dialog.dart';
@@ -17,6 +18,8 @@ class AvailabilityWidget extends StatefulWidget {
 }
 
 class _AvailabilityWidgetState extends State<AvailabilityWidget> {
+  late PermissionProvider permissionProvider;
+
   final List<String> daysOfWeek = [
     "Monday",
     "Tuesday",
@@ -40,6 +43,11 @@ class _AvailabilityWidgetState extends State<AvailabilityWidget> {
     super.initState();
 
     serviceProvider = context.read<ServiceProvider>();
+
+    permissionProvider = Provider.of<PermissionProvider>(
+      context,
+      listen: false,
+    );
 
     loadServices();
   }
@@ -272,7 +280,8 @@ class _AvailabilityWidgetState extends State<AvailabilityWidget> {
             ...daySlots.map((slot) => _buildSlotBlock(slot, colorScheme)),
 
             // Add button (when empty or on hover)
-            if (daySlots.isEmpty)
+            if (daySlots.isEmpty &&
+                permissionProvider.canInsertEmployeeAvailability())
               Center(
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -307,7 +316,9 @@ class _AvailabilityWidgetState extends State<AvailabilityWidget> {
       right: 2,
       height: height,
       child: GestureDetector(
-        onTap: () => editSlot(slot),
+        onTap: () => permissionProvider.canUpdateEmployeeAvailability()
+            ? editSlot(slot)
+            : null,
         child: Container(
           margin: const EdgeInsets.symmetric(vertical: 1),
           decoration: BoxDecoration(

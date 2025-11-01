@@ -11,6 +11,8 @@ import 'package:careconnect_admin/providers/children_diagnosis_provider.dart';
 import 'package:careconnect_admin/providers/clients_child_form_provider.dart';
 import 'package:careconnect_admin/providers/clients_child_provider.dart';
 import 'package:careconnect_admin/core/theme/app_colors.dart';
+import 'package:careconnect_admin/providers/permission_provider.dart';
+import 'package:careconnect_admin/screens/no_permission_screen.dart';
 import 'package:careconnect_admin/widgets/primary_button.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
@@ -130,6 +132,16 @@ class _ChildDetailsScreenState extends State<ChildDetailsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final permissionProvider = context.watch<PermissionProvider>();
+
+    if (!permissionProvider.canViewChildDetails()) {
+      return MasterScreen(
+        'Child Details',
+        NoPermissionScreen(),
+        currentScreen: "Clients",
+      );
+    }
+
     return MasterScreen(
       "Child Details",
       currentScreen: "Clients",

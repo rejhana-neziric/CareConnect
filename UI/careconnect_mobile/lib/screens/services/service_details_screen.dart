@@ -2,11 +2,13 @@ import 'package:careconnect_mobile/models/auth_user.dart';
 import 'package:careconnect_mobile/models/responses/employee.dart';
 import 'package:careconnect_mobile/models/responses/service.dart';
 import 'package:careconnect_mobile/providers/auth_provider.dart';
+import 'package:careconnect_mobile/providers/permission_provider.dart';
 import 'package:careconnect_mobile/providers/service_provider.dart';
-import 'package:careconnect_mobile/screens/scheduling_appointment/appointment_scheduling_screen.dart';
-import 'package:careconnect_mobile/screens/employee_profile_screen.dart';
+import 'package:careconnect_mobile/screens/no_permission_screen.dart';
+import 'package:careconnect_mobile/screens/appointments/scheduling_appointment/appointment_scheduling_screen.dart';
+import 'package:careconnect_mobile/screens/services/employee_profile_screen.dart';
+import 'package:careconnect_mobile/widgets/snackbar.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 
 class ServiceDetailsScreen extends StatefulWidget {
@@ -36,7 +38,9 @@ class _ServiceDetailsScreenState extends State<ServiceDetailsScreen>
 
     serviceProvider = context.read<ServiceProvider>();
 
-    loadEmployees();
+    final permissionProvider = context.read<PermissionProvider>();
+
+    if (permissionProvider.canGetEmployeesForService()) loadEmployees();
   }
 
   void loadEmployees() async {
@@ -53,6 +57,29 @@ class _ServiceDetailsScreenState extends State<ServiceDetailsScreen>
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
+
+    final permissionProvider = context.read<PermissionProvider>();
+
+    if (!permissionProvider.canGetByIdService()) {
+      return Scaffold(
+        backgroundColor: colorScheme.surfaceContainerLow,
+        appBar: AppBar(
+          elevation: 0,
+          backgroundColor: colorScheme.surfaceContainerLow,
+          foregroundColor: colorScheme.onSurface,
+          title: Text(
+            'Service Details',
+            style: TextStyle(
+              fontWeight: FontWeight.w600,
+              fontSize: 18,
+              color: colorScheme.onSurface,
+            ),
+          ),
+        ),
+        body: NoPermissionScreen(),
+      );
+    }
+
     return Scaffold(
       backgroundColor: colorScheme.surfaceContainerLow,
       appBar: AppBar(
@@ -73,7 +100,8 @@ class _ServiceDetailsScreenState extends State<ServiceDetailsScreen>
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             _buildServiceInfo(colorScheme),
-            _buildEmployeesTab(colorScheme),
+            if (permissionProvider.canGetEmployeesForService())
+              _buildEmployeesTab(colorScheme),
           ],
         ),
       ),
@@ -107,21 +135,23 @@ class _ServiceDetailsScreenState extends State<ServiceDetailsScreen>
           ),
           const SizedBox(height: 16),
           Row(
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
               _buildPriceCard(
                 'Regular price',
-                widget.service.price,
+                widget.service.price?.toStringAsFixed(2),
                 Icons.attach_money,
                 colorScheme,
               ),
-              const SizedBox(width: 12),
-              if (widget.service.memberPrice != null)
-                _buildPriceCard(
-                  'Member price',
-                  widget.service.memberPrice,
-                  Icons.card_membership,
-                  colorScheme,
-                ),
+
+              //const SizedBox(width: 12),
+              // if (widget.service.memberPrice != null)
+              //   _buildPriceCard(
+              //     'Member price',
+              //     widget.service.serviceType?.name,
+              //     Icons.card_membership,
+              //     colorScheme,
+              //   ),
             ],
           ),
           if (widget.service.description != null) ...[
@@ -151,7 +181,7 @@ class _ServiceDetailsScreenState extends State<ServiceDetailsScreen>
 
   Widget _buildPriceCard(
     String label,
-    double? price,
+    String? price,
     IconData icon,
     ColorScheme colorScheme,
   ) {
@@ -186,7 +216,7 @@ class _ServiceDetailsScreenState extends State<ServiceDetailsScreen>
                   ),
                 ),
                 Text(
-                  price != null ? '\$${price.toStringAsFixed(2)}' : 'N/A',
+                  price != null ? price : 'Not provided',
                   style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
@@ -205,12 +235,12 @@ class _ServiceDetailsScreenState extends State<ServiceDetailsScreen>
     if (employees == null || employees?.isEmpty == true) {
       return Text('No current available employee, please connact support.');
     }
+
     return ListView.builder(
       shrinkWrap: true,
       physics: NeverScrollableScrollPhysics(),
       padding: const EdgeInsets.all(24),
       itemCount: employees!.length,
-
       itemBuilder: (context, index) {
         final employee = employees![index];
         return _buildEmployeeCard(employee, colorScheme);
@@ -219,6 +249,8 @@ class _ServiceDetailsScreenState extends State<ServiceDetailsScreen>
   }
 
   Widget _buildEmployeeCard(Employee employee, ColorScheme colorScheme) {
+    final permissionProvider = context.read<PermissionProvider>();
+
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       padding: const EdgeInsets.all(20),
@@ -285,7 +317,10 @@ class _ServiceDetailsScreenState extends State<ServiceDetailsScreen>
             children: [
               Expanded(
                 child: ElevatedButton.icon(
-                  onPressed: () => _scheduleAppointment(employee),
+                  onPressed: () =>
+                      permissionProvider.canScheduleAppointment() == true
+                      ? _scheduleAppointment(employee)
+                      : _showNoPermission(),
                   icon: const Icon(Icons.calendar_today, size: 18),
                   label: const Text('Schedule'),
                   style: ElevatedButton.styleFrom(
@@ -322,6 +357,15 @@ class _ServiceDetailsScreenState extends State<ServiceDetailsScreen>
     );
   }
 
+  void _showNoPermission() {
+    CustomSnackbar.show(
+      context,
+      message:
+          'Sorry, you do not have permission to perform this action. Contact administration.',
+      type: SnackbarType.error,
+    );
+  }
+
   void _scheduleAppointment(Employee employee) {
     // HapticFeedback.lightImpact();
     // showModalBottomSheet(
@@ -350,10 +394,8 @@ class _ServiceDetailsScreenState extends State<ServiceDetailsScreen>
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => EmployeeProfileScreen(
-          employee: employee,
-          serviceId: widget.service.serviceId,
-        ),
+        builder: (context) =>
+            EmployeeProfileScreen(employee: employee, service: widget.service),
       ),
     );
   }

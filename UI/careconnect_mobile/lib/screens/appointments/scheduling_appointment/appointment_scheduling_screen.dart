@@ -3,7 +3,7 @@ import 'package:careconnect_mobile/models/responses/employee_availability.dart';
 import 'package:careconnect_mobile/models/responses/service.dart';
 import 'package:careconnect_mobile/models/time_slot.dart';
 import 'package:careconnect_mobile/providers/employee_provider.dart';
-import 'package:careconnect_mobile/screens/scheduling_appointment/appointment_confirmation_screen.dart';
+import 'package:careconnect_mobile/screens/appointments/scheduling_appointment/appointment_confirmation_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';

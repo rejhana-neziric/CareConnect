@@ -3,8 +3,10 @@ import 'package:careconnect_admin/core/theme/app_colors.dart';
 import 'package:careconnect_admin/models/requests/role_insert_request.dart';
 import 'package:careconnect_admin/models/responses/permission_group.dart';
 import 'package:careconnect_admin/models/responses/role.dart';
+import 'package:careconnect_admin/providers/permission_provider.dart';
 import 'package:careconnect_admin/providers/role_permissions_provider.dart';
 import 'package:careconnect_admin/providers/role_provider.dart';
+import 'package:careconnect_admin/screens/no_permission_screen.dart';
 import 'package:careconnect_admin/widgets/confirm_dialog.dart';
 import 'package:careconnect_admin/widgets/no_results.dart';
 import 'package:careconnect_admin/widgets/primary_button.dart';
@@ -39,15 +41,24 @@ class _RolePermissionsScreenState extends State<RolePermissionsScreen> {
     rolePermissionsProvider = context.read<RolePermissionsProvider>();
     roleProvider = context.read<RoleProvider>();
 
+    final permissionProvider = context.read<PermissionProvider>();
+
     _loadData();
   }
 
   Future<void> _loadData() async {
+    final permissionProvider = context.read<PermissionProvider>();
+
     setState(() => isLoading = true);
     try {
-      final rolesData = await rolePermissionsProvider.getRoles();
-      final permissionsData = await rolePermissionsProvider
-          .getGroupedPermissions();
+      final List<Role> rolesData = permissionProvider.canGetAllRoles()
+          ? await rolePermissionsProvider.getRoles()
+          : [];
+
+      final List<PermissionGroup> permissionsData =
+          permissionProvider.canGetPermissions()
+          ? await rolePermissionsProvider.getGroupedPermissions()
+          : [];
 
       setState(() {
         roles = rolesData;
@@ -74,8 +85,19 @@ class _RolePermissionsScreenState extends State<RolePermissionsScreen> {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
 
+    final permissionProvider = context.watch<PermissionProvider>();
+
+    if (!permissionProvider.canViewRolePermissions()) {
+      return MasterScreen(
+        'Role Permissions Management',
+        NoPermissionScreen(),
+        currentScreen: "Roles and Permissions",
+      );
+    }
+
     return MasterScreen(
       "Role Permissions Management",
+      currentScreen: "Roles and Permissions",
       Scaffold(
         backgroundColor: colorScheme.surfaceContainerLowest,
         body: isLoading
@@ -119,16 +141,25 @@ class _RolePermissionsScreenState extends State<RolePermissionsScreen> {
                             ],
                           ),
                         ),
-                        Expanded(child: _buildRoles()),
-                        Padding(
-                          padding: const EdgeInsets.all(32.0),
-                          child: Center(
-                            child: PrimaryButton(
-                              onPressed: () => showRoleDialog(context),
-                              label: 'Add Role',
+                        if (permissionProvider.canGetAllRoles())
+                          Expanded(child: _buildRoles())
+                        else
+                          const Center(
+                            child: Text(
+                              'Sorry, you do not have permission to view roles.',
                             ),
                           ),
-                        ),
+
+                        if (permissionProvider.canInsertRole())
+                          Padding(
+                            padding: const EdgeInsets.all(32.0),
+                            child: Center(
+                              child: PrimaryButton(
+                                onPressed: () => showRoleDialog(context),
+                                label: 'Add Role',
+                              ),
+                            ),
+                          ),
                       ],
                     ),
                   ),
@@ -183,10 +214,12 @@ class _RolePermissionsScreenState extends State<RolePermissionsScreen> {
                                     child: const Text('Refresh'),
                                   ),
                                   SizedBox(width: 12),
-                                  PrimaryButton(
-                                    onPressed: _savePermissions,
-                                    label: 'Save Changes',
-                                  ),
+                                  if (permissionProvider
+                                      .canUpdateRolePermissions())
+                                    PrimaryButton(
+                                      onPressed: _savePermissions,
+                                      label: 'Save Changes',
+                                    ),
                                 ],
                               ),
                               SizedBox(height: 16),
@@ -226,13 +259,14 @@ class _RolePermissionsScreenState extends State<RolePermissionsScreen> {
                 ],
               ),
       ),
-      currentScreen: "Roles and Permissions",
     );
   }
 
   Widget _buildRoles() {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
+
+    final permissionProvider = context.read<PermissionProvider>();
 
     return ListView.builder(
       itemCount: roles.length,
@@ -322,9 +356,27 @@ class _RolePermissionsScreenState extends State<RolePermissionsScreen> {
             trailing: PopupMenuButton<String>(
               onSelected: (value) {
                 if (value == 'edit') {
-                  showRoleDialog(context, role: role);
+                  if (!permissionProvider.canGetByIdRole()) {
+                    CustomSnackbar.show(
+                      context,
+                      message:
+                          'You do not have permission to perform this action.',
+                      type: SnackbarType.error,
+                    );
+                  } else {
+                    showRoleDialog(context, role: role);
+                  }
                 } else if (value == 'delete') {
-                  _deleteRole(role);
+                  if (!permissionProvider.canDeleteRole()) {
+                    CustomSnackbar.show(
+                      context,
+                      message:
+                          'You do not have permission to perform this action.',
+                      type: SnackbarType.error,
+                    );
+                  } else {
+                    _deleteRole(role);
+                  }
                 }
               },
               itemBuilder: (context) => [
@@ -369,6 +421,14 @@ class _RolePermissionsScreenState extends State<RolePermissionsScreen> {
   Widget _buildPermissions() {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
+
+    final permissionProvider = context.read<PermissionProvider>();
+
+    if (!permissionProvider.canGetPermissions()) {
+      return Center(
+        child: Text('Sorry, you do not have permission to view permissions.'),
+      );
+    }
 
     if (filteredPermissionGroups.isEmpty) {
       return NoResultsWidget(message: 'No results found. Please try again.');
@@ -588,25 +648,19 @@ class _RolePermissionsScreenState extends State<RolePermissionsScreen> {
       await _loadData();
 
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Row(
-              children: [
-                Icon(Icons.check_circle, color: Colors.white),
-                SizedBox(width: 12),
-                Text('Permissions updated successfully'),
-              ],
-            ),
-            backgroundColor: Colors.green,
-            behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(10),
-            ),
-          ),
+        CustomSnackbar.show(
+          context,
+          message: 'Permissions updated successfully',
+          type: SnackbarType.success,
         );
       }
     } catch (e) {
-      _showError('Failed to save permissions: $e');
+      // _showError('Failed to save permissions: $e');
+      CustomSnackbar.show(
+        context,
+        message: 'Something went wrong, please try again.',
+        type: SnackbarType.error,
+      );
     } finally {
       setState(() => isSaving = false);
     }
@@ -661,6 +715,8 @@ class _RolePermissionsScreenState extends State<RolePermissionsScreen> {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
 
+    final permissionProvider = context.read<PermissionProvider>();
+
     final TextEditingController nameController = TextEditingController(
       text: role?.name ?? '',
     );
@@ -686,6 +742,9 @@ class _RolePermissionsScreenState extends State<RolePermissionsScreen> {
                   width: 400,
                   child: TextFormField(
                     controller: nameController,
+                    enabled:
+                        (permissionProvider.canEditRole() && role != null) ||
+                        (permissionProvider.canInsertRole() && role == null),
                     decoration: InputDecoration(
                       label: RichText(
                         text: TextSpan(
@@ -721,6 +780,9 @@ class _RolePermissionsScreenState extends State<RolePermissionsScreen> {
                   width: 400,
                   child: TextFormField(
                     controller: descriptionController,
+                    enabled:
+                        (permissionProvider.canEditRole() && role != null) ||
+                        (permissionProvider.canInsertRole() && role == null),
                     decoration: InputDecoration(
                       labelText: 'Description',
                       labelStyle: TextStyle(
@@ -747,64 +809,66 @@ class _RolePermissionsScreenState extends State<RolePermissionsScreen> {
               onPressed: () => Navigator.pop(ctx),
               child: const Text('Cancel'),
             ),
-            PrimaryButton(
-              onPressed: () async {
-                if (!formKey.currentState!.validate()) return;
+            if ((permissionProvider.canEditRole() && role != null) ||
+                (permissionProvider.canInsertRole() && role == null))
+              PrimaryButton(
+                onPressed: () async {
+                  if (!formKey.currentState!.validate()) return;
 
-                Navigator.of(ctx).pop();
+                  Navigator.of(ctx).pop();
 
-                final request = RoleInsertRequest(
-                  name: nameController.text,
-                  description: descriptionController.text.isEmpty
-                      ? null
-                      : descriptionController.text,
-                );
+                  final request = RoleInsertRequest(
+                    name: nameController.text,
+                    description: descriptionController.text.isEmpty
+                        ? null
+                        : descriptionController.text,
+                  );
 
-                if (isEditing) {
-                  // Call update API
+                  if (isEditing) {
+                    // Call update API
 
-                  try {
-                    await roleProvider.update(role.roleId, request);
+                    try {
+                      await roleProvider.update(role.roleId, request);
 
-                    CustomSnackbar.show(
-                      context,
-                      message: 'Role updated successfully.',
-                      type: SnackbarType.success,
-                    );
-
-                    _loadData();
-                  } catch (e) {
-                    if (mounted) {
                       CustomSnackbar.show(
                         context,
-                        message: 'Something went wrong. Please try again.',
+                        message: 'Role updated successfully.',
                         type: SnackbarType.success,
                       );
-                    }
-                  }
-                } else {
-                  try {
-                    await roleProvider.insert(request);
 
-                    CustomSnackbar.show(
-                      context,
-                      message: 'Successfully added new role.',
-                      type: SnackbarType.success,
-                    );
-                    _loadData();
-                  } catch (e) {
-                    if (mounted) {
+                      _loadData();
+                    } catch (e) {
+                      if (mounted) {
+                        CustomSnackbar.show(
+                          context,
+                          message: 'Something went wrong. Please try again.',
+                          type: SnackbarType.success,
+                        );
+                      }
+                    }
+                  } else {
+                    try {
+                      await roleProvider.insert(request);
+
                       CustomSnackbar.show(
                         context,
-                        message: 'Something went wrong. Please try again.',
+                        message: 'Successfully added new role.',
                         type: SnackbarType.success,
                       );
+                      _loadData();
+                    } catch (e) {
+                      if (mounted) {
+                        CustomSnackbar.show(
+                          context,
+                          message: 'Something went wrong. Please try again.',
+                          type: SnackbarType.success,
+                        );
+                      }
                     }
                   }
-                }
-              },
-              label: 'Save',
-            ),
+                },
+                label: 'Save',
+              ),
           ],
         );
       },

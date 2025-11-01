@@ -3,7 +3,9 @@ import 'package:careconnect_admin/models/responses/employee.dart';
 import 'package:careconnect_admin/models/responses/search_result.dart';
 import 'package:careconnect_admin/providers/employee_form_provider.dart';
 import 'package:careconnect_admin/providers/employee_provider.dart';
+import 'package:careconnect_admin/providers/permission_provider.dart';
 import 'package:careconnect_admin/screens/employees/employee_details_screen.dart';
+import 'package:careconnect_admin/screens/no_permission_screen.dart';
 import 'package:careconnect_admin/widgets/confirm_dialog.dart';
 import 'package:careconnect_admin/widgets/custom_dropdown_fliter.dart';
 import 'package:careconnect_admin/widgets/no_results.dart';
@@ -27,6 +29,7 @@ class EmployeeListScreen extends StatefulWidget {
 
 class _EmployeeListScreenState extends State<EmployeeListScreen> {
   late EmployeeProvider employeeProvider;
+  late PermissionProvider permissionProvider;
 
   SearchResult<Employee>? employees;
   int currentPage = 0;
@@ -81,6 +84,11 @@ class _EmployeeListScreenState extends State<EmployeeListScreen> {
   void initState() {
     super.initState();
     employeeProvider = context.read<EmployeeProvider>();
+    permissionProvider = Provider.of<PermissionProvider>(
+      context,
+      listen: false,
+    );
+
     loadData();
   }
 
@@ -120,7 +128,9 @@ class _EmployeeListScreenState extends State<EmployeeListScreen> {
       newThisMonth = statistics['employedThisMonth'];
 
       if (mounted) {
-        setState(() {});
+        setState(() {
+          isLoading = false;
+        });
       }
     } finally {
       setState(() {
@@ -134,12 +144,20 @@ class _EmployeeListScreenState extends State<EmployeeListScreen> {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
 
+    if (!permissionProvider.canViewEmployeeScreen()) {
+      return MasterScreen(
+        'Employees',
+        NoPermissionScreen(),
+        currentScreen: "Employees",
+      );
+    }
+
     return MasterScreen(
       "Employees",
       currentScreen: "Employees",
       Column(
         children: [
-          _buildOverview(),
+          if (permissionProvider.canViewEmployeeStatistics()) _buildOverview(),
           _buildSearch(colorScheme),
           Consumer<EmployeeProvider>(
             builder: (context, employeeProvider, child) {
@@ -148,28 +166,30 @@ class _EmployeeListScreenState extends State<EmployeeListScreen> {
           ),
         ],
       ),
-      button: SizedBox(
-        child: Align(
-          alignment: Alignment.topRight,
-          child: PrimaryButton(
-            onPressed: () async {
-              final result = await Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => ChangeNotifierProvider(
-                    create: (_) => EmployeeFormProvider(),
-                    child: EmployeeDetailsScreen(employee: null),
-                  ),
-                ),
-              );
+      button: permissionProvider.canInsertEmployee()
+          ? SizedBox(
+              child: Align(
+                alignment: Alignment.topRight,
+                child: PrimaryButton(
+                  onPressed: () async {
+                    final result = await Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => ChangeNotifierProvider(
+                          create: (_) => EmployeeFormProvider(),
+                          child: EmployeeDetailsScreen(employee: null),
+                        ),
+                      ),
+                    );
 
-              if (result == true) loadData();
-            },
-            label: 'Add Employee',
-            icon: Icons.person_add_alt_1,
-          ),
-        ),
-      ),
+                    if (result == true) loadData();
+                  },
+                  label: 'Add Employee',
+                  icon: Icons.person_add_alt_1,
+                ),
+              ),
+            )
+          : null,
     );
   }
 
@@ -379,6 +399,10 @@ class _EmployeeListScreenState extends State<EmployeeListScreen> {
   }
 
   Widget _buildResultView() {
+    if (isLoading && (employees == null || employees!.result.isEmpty)) {
+      return const Expanded(child: Center(child: CircularProgressIndicator()));
+    }
+
     return (employees != null && employees?.result.isEmpty == false)
         ? Expanded(
             child: Padding(
@@ -442,6 +466,14 @@ class _EmployeeTableState extends State<EmployeeTable> {
     final employees = widget.result?.result ?? [];
     final totalCount = widget.result?.totalCount ?? 0;
 
+    final permissionProvider = Provider.of<PermissionProvider>(
+      context,
+      listen: false,
+    );
+
+    final canViewEmployeeDetails = permissionProvider.canGetByIdEmployee();
+    final canDeleteEmployee = permissionProvider.canDeleteEmployee();
+
     _dataSource = EmployeeDataSource(
       employees,
       context,
@@ -450,6 +482,8 @@ class _EmployeeTableState extends State<EmployeeTable> {
       onPageChanged: _fetchPage,
       pageSize: _pageSize,
       currentPage: currentPage,
+      canViewEmployeeDetails: canViewEmployeeDetails,
+      canDeleteEmployee: canDeleteEmployee,
     );
   }
 
@@ -523,9 +557,6 @@ class _EmployeeTableState extends State<EmployeeTable> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
-
     final employees = widget.result?.result ?? [];
     //final totalCount = widget.result?.totalCount ?? 0;
 
@@ -577,9 +608,7 @@ class _EmployeeTableState extends State<EmployeeTable> {
         if (isLoading)
           Positioned.fill(
             child: Container(
-              color: colorScheme.surfaceContainerLowest.withAlpha(
-                (0.9 * 255).toInt(),
-              ), //Colors.white.withAlpha((0.7 * 255).toInt()),
+              color: Colors.transparent,
               child: const Center(child: CircularProgressIndicator()),
             ),
           ),
@@ -596,6 +625,8 @@ class EmployeeDataSource extends DataTableSource {
   final void Function(Employee employee) delete;
   final int pageSize;
   final int currentPage;
+  final bool canViewEmployeeDetails;
+  final bool canDeleteEmployee;
 
   EmployeeDataSource(
     this.employees,
@@ -605,6 +636,8 @@ class EmployeeDataSource extends DataTableSource {
     this.onPageChanged,
     this.pageSize = 10,
     this.currentPage = 0,
+    required this.canViewEmployeeDetails,
+    required this.canDeleteEmployee,
   });
 
   @override
@@ -649,38 +682,57 @@ class EmployeeDataSource extends DataTableSource {
           ),
         ),
         DataCell(
-          Row(
-            children: [
-              IconButton(
-                icon: const Icon(Icons.edit_outlined, color: Colors.grey),
-                tooltip: 'Edit',
-                onPressed: () async {
-                  final result = await Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => ChangeNotifierProvider(
-                        create: (_) => EmployeeFormProvider(),
-                        child: EmployeeDetailsScreen(employee: employee),
+          Center(
+            child: PopupMenuButton<String>(
+              onSelected: (value) async {
+                if (value == 'details') {
+                  if (!canViewEmployeeDetails) {
+                    CustomSnackbar.show(
+                      context,
+                      message:
+                          'You do not have permission to perform this action.',
+                      type: SnackbarType.error,
+                    );
+                  } else {
+                    final result = await Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => ChangeNotifierProvider(
+                          create: (_) => EmployeeFormProvider(),
+                          child: EmployeeDetailsScreen(employee: employee),
+                        ),
                       ),
-                    ),
-                  );
+                    );
 
-                  if (result == true && onPageChanged != null) {
-                    onPageChanged!(currentPage);
+                    if (result == true && onPageChanged != null) {
+                      onPageChanged!(currentPage);
+                    }
                   }
-                },
-              ),
-              IconButton(
-                icon: const Icon(
-                  Icons.delete_outline_outlined,
-                  color: Colors.grey,
+                } else if (value == 'delete') {
+                  if (!canDeleteEmployee) {
+                    CustomSnackbar.show(
+                      context,
+                      message:
+                          'You do not have permission to perform this action.',
+                      type: SnackbarType.error,
+                    );
+                  } else {
+                    delete(employee);
+                  }
+                }
+              },
+              itemBuilder: (context) => [
+                const PopupMenuItem(
+                  value: 'details',
+                  child: Text('View employee details'),
                 ),
-                tooltip: 'Delete',
-                onPressed: () async {
-                  delete(employee);
-                },
-              ),
-            ],
+                const PopupMenuItem(
+                  value: 'delete',
+                  child: Text('Delete employee'),
+                ),
+              ],
+              child: const Icon(Icons.more_vert),
+            ),
           ),
         ),
       ],

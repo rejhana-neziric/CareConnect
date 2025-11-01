@@ -6,8 +6,10 @@ import 'package:careconnect_admin/providers/employee_form_provider.dart';
 import 'package:careconnect_admin/providers/employee_provider.dart';
 import 'package:careconnect_admin/core/theme/app_colors.dart';
 import 'package:careconnect_admin/core/utils.dart';
+import 'package:careconnect_admin/providers/permission_provider.dart';
 import 'package:careconnect_admin/providers/role_permissions_provider.dart';
 import 'package:careconnect_admin/providers/user_provider.dart';
+import 'package:careconnect_admin/screens/no_permission_screen.dart';
 import 'package:careconnect_admin/widgets/confirm_dialog.dart';
 import 'package:careconnect_admin/widgets/custom_date_field.dart';
 import 'package:careconnect_admin/widgets/custom_dropdown_field.dart';
@@ -128,6 +130,16 @@ class _EmployeeDetailsScreenState extends State<EmployeeDetailsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final permissionProvider = context.watch<PermissionProvider>();
+
+    if (!permissionProvider.canGetByIdEmployee()) {
+      return MasterScreen(
+        'Employee Details',
+        NoPermissionScreen(),
+        currentScreen: "Employees",
+      );
+    }
+
     return MasterScreen(
       "Employee Details",
       currentScreen: "Employees",
@@ -141,7 +153,14 @@ class _EmployeeDetailsScreenState extends State<EmployeeDetailsScreen> {
               children: [
                 if (!isLoading) _buildForm(),
                 const SizedBox(height: 20),
-                _actionButtons(),
+
+                if ((permissionProvider.canEditEmployee() &&
+                        widget.employee != null) ||
+                    (permissionProvider.canInsertEmployee() &&
+                        widget.employee == null) ||
+                    (permissionProvider.canDeleteEmployee() &&
+                        widget.employee != null))
+                  _actionButtons(),
               ],
             ),
           ),
@@ -153,6 +172,8 @@ class _EmployeeDetailsScreenState extends State<EmployeeDetailsScreen> {
 
   Widget _buildForm() {
     final employeeFormProvider = Provider.of<EmployeeFormProvider>(context);
+
+    final permissionProvider = context.watch<PermissionProvider>();
 
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
@@ -379,7 +400,9 @@ class _EmployeeDetailsScreenState extends State<EmployeeDetailsScreen> {
               ],
             ),
 
-          if (widget.employee != null) ...[
+          if (widget.employee != null &&
+              permissionProvider.canViewRolesForUser() &&
+              isLoading == false) ...[
             const SizedBox(width: 40, height: 40),
 
             buildSectionTitle("Roles", colorScheme),
@@ -392,53 +415,60 @@ class _EmployeeDetailsScreenState extends State<EmployeeDetailsScreen> {
                   return InputChip(
                     label: Text(role.name),
                     onDeleted: () async {
-                      final shouldProceed = await CustomConfirmDialog.show(
-                        context,
-                        icon: Icons.error,
-                        title: 'Remove role',
-                        content:
-                            'Are you sure you want to remove from this user?',
-                        confirmText: 'Remove',
-                        cancelText: 'Cancel',
-                      );
-
-                      if (shouldProceed != true) return;
-
-                      if (shouldProceed == true) {
-                        final success = await userProvider.removeRole(
-                          widget.employee!.user!.userId,
-                          role.roleId,
+                      if (permissionProvider.canRemoveRoleFromUser()) {
+                        final shouldProceed = await CustomConfirmDialog.show(
+                          context,
+                          icon: Icons.error,
+                          title: 'Remove role',
+                          content:
+                              'Are you sure you want to remove from this user?',
+                          confirmText: 'Remove',
+                          cancelText: 'Cancel',
                         );
-                        if (success) {
-                          setState(() {
-                            getRoles();
-                          });
-                          CustomSnackbar.show(
-                            context,
-                            message: 'Role removed successfully.',
-                            type: SnackbarType.success,
+
+                        if (shouldProceed != true) return;
+
+                        if (shouldProceed == true) {
+                          final success = await userProvider.removeRole(
+                            widget.employee!.user!.userId,
+                            role.roleId,
                           );
-                        } else {
-                          CustomSnackbar.show(
-                            context,
-                            message: 'Failed to remove role. Please try again.',
-                            type: SnackbarType.error,
-                          );
+                          if (success) {
+                            setState(() {
+                              getRoles();
+                            });
+                            CustomSnackbar.show(
+                              context,
+                              message: 'Role removed successfully.',
+                              type: SnackbarType.success,
+                            );
+                          } else {
+                            CustomSnackbar.show(
+                              context,
+                              message:
+                                  'Failed to remove role. Please try again.',
+                              type: SnackbarType.error,
+                            );
+                          }
                         }
                       }
                     },
-                    deleteIcon: const Icon(Icons.close, size: 18),
+                    deleteIcon:
+                        permissionProvider.canRemoveRoleFromUser() == true
+                        ? const Icon(Icons.close, size: 18)
+                        : null,
                     backgroundColor: colorScheme.surfaceContainerLowest,
                   );
                 }),
 
-                PrimaryButton(
-                  onPressed: () async {
-                    await _showAddRoleDialog(context);
-                  },
-                  label: 'Add Role',
-                  icon: Icons.add,
-                ),
+                if (permissionProvider.canAddRoleToUser())
+                  PrimaryButton(
+                    onPressed: () async {
+                      await _showAddRoleDialog(context);
+                    },
+                    label: 'Add Role',
+                    icon: Icons.add,
+                  ),
               ],
             ),
 
@@ -499,10 +529,13 @@ class _EmployeeDetailsScreenState extends State<EmployeeDetailsScreen> {
   Widget _actionButtons() {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
+
+    final permissionProvider = context.read<PermissionProvider>();
+
     return SizedBox(
       child: Row(
         children: [
-          if (widget.employee != null)
+          if (widget.employee != null && permissionProvider.canDeleteEmployee())
             PrimaryButton(
               onPressed: () async {
                 delete();
@@ -512,24 +545,29 @@ class _EmployeeDetailsScreenState extends State<EmployeeDetailsScreen> {
             ),
 
           Spacer(),
-          Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              PrimaryButton(
-                onPressed: () async {
-                  Navigator.pop(context);
-                },
-                label: 'Cancel',
-              ),
-              SizedBox(width: 10),
-              PrimaryButton(
-                onPressed: () async {
-                  save();
-                },
-                label: 'Save',
-              ),
-            ],
-          ),
+
+          if ((permissionProvider.canEditEmployee() &&
+                  widget.employee != null) ||
+              (permissionProvider.canInsertEmployee() &&
+                  widget.employee == null))
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                PrimaryButton(
+                  onPressed: () async {
+                    Navigator.pop(context);
+                  },
+                  label: 'Cancel',
+                ),
+                SizedBox(width: 10),
+                PrimaryButton(
+                  onPressed: () async {
+                    save();
+                  },
+                  label: 'Save',
+                ),
+              ],
+            ),
         ],
       ),
     );

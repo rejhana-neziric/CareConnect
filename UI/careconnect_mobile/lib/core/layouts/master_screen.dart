@@ -4,15 +4,13 @@ import 'package:careconnect_mobile/models/auth_credentials.dart';
 import 'package:careconnect_mobile/providers/auth_provider.dart';
 import 'package:careconnect_mobile/providers/notification_provider.dart';
 import 'package:careconnect_mobile/providers/signalr.dart';
-import 'package:careconnect_mobile/screens/client_list_screen.dart';
-import 'package:careconnect_mobile/screens/employee_list_screen.dart';
 import 'package:careconnect_mobile/screens/home_screen.dart';
 import 'package:careconnect_mobile/screens/login_screen.dart';
 import 'package:careconnect_mobile/screens/notifications_screen.dart';
 import 'package:careconnect_mobile/screens/profile/profile_screen.dart';
 import 'package:careconnect_mobile/screens/review/review_list_screen.dart';
-import 'package:careconnect_mobile/screens/services_list_screen.dart';
-import 'package:careconnect_mobile/screens/workshops_list_screen.dart';
+import 'package:careconnect_mobile/screens/services/services_list_screen.dart';
+import 'package:careconnect_mobile/screens/workshops/workshops_list_screen.dart';
 import 'package:careconnect_mobile/widgets/notification_bell.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -104,27 +102,30 @@ class _MasterScreenState extends State<MasterScreen> {
             ),
             _buildDrawerItem(
               context,
-              title: "Profile",
-              icon: Icons.account_circle,
-              screen: ProfileScreen(),
-            ),
-            _buildDrawerItem(
-              context,
               title: "My Reviews",
               icon: Icons.reviews,
               screen: ReviewListScreen(),
             ),
-            _buildDrawerItem(
-              context,
-              title: "Employees",
-              icon: Icons.people,
-              screen: const EmployeeListScreen(),
+
+            // _buildDrawerItem(
+            //   context,
+            //   title: "Employees",
+            //   icon: Icons.people,
+            //   screen: const EmployeeListScreen(),
+            // ),
+            Padding(
+              padding: const EdgeInsets.symmetric(
+                horizontal: 16.0,
+                vertical: 8.0,
+              ),
+              child: Divider(color: colorScheme.outline.withOpacity(0.3)),
             ),
+
             _buildDrawerItem(
               context,
-              title: "Clients",
-              icon: Icons.person,
-              screen: const ClientListScreen(),
+              title: "Profile",
+              icon: Icons.account_circle,
+              screen: ProfileScreen(),
             ),
 
             _buildDrawerItem(

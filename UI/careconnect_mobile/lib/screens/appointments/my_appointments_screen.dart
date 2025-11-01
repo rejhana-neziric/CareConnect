@@ -5,9 +5,11 @@ import 'package:careconnect_mobile/models/responses/search_result.dart';
 import 'package:careconnect_mobile/models/responses/service_type.dart';
 import 'package:careconnect_mobile/providers/appointment_provider.dart';
 import 'package:careconnect_mobile/providers/auth_provider.dart';
+import 'package:careconnect_mobile/providers/permission_provider.dart';
 import 'package:careconnect_mobile/providers/service_type_provider.dart';
 import 'package:careconnect_mobile/providers/utils.dart';
-import 'package:careconnect_mobile/screens/appointment_details_screen.dart';
+import 'package:careconnect_mobile/screens/appointments/appointment_details_screen.dart';
+import 'package:careconnect_mobile/screens/no_permission_screen.dart';
 import 'package:careconnect_mobile/widgets/filter/filter_config.dart';
 import 'package:careconnect_mobile/widgets/filter/filter_option.dart';
 import 'package:careconnect_mobile/widgets/filter/filter_section.dart';
@@ -55,8 +57,10 @@ class _MyAppointmentsScreenState extends State<MyAppointmentsScreen> {
       currentUser = auth.user;
     });
 
-    loadAppointments();
-    loadServiceTypes();
+    final permissionProvider = context.read<PermissionProvider>();
+
+    if (permissionProvider.canGetAppointments()) loadAppointments();
+    if (permissionProvider.canGetServiceTypes()) loadServiceTypes();
   }
 
   Future<void> loadAppointments() async {
@@ -183,34 +187,42 @@ class _MyAppointmentsScreenState extends State<MyAppointmentsScreen> {
 
   Map<String, List<String>> appliedFilters = {};
 
-  FilterConfig get foodFilterConfig => FilterConfig(
-    title: 'Filters',
-    sections: [
+  FilterConfig get filterConfig {
+    final permissionProvider = context.read<PermissionProvider>();
+
+    final sections = <FilterSection>[
       FilterSection(
         title: 'Status',
         allowMultipleSelection: false,
         options: buildStatusOptions(),
       ),
+    ];
 
-      FilterSection(
-        title: 'Service Type',
-        allowMultipleSelection: false,
-        options: buildServiceTypeOptions(),
-      ),
+    if (permissionProvider.canGetServiceTypes()) {
+      sections.add(
+        FilterSection(
+          title: 'Service Type',
+          allowMultipleSelection: false,
+          options: buildServiceTypeOptions(),
+        ),
+      );
+    }
 
+    sections.addAll([
       FilterSection(
         title: 'Sort by',
         allowMultipleSelection: false,
         options: buildSortByOptions(),
       ),
-
       FilterSection(
         title: 'Sort direction',
         allowMultipleSelection: false,
         options: buildSortDirectionOptions(),
       ),
-    ],
-  );
+    ]);
+
+    return FilterConfig(title: 'Filters', sections: sections);
+  }
 
   String getFirstFilterValue(String filterKey) {
     final values = appliedFilters[filterKey];
@@ -220,7 +232,7 @@ class _MyAppointmentsScreenState extends State<MyAppointmentsScreen> {
   void _showFilters() {
     showGenericFilter(
       context: context,
-      config: foodFilterConfig,
+      config: filterConfig,
       initialFilters: appliedFilters,
       onApply: _handleFilterApply,
       onClearAll: _handleClearAll,
@@ -277,6 +289,31 @@ class _MyAppointmentsScreenState extends State<MyAppointmentsScreen> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
+
+    final permissionProvider = context.read<PermissionProvider>();
+
+    if (!permissionProvider.canGetAppointments()) {
+      return Scaffold(
+        backgroundColor: colorScheme.surfaceContainerLow,
+        appBar: AppBar(
+          elevation: 0,
+          backgroundColor: colorScheme.surfaceContainerLow,
+          foregroundColor: colorScheme.onSurface,
+          title: Text(
+            'Appointments',
+            style: TextStyle(
+              fontWeight: FontWeight.w600,
+              fontSize: 18,
+              color: colorScheme.onSurface,
+            ),
+          ),
+        ),
+        body: const Padding(
+          padding: EdgeInsets.all(16.0),
+          child: Center(child: NoPermissionScreen()),
+        ),
+      );
+    }
 
     return Scaffold(
       backgroundColor: colorScheme.surfaceContainerLow,

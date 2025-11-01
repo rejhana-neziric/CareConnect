@@ -4,8 +4,10 @@ import 'package:careconnect_mobile/models/responses/child.dart';
 import 'package:careconnect_mobile/models/responses/workshop.dart';
 import 'package:careconnect_mobile/providers/auth_provider.dart';
 import 'package:careconnect_mobile/providers/participant_provider.dart';
+import 'package:careconnect_mobile/providers/permission_provider.dart';
 import 'package:careconnect_mobile/providers/workshop_provider.dart';
-import 'package:careconnect_mobile/screens/workshop_details_screen.dart';
+import 'package:careconnect_mobile/screens/no_permission_screen.dart';
+import 'package:careconnect_mobile/screens/workshops/workshop_details_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
@@ -45,7 +47,9 @@ class _MyWorkshopsScreenState extends State<MyWorkshopsScreen> {
       currentUser = auth.user;
     });
 
-    loadWorkshops();
+    final permissionProvider = context.read<PermissionProvider>();
+
+    if (permissionProvider.canGetWorkshops()) loadWorkshops();
   }
 
   Future<void> loadWorkshops() async {
@@ -68,6 +72,31 @@ class _MyWorkshopsScreenState extends State<MyWorkshopsScreen> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
+
+    final permissionProvider = context.read<PermissionProvider>();
+
+    if (!permissionProvider.canGetWorkshops()) {
+      return Scaffold(
+        backgroundColor: colorScheme.surfaceContainerLow,
+        appBar: AppBar(
+          elevation: 0,
+          backgroundColor: colorScheme.surfaceContainerLow,
+          foregroundColor: colorScheme.onSurface,
+          title: Text(
+            'Workshops',
+            style: TextStyle(
+              fontWeight: FontWeight.w600,
+              fontSize: 18,
+              color: colorScheme.onSurface,
+            ),
+          ),
+        ),
+        body: const Padding(
+          padding: EdgeInsets.all(16.0),
+          child: Center(child: NoPermissionScreen()),
+        ),
+      );
+    }
 
     return Scaffold(
       backgroundColor: colorScheme.surfaceContainerLow,
@@ -148,6 +177,8 @@ class _MyWorkshopsScreenState extends State<MyWorkshopsScreen> {
   }
 
   Widget _buildWorkshopCard(Workshop workshop, ColorScheme colorScheme) {
+    final permissionProvider = context.read<PermissionProvider>();
+
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(16),
@@ -190,31 +221,40 @@ class _MyWorkshopsScreenState extends State<MyWorkshopsScreen> {
                 ),
 
                 if (workshop.workshopType == "Children")
-                  FutureBuilder<List<Child>>(
-                    future: _getEnrolledChildren(workshop),
-                    builder: (context, snapshot) {
-                      if (snapshot.connectionState == ConnectionState.waiting) {
-                        return const CircularProgressIndicator();
-                      }
-                      if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                        return const Text("No children enrolled yet.");
-                      }
+                  permissionProvider.canGetEnrolledChildren()
+                      ? FutureBuilder<List<Child>>(
+                          future: _getEnrolledChildren(workshop),
+                          builder: (context, snapshot) {
+                            if (snapshot.connectionState ==
+                                ConnectionState.waiting) {
+                              return const CircularProgressIndicator();
+                            }
+                            if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                              return const Text("No children enrolled yet.");
+                            }
 
-                      final children = snapshot.data!;
-                      return Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Text(
-                            "Enrolled children:",
-                            style: TextStyle(fontWeight: FontWeight.w600),
-                          ),
-                          ...children
-                              .map((child) => Text("- ${child.firstName}"))
-                              .toList(),
-                        ],
-                      );
-                    },
-                  ),
+                            final children = snapshot.data!;
+                            return Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const SizedBox(height: 5),
+                                const Text(
+                                  "Enrolled children:",
+                                  style: TextStyle(fontWeight: FontWeight.w600),
+                                ),
+                                ...children
+                                    .map(
+                                      (child) => Text("- ${child.firstName}"),
+                                    )
+                                    .toList(),
+                              ],
+                            );
+                          },
+                        )
+                      : const Text(
+                          "You don’t have permission to view enrolled children.",
+                          style: TextStyle(color: Colors.grey),
+                        ),
 
                 const SizedBox(height: 8),
 
@@ -292,6 +332,10 @@ class _MyWorkshopsScreenState extends State<MyWorkshopsScreen> {
 
   Future<List<Child>> _getEnrolledChildren(Workshop workshop) async {
     if (currentUser == null) return [];
+
+    final permissionProvider = context.read<PermissionProvider>();
+
+    if (!permissionProvider.canGetEnrolledChildren()) return [];
 
     final response = await participantProvider.loadData(
       workshopId: workshop.workshopId,

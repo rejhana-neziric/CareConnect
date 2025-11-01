@@ -16,6 +16,7 @@ class ReviewSearchObject {
   String? employeeFirstNameGTE;
   String? employeeLastNameGTE;
   ReviewAdditionalData? additionalData;
+  int? employeeId;
   int? page;
   String? sortBy;
   bool? sortAscending;
@@ -34,6 +35,7 @@ class ReviewSearchObject {
     this.employeeFirstNameGTE,
     this.employeeLastNameGTE,
     this.additionalData,
+    this.employeeId,
     this.page,
     this.sortBy,
     this.sortAscending,

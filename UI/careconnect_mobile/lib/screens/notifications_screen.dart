@@ -2,8 +2,8 @@ import 'package:careconnect_mobile/models/messages/appointment_notification.dart
 import 'package:careconnect_mobile/models/responses/appointment.dart';
 import 'package:careconnect_mobile/providers/appointment_provider.dart';
 import 'package:careconnect_mobile/providers/notification_provider.dart';
-import 'package:careconnect_mobile/screens/appointment_details_screen.dart';
-import 'package:careconnect_mobile/screens/scheduling_appointment/appointment_scheduling_screen.dart';
+import 'package:careconnect_mobile/screens/appointments/appointment_details_screen.dart';
+import 'package:careconnect_mobile/screens/appointments/scheduling_appointment/appointment_scheduling_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 

@@ -16,7 +16,7 @@ class Appointment {
   final DateTime date;
   final String? description;
   final String? note;
-  final String? stateMachine;
+  String? stateMachine;
   final bool paid;
   final DateTime modifiedDate;
   final AttendanceStatus? attendanceStatus;

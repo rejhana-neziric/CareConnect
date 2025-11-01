@@ -1,11 +1,16 @@
 import 'package:careconnect_mobile/core/theme/app_colors.dart';
+import 'package:careconnect_mobile/models/auth_user.dart';
 import 'package:careconnect_mobile/models/responses/employee.dart';
 import 'package:careconnect_mobile/models/responses/employee_availability.dart';
 import 'package:careconnect_mobile/models/responses/review.dart';
+import 'package:careconnect_mobile/models/responses/service.dart';
+import 'package:careconnect_mobile/providers/auth_provider.dart';
 import 'package:careconnect_mobile/providers/employee_availability_provider.dart';
+import 'package:careconnect_mobile/providers/permission_provider.dart';
 import 'package:careconnect_mobile/providers/review_provider.dart';
+import 'package:careconnect_mobile/screens/appointments/scheduling_appointment/appointment_scheduling_screen.dart';
+import 'package:careconnect_mobile/widgets/snackbar.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
@@ -14,11 +19,11 @@ class EmployeeProfileScreen extends StatefulWidget {
   const EmployeeProfileScreen({
     super.key,
     required this.employee,
-    required this.serviceId,
+    required this.service,
   });
 
   final Employee employee;
-  final int serviceId;
+  final Service service;
 
   @override
   State<EmployeeProfileScreen> createState() => _EmployeeProfileScreenState();
@@ -26,6 +31,8 @@ class EmployeeProfileScreen extends StatefulWidget {
 
 class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
   bool isLoading = false;
+
+  AuthUser? currentUser;
 
   late ReviewProvider reviewProvider;
   late EmployeeAvailabilityProvider employeeAvailabilityProvider;
@@ -45,11 +52,16 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
   void initState() {
     super.initState();
 
+    final auth = Provider.of<AuthProvider>(context, listen: false);
+
+    currentUser = auth.user;
+
     reviewProvider = context.read<ReviewProvider>();
     employeeAvailabilityProvider = context.read<EmployeeAvailabilityProvider>();
+    final permissionProvider = context.read<PermissionProvider>();
 
-    loadReviews();
-    loadAvailability();
+    if (permissionProvider.canGetReviews()) loadReviews();
+    if (permissionProvider.canViewEmployeeAvailabilities()) loadAvailability();
   }
 
   Future<void> loadReviews() async {
@@ -75,7 +87,7 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
 
     final response = await employeeAvailabilityProvider.loadData(
       employeeId: widget.employee.user!.userId,
-      serviceId: widget.serviceId,
+      serviceId: widget.service.serviceId,
     );
 
     setState(() {
@@ -108,6 +120,9 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
+
+    final permissionProvider = context.watch<PermissionProvider>();
+
     return Scaffold(
       backgroundColor: colorScheme.surfaceContainerLow,
       appBar: AppBar(
@@ -128,16 +143,24 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             _buildEmployeeInfo(colorScheme),
-            _buildEmployeeAvailability(colorScheme),
-            _buildReviewsTitleSection(colorScheme),
+
+            if (permissionProvider.canViewEmployeeAvailabilities())
+              _buildEmployeeAvailability(colorScheme),
+
             //_buildAverageRating(colorScheme),
-            _buildStatisticsCard(colorScheme),
-            _buildReviews(colorScheme),
+            if (permissionProvider.canGetReviews()) ...[
+              _buildReviewsTitleSection(colorScheme),
+              _buildStatisticsCard(colorScheme),
+              _buildReviews(colorScheme),
+            ],
+
             // _buildEmployeesTab(colorScheme),
           ],
         ),
       ),
-      bottomNavigationBar: _buildBottomBar(colorScheme),
+      bottomNavigationBar: permissionProvider.canInsertAppointment()
+          ? _buildBottomBar(colorScheme)
+          : null,
     );
   }
 
@@ -715,12 +738,16 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
   // }
 
   Widget _buildBottomBar(ColorScheme colorScheme) {
+    final permissionProvider = context.read<PermissionProvider>();
+
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(color: colorScheme.surfaceContainerLowest),
       child: SafeArea(
         child: ElevatedButton(
-          onPressed: _scheduleBookAppointment,
+          onPressed: permissionProvider.canScheduleAppointment() == true
+              ? _scheduleAppointment
+              : _showNoPermission,
           style: ElevatedButton.styleFrom(
             backgroundColor: colorScheme.primaryContainer,
             foregroundColor: colorScheme.onSurface,
@@ -749,7 +776,28 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
     );
   }
 
-  void _scheduleBookAppointment() {
-    //todo
+  void _scheduleAppointment() {
+    if (currentUser == null) return;
+
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => AppointmentSchedulingScreen(
+          clientId: currentUser!.id,
+          childId: 1,
+          employee: widget.employee,
+          service: widget.service,
+        ),
+      ),
+    );
+  }
+
+  void _showNoPermission() {
+    CustomSnackbar.show(
+      context,
+      message:
+          'Sorry, you do not have permission to perform this action. Contact administration.',
+      type: SnackbarType.error,
+    );
   }
 }

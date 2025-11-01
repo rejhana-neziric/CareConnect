@@ -3,6 +3,9 @@ import 'package:careconnect_mobile/models/enums/appointment_status.dart';
 import 'package:careconnect_mobile/models/requests/appointment_reschedule_request.dart';
 import 'package:careconnect_mobile/models/responses/appointment.dart';
 import 'package:careconnect_mobile/providers/appointment_provider.dart';
+import 'package:careconnect_mobile/providers/permission_provider.dart';
+import 'package:careconnect_mobile/screens/appointments/scheduling_appointment/appointment_scheduling_screen.dart';
+import 'package:careconnect_mobile/screens/no_permission_screen.dart';
 import 'package:careconnect_mobile/widgets/confim_dialog.dart';
 import 'package:careconnect_mobile/widgets/primary_button.dart';
 import 'package:careconnect_mobile/widgets/snackbar.dart';
@@ -43,6 +46,28 @@ class _AppointmentDetailsScreenState extends State<AppointmentDetailsScreen> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
+
+    final permissionProvider = context.read<PermissionProvider>();
+
+    if (!permissionProvider.canGetByIdAppointment()) {
+      return Scaffold(
+        backgroundColor: colorScheme.surfaceContainerLow,
+        appBar: AppBar(
+          elevation: 0,
+          backgroundColor: colorScheme.surfaceContainerLow,
+          foregroundColor: colorScheme.onSurface,
+          title: Text(
+            'Appointment Details',
+            style: TextStyle(
+              fontWeight: FontWeight.w600,
+              fontSize: 18,
+              color: colorScheme.onSurface,
+            ),
+          ),
+        ),
+        body: NoPermissionScreen(),
+      );
+    }
 
     return Scaffold(
       backgroundColor: colorScheme.surfaceContainerLow,
@@ -206,6 +231,8 @@ class _AppointmentDetailsScreenState extends State<AppointmentDetailsScreen> {
   }
 
   Widget _buildActionButtons(BuildContext context) {
+    final permissionProvider = context.read<PermissionProvider>();
+
     if (actions.isEmpty) return SizedBox.shrink();
 
     return Column(
@@ -217,14 +244,20 @@ class _AppointmentDetailsScreenState extends State<AppointmentDetailsScreen> {
 
             switch (action) {
               case 'Cancel':
+                if (!permissionProvider.canCancelAppointment()) {
+                  return const SizedBox.shrink();
+                }
                 backgroundColor = Colors.red;
                 onPressed = () => _cancelAppointment(widget.appointment);
                 break;
               case 'Choose new time':
+                if (!permissionProvider.canRescheduleAppointment()) {
+                  return const SizedBox.shrink();
+                }
                 backgroundColor = AppColors.accentDeepMauve;
                 onPressed = () => _requestNewAppointmentTime(
-                  appointmentId: widget.appointment.appointmentId,
-                  request: new AppointmentRescheduleRequest(),
+                  // appointmentId: widget.appointment.appointmentId,
+                  // request: new AppointmentRescheduleRequest(),
                 );
                 break;
 
@@ -607,35 +640,51 @@ class _AppointmentDetailsScreenState extends State<AppointmentDetailsScreen> {
     },
   );
 
-  Future<void> _requestNewAppointmentTime({
-    required int appointmentId,
-    required AppointmentRescheduleRequest request,
-  }) async {
-    final shouldProceed = await CustomConfirmDialog.show(
+  Future<void> _requestNewAppointmentTime(
+    //   {
+    //   required int appointmentId,
+    //   required AppointmentRescheduleRequest request,
+    // }
+  ) async {
+    Navigator.push(
       context,
-      icon: Icons.info,
-      iconBackgroundColor: AppColors.mauveGray,
-      title: '',
-      content: '',
-      confirmText: 'Confirm new time',
-      cancelText: 'Cancel',
+      MaterialPageRoute(
+        builder: (context) => AppointmentSchedulingScreen(
+          clientId: appointment.clientId,
+          childId: appointment.childId,
+          employee: appointment.employeeAvailability!.employee,
+          service: appointment.employeeAvailability!.service!,
+          isRescheduling: true,
+          appointmentId: appointment.appointmentId,
+        ),
+      ),
     );
 
-    if (shouldProceed != true) return;
+    // final shouldProceed = await CustomConfirmDialog.show(
+    //   context,
+    //   icon: Icons.info,
+    //   iconBackgroundColor: AppColors.mauveGray,
+    //   title: '',
+    //   content: '',
+    //   confirmText: 'Confirm new time',
+    //   cancelText: 'Cancel',
+    // );
 
-    final success = await appointmentProvider.requestNewAppointmentTime(
-      appointmentId: appointmentId,
-      request: request,
-    );
+    // if (shouldProceed != true) return;
 
-    if (!mounted) return;
+    // final success = await appointmentProvider.requestNewAppointmentTime(
+    //   appointmentId: appointmentId,
+    //   request: request,
+    // );
 
-    CustomSnackbar.show(
-      context,
-      message: success
-          ? 'You have successfully chose new appointment time. You will be notified when employee reviews request.'
-          : 'Something went wrong. Please try again.',
-      type: success ? SnackbarType.success : SnackbarType.error,
-    );
+    // if (!mounted) return;
+
+    // CustomSnackbar.show(
+    //   context,
+    //   message: success
+    //       ? 'You have successfully chose new appointment time. You will be notified when employee reviews request.'
+    //       : 'Something went wrong. Please try again.',
+    //   type: success ? SnackbarType.success : SnackbarType.error,
+    // );
   }
 }

@@ -6,7 +6,9 @@ import 'package:careconnect_mobile/providers/auth_provider.dart';
 import 'package:careconnect_mobile/providers/client_provider.dart';
 import 'package:careconnect_mobile/providers/clients_child_provider.dart';
 import 'package:careconnect_mobile/providers/payment_provider.dart';
+import 'package:careconnect_mobile/providers/permission_provider.dart';
 import 'package:careconnect_mobile/providers/workshop_provider.dart';
+import 'package:careconnect_mobile/screens/no_permission_screen.dart';
 import 'package:careconnect_mobile/widgets/confim_dialog.dart';
 import 'package:careconnect_mobile/widgets/primary_button.dart';
 import 'package:careconnect_mobile/widgets/snackbar.dart';
@@ -79,6 +81,28 @@ class _WorkshopDetailsScreenState extends State<WorkshopDetailsScreen> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
+
+    final permissionProvider = context.read<PermissionProvider>();
+
+    if (!permissionProvider.canGetByIdWorkshop()) {
+      return Scaffold(
+        backgroundColor: colorScheme.surfaceContainerLow,
+        appBar: AppBar(
+          elevation: 0,
+          backgroundColor: colorScheme.surfaceContainerLow,
+          foregroundColor: colorScheme.onSurface,
+          title: Text(
+            'Workshops Details',
+            style: TextStyle(
+              fontWeight: FontWeight.w600,
+              fontSize: 18,
+              color: colorScheme.onSurface,
+            ),
+          ),
+        ),
+        body: NoPermissionScreen(),
+      );
+    }
 
     return Scaffold(
       backgroundColor: colorScheme.surfaceContainerLow,
@@ -346,6 +370,8 @@ class _WorkshopDetailsScreenState extends State<WorkshopDetailsScreen> {
   }
 
   Widget _buildBottomBar(ColorScheme colorScheme) {
+    final permissionProvider = context.read<PermissionProvider>();
+
     if (widget.workshop.maxParticipants != null &&
         widget.workshop.participants != null &&
         widget.workshop.participants! >= widget.workshop.maxParticipants!) {
@@ -365,6 +391,13 @@ class _WorkshopDetailsScreenState extends State<WorkshopDetailsScreen> {
           );
         },
       );
+    } else if (!permissionProvider.canEnrollWorkshop()) {
+      return PrimaryButton(
+        label: widget.workshop.price == null
+            ? 'Enroll for Free'
+            : 'Pay & Enroll (\$${widget.workshop.price.toString()})',
+        onPressed: _showNoPermission,
+      );
     } else {
       return PrimaryButton(
         label: widget.workshop.price == null
@@ -375,13 +408,35 @@ class _WorkshopDetailsScreenState extends State<WorkshopDetailsScreen> {
     }
   }
 
+  void _showNoPermission() async {
+    CustomSnackbar.show(
+      context,
+      message:
+          'Sorry, you do not have permission to perform this action. Please contact administration.',
+      type: SnackbarType.error,
+    );
+  }
+
   Future<void> _handleEnrollment() async {
     if (currentUser == null) return;
 
     List<Child> children = [];
 
+    final permissionProvider = context.read<PermissionProvider>();
+
     if (widget.workshop.workshopType == "Children") {
-      children = await clientsChildProvider.getChildren(currentUser!.id);
+      if (!permissionProvider.canViewClientsChildren()) {
+        CustomSnackbar.show(
+          context,
+          message:
+              'Sorry, you do not have access to get your children. Please contact administration.',
+          type: SnackbarType.error,
+        );
+
+        return;
+      } else {
+        children = await clientsChildProvider.getChildren(currentUser!.id);
+      }
     }
 
     int? selectedChildId;
@@ -463,7 +518,7 @@ class _WorkshopDetailsScreenState extends State<WorkshopDetailsScreen> {
           context,
           message:
               'Failed to enroll. Workshop may be full or you have already enrolled.',
-          type: SnackbarType.info,
+          type: SnackbarType.error,
         );
       }
     } catch (e) {
@@ -473,7 +528,7 @@ class _WorkshopDetailsScreenState extends State<WorkshopDetailsScreen> {
       CustomSnackbar.show(
         context,
         message: 'Something went wrong. Please try again.',
-        type: SnackbarType.info,
+        type: SnackbarType.error,
       );
     }
   }

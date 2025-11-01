@@ -3,10 +3,12 @@ import 'package:careconnect_admin/models/enums/workshop_status.dart';
 import 'package:careconnect_admin/models/responses/search_result.dart';
 import 'package:careconnect_admin/models/responses/workshop.dart';
 import 'package:careconnect_admin/models/workshopML/workshop_prediction.dart';
+import 'package:careconnect_admin/providers/permission_provider.dart';
 import 'package:careconnect_admin/providers/workshop_form_provider.dart';
 import 'package:careconnect_admin/providers/workshop_provider.dart';
 import 'package:careconnect_admin/core/theme/app_colors.dart';
 import 'package:careconnect_admin/core/utils.dart';
+import 'package:careconnect_admin/screens/no_permission_screen.dart';
 import 'package:careconnect_admin/widgets/confirm_dialog.dart';
 import 'package:careconnect_admin/widgets/custom_date_field.dart';
 import 'package:careconnect_admin/widgets/custom_dropdown_field.dart';
@@ -98,6 +100,16 @@ class _WorkshopDetailsScreenState extends State<WorkshopDetailsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final permissionProvider = context.watch<PermissionProvider>();
+
+    if (!permissionProvider.canGetByIdWorkshop()) {
+      return MasterScreen(
+        'Workshop Details',
+        NoPermissionScreen(),
+        currentScreen: "Workshops",
+      );
+    }
+
     return MasterScreen(
       "Workshop Details",
       currentScreen: "Workshops",
@@ -115,14 +127,21 @@ class _WorkshopDetailsScreenState extends State<WorkshopDetailsScreen> {
                     children: [
                       if (!isLoading) Center(child: _buildForm()),
                       const SizedBox(height: 10),
-                      _buildInfoCard(),
+                      if (permissionProvider.canPredictForNewWorkshop() &&
+                          widget.workshop == null)
+                        _buildInfoCard(),
                       if (_prediction != null) ...[
                         SizedBox(height: 20),
                         _buildPredictionCard(),
                       ],
-
                       const SizedBox(height: 40),
-                      _actionButtons(),
+                      if ((permissionProvider.canEditWorkshop() &&
+                              widget.workshop != null) ||
+                          (permissionProvider.canInsertWorkshop() &&
+                              widget.workshop == null) ||
+                          (permissionProvider.canDeleteWorkshop() &&
+                              widget.workshop != null))
+                        _actionButtons(),
                     ],
                   ),
                 ),
@@ -138,8 +157,32 @@ class _WorkshopDetailsScreenState extends State<WorkshopDetailsScreen> {
   Widget _buildForm() {
     final workshopFormProvider = Provider.of<WorkshopFormProvider>(context);
 
+    final permissionProvider = context.read<PermissionProvider>();
+
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
+
+    List<String> allowedActions = [];
+
+    _currentWorkshop != null
+        ? allowedActions = workshopStatusFromString(_currentWorkshop!.status)
+              .allowedActions
+              .where((action) {
+                switch (action) {
+                  case "Publish":
+                    return permissionProvider.canPublishWorkshop();
+                  case "Cancel":
+                    return permissionProvider.canCancelWorkshop();
+                  case "Close":
+                    return permissionProvider.canCloseWorkshop();
+                  case "View Participants":
+                    return permissionProvider.canViewParticipants();
+                  default:
+                    return false;
+                }
+              })
+              .toList()
+        : [];
 
     return FormBuilder(
       key: workshopFormProvider.formKey,
@@ -169,18 +212,18 @@ class _WorkshopDetailsScreenState extends State<WorkshopDetailsScreen> {
                   children: [
                     if (_currentWorkshop != null)
                       SizedBox(
-                        width: 800,
+                        width: 1000,
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.end,
                           children:
-                              workshopStatusFromString(_currentWorkshop!.status)
-                                  .allowedActions
+                              // workshopStatusFromString(_currentWorkshop!.status)
+                              //     .
+                              allowedActions
                                   .map(
                                     (action) => Padding(
                                       padding: const EdgeInsets.only(left: 8.0),
                                       child: PrimaryButton(
                                         onPressed: () async {
-                                          print(action);
                                           if (action != "View Participants") {
                                             final shouldProceed =
                                                 await CustomConfirmDialog.show(
@@ -514,11 +557,14 @@ class _WorkshopDetailsScreenState extends State<WorkshopDetailsScreen> {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
 
+    final permissionProvider = context.read<PermissionProvider>();
+
     return SizedBox(
       width: 1000,
       child: Row(
         children: [
-          if (_currentWorkshop != null)
+          if (_currentWorkshop != null &&
+              permissionProvider.canDeleteWorkshop())
             PrimaryButton(
               onPressed: () async {
                 delete();
@@ -529,7 +575,12 @@ class _WorkshopDetailsScreenState extends State<WorkshopDetailsScreen> {
 
           Spacer(),
 
-          if (_currentWorkshop == null || _currentWorkshop?.status == "Draft")
+          if ((_currentWorkshop == null ||
+                  _currentWorkshop?.status == "Draft") &&
+              ((permissionProvider.canEditWorkshop() &&
+                      _currentWorkshop != null) ||
+                  (permissionProvider.canInsertWorkshop() &&
+                      _currentWorkshop == null)))
             Row(
               mainAxisSize: MainAxisSize.min,
               children: [

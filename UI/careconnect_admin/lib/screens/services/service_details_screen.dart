@@ -2,11 +2,13 @@ import 'package:careconnect_admin/core/layouts/master_screen.dart';
 import 'package:careconnect_admin/models/responses/search_result.dart';
 import 'package:careconnect_admin/models/responses/service.dart';
 import 'package:careconnect_admin/models/responses/service_type.dart';
+import 'package:careconnect_admin/providers/permission_provider.dart';
 import 'package:careconnect_admin/providers/service_form_provider.dart';
 import 'package:careconnect_admin/providers/service_provider.dart';
 import 'package:careconnect_admin/providers/service_type_provider.dart';
 import 'package:careconnect_admin/core/theme/app_colors.dart';
 import 'package:careconnect_admin/core/utils.dart';
+import 'package:careconnect_admin/screens/no_permission_screen.dart';
 import 'package:careconnect_admin/widgets/confirm_dialog.dart';
 import 'package:careconnect_admin/widgets/custom_checkbox_field.dart';
 import 'package:careconnect_admin/widgets/custom_date_field.dart';
@@ -89,8 +91,6 @@ class _ServiceDetailsScreenState extends State<ServiceDetailsScreen> {
       }
     });
 
-    print(widget.serviceTypeId);
-
     loadServiceTypes();
 
     setState(() {});
@@ -106,6 +106,16 @@ class _ServiceDetailsScreenState extends State<ServiceDetailsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final permissionProvider = context.watch<PermissionProvider>();
+
+    if (!permissionProvider.canGetByIdService()) {
+      return MasterScreen(
+        'Service Details',
+        NoPermissionScreen(),
+        currentScreen: "Services",
+      );
+    }
+
     return MasterScreen(
       "Service Details",
       currentScreen: "Services",
@@ -122,7 +132,14 @@ class _ServiceDetailsScreenState extends State<ServiceDetailsScreen> {
                   children: [
                     if (!isLoading) _buildForm(),
                     const SizedBox(height: 20),
-                    _actionButtons(),
+
+                    if ((permissionProvider.canEditService() &&
+                            widget.service != null) ||
+                        (permissionProvider.canInsertService() &&
+                            widget.service == null) ||
+                        (permissionProvider.canDeleteEmployee() &&
+                            widget.service != null))
+                      _actionButtons(),
                   ],
                 ),
               ],
@@ -136,6 +153,8 @@ class _ServiceDetailsScreenState extends State<ServiceDetailsScreen> {
 
   Widget _buildForm() {
     final serviceFormProvider = Provider.of<ServiceFormProvider>(context);
+
+    final permissionProvider = context.read<PermissionProvider>();
 
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
@@ -175,7 +194,8 @@ class _ServiceDetailsScreenState extends State<ServiceDetailsScreen> {
                       required: true,
                     ),
 
-                    if (widget.service != null)
+                    if (widget.service != null &&
+                        permissionProvider.canGetServiceTypes())
                       CustomDropdownField<int>(
                         width: 600,
                         name: 'serviceTypeId',
@@ -246,11 +266,13 @@ class _ServiceDetailsScreenState extends State<ServiceDetailsScreen> {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
 
+    final permissionProvider = context.read<PermissionProvider>();
+
     return SizedBox(
       width: 600,
       child: Row(
         children: [
-          if (widget.service != null)
+          if (widget.service != null && permissionProvider.canDeleteService())
             PrimaryButton(
               onPressed: () async {
                 delete();
@@ -260,24 +282,27 @@ class _ServiceDetailsScreenState extends State<ServiceDetailsScreen> {
             ),
 
           Spacer(),
-          Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              PrimaryButton(
-                onPressed: () async {
-                  Navigator.pop(context);
-                },
-                label: 'Cancel',
-              ),
-              SizedBox(width: 10),
-              PrimaryButton(
-                onPressed: () async {
-                  save();
-                },
-                label: 'Save',
-              ),
-            ],
-          ),
+
+          if ((permissionProvider.canEditService() && widget.service != null) ||
+              (permissionProvider.canInsertService() && widget.service == null))
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                PrimaryButton(
+                  onPressed: () async {
+                    Navigator.pop(context);
+                  },
+                  label: 'Cancel',
+                ),
+                SizedBox(width: 10),
+                PrimaryButton(
+                  onPressed: () async {
+                    save();
+                  },
+                  label: 'Save',
+                ),
+              ],
+            ),
         ],
       ),
     );

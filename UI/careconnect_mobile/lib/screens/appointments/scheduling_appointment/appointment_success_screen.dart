@@ -1,5 +1,6 @@
+import 'package:careconnect_mobile/core/layouts/master_screen.dart';
 import 'package:careconnect_mobile/models/requests/appointment_insert_request.dart';
-import 'package:careconnect_mobile/screens/employee_list_screen.dart';
+import 'package:careconnect_mobile/screens/home_screen.dart';
 import 'package:careconnect_mobile/widgets/primary_button.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
@@ -92,9 +93,15 @@ class AppointmentSuccessScreen extends StatelessWidget {
               PrimaryButton(
                 label: 'Back to Home',
                 onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (_) => EmployeeListScreen()),
+                  // Navigator.push(
+                  //   context,
+                  //   MaterialPageRoute(builder: (_) => EmployeeListScreen()),
+                  // );
+
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (context) => MasterScreen('Home', HomeScreen()),
+                    ),
                   );
                 },
               ),

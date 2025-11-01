@@ -7,6 +7,7 @@ import 'package:careconnect_mobile/models/responses/employee.dart';
 import 'package:careconnect_mobile/models/responses/review.dart';
 import 'package:careconnect_mobile/providers/appointment_provider.dart';
 import 'package:careconnect_mobile/providers/auth_provider.dart';
+import 'package:careconnect_mobile/providers/permission_provider.dart';
 import 'package:careconnect_mobile/widgets/confim_dialog.dart';
 import 'package:careconnect_mobile/widgets/custom_text_field.dart';
 import 'package:careconnect_mobile/widgets/primary_button.dart';
@@ -37,6 +38,8 @@ class _ReviewDetailsScreenState extends State<ReviewDetailsScreen> {
   final _formKey = GlobalKey<FormBuilderState>();
 
   late bool isEditing;
+
+  bool isLoading = false;
 
   late AppointmentProvider appointmentProvider;
 
@@ -74,11 +77,19 @@ class _ReviewDetailsScreenState extends State<ReviewDetailsScreen> {
   }
 
   void loadAppointments() async {
+    setState(() {
+      isLoading = true;
+    });
+
     final response = await appointmentProvider.loadData(status: 'Completed');
 
     appointments = response?.result ?? [];
 
     employees = getCompletedEmployees(appointments, currentUser!.id);
+
+    setState(() {
+      isLoading = false;
+    });
   }
 
   List<Employee> getCompletedEmployees(
@@ -104,6 +115,8 @@ class _ReviewDetailsScreenState extends State<ReviewDetailsScreen> {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
 
+    final permissionProvider = context.read<PermissionProvider>();
+
     return Scaffold(
       backgroundColor: colorScheme.surfaceContainerLow,
       appBar: AppBar(
@@ -125,7 +138,10 @@ class _ReviewDetailsScreenState extends State<ReviewDetailsScreen> {
             children: [
               _buildFormCard(colorScheme),
               const SizedBox(height: 30),
-              _buildActionButtons(context),
+              if ((permissionProvider.canInsertReview() &&
+                      widget.review == null) ||
+                  (permissionProvider.canEditReview() && widget.review != null))
+                _buildActionButtons(context),
             ],
           ),
         ),
@@ -158,33 +174,37 @@ class _ReviewDetailsScreenState extends State<ReviewDetailsScreen> {
               child: Column(
                 children: [
                   if (!isEditing) ...[
-                    FormBuilderDropdown<int>(
-                      name: 'employeeId',
-                      initialValue: null,
-                      decoration: InputDecoration(
-                        labelText: 'Select Employee',
-                        prefixIcon: const Icon(Icons.person_outline),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
+                    if (isLoading)
+                      const Center(child: CircularProgressIndicator())
+                    else ...[
+                      FormBuilderDropdown<int>(
+                        name: 'employeeId',
+                        initialValue: null,
+                        decoration: InputDecoration(
+                          labelText: 'Select Employee',
+                          prefixIcon: const Icon(Icons.person_outline),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
                         ),
-                      ),
-                      validator: FormBuilderValidators.required(),
-                      items: employees
-                          .map(
-                            (employee) => DropdownMenuItem<int>(
-                              value: employee.user?.userId,
-                              child: Text(
-                                '${employee.user?.firstName} ${employee.user?.lastName}',
+                        validator: FormBuilderValidators.required(),
+                        items: employees
+                            .map(
+                              (employee) => DropdownMenuItem<int>(
+                                value: employee.user?.userId,
+                                child: Text(
+                                  '${employee.user?.firstName} ${employee.user?.lastName}',
+                                ),
                               ),
-                            ),
-                          )
-                          .toList(),
-                    ),
-                    const SizedBox(height: 20),
-                    Text(
-                      'Reviews can only be added for employees from completed appointments.',
-                      style: TextStyle(fontSize: 12),
-                    ),
+                            )
+                            .toList(),
+                      ),
+                      const SizedBox(height: 20),
+                      Text(
+                        'Reviews can only be added for employees from completed appointments.',
+                        style: TextStyle(fontSize: 12),
+                      ),
+                    ],
                   ],
 
                   const SizedBox(height: 20),

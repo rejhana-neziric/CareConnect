@@ -1,10 +1,11 @@
+import 'package:careconnect_mobile/core/layouts/master_screen.dart';
 import 'package:careconnect_mobile/core/theme/app_colors.dart';
 import 'package:careconnect_mobile/models/auth_user.dart';
 import 'package:careconnect_mobile/providers/auth_provider.dart';
 import 'package:careconnect_mobile/providers/notification_provider.dart';
 import 'package:careconnect_mobile/providers/signalr.dart';
 import 'package:careconnect_mobile/providers/user_provider.dart';
-import 'package:careconnect_mobile/screens/employee_list_screen.dart';
+import 'package:careconnect_mobile/screens/home_screen.dart';
 import 'package:careconnect_mobile/screens/signup/sign_up_flow.dart';
 import 'package:careconnect_mobile/widgets/snackbar.dart';
 import 'package:flutter/material.dart';
@@ -413,7 +414,7 @@ class _LoginScreenState extends State<LoginScreen>
             return;
           }
 
-          getPermissions(response.username);
+          await getPermissions(response.username);
 
           final authUser = AuthUser(
             id: response.userId,
@@ -426,9 +427,15 @@ class _LoginScreenState extends State<LoginScreen>
 
           await notificationProvider.initialize(_hubUrl, authUser.id);
 
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => const EmployeeListScreen()),
+          // Navigator.push(
+          //   context,
+          //   MaterialPageRoute(builder: (context) => const HomeScreen()),
+          // );
+
+          Navigator.of(context).pushReplacement(
+            MaterialPageRoute(
+              builder: (context) => MasterScreen('Home', HomeScreen()),
+            ),
           );
         } else {
           CustomSnackbar.show(

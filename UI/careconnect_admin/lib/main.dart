@@ -12,6 +12,7 @@ import 'package:careconnect_admin/providers/employee_form_provider.dart';
 import 'package:careconnect_admin/providers/employee_provider.dart';
 import 'package:careconnect_admin/providers/notification_provider.dart';
 import 'package:careconnect_admin/providers/participant_provider.dart';
+import 'package:careconnect_admin/providers/permission_provider.dart';
 import 'package:careconnect_admin/providers/report_provider.dart';
 import 'package:careconnect_admin/providers/review_provider.dart';
 import 'package:careconnect_admin/providers/role_permissions_provider.dart';
@@ -103,6 +104,9 @@ void main() async {
           create: (_) => RolePermissionsProvider(),
         ),
         ChangeNotifierProvider<RoleProvider>(create: (_) => RoleProvider()),
+        ProxyProvider<AuthProvider, PermissionProvider>(
+          update: (_, authProvider, __) => PermissionProvider(authProvider),
+        ),
       ],
       child: const MyApp(),
     ),

@@ -3,10 +3,12 @@ import 'package:careconnect_admin/models/responses/search_result.dart';
 import 'package:careconnect_admin/models/responses/service.dart';
 import 'package:careconnect_admin/models/responses/service_statistics.dart';
 import 'package:careconnect_admin/models/responses/service_type.dart';
+import 'package:careconnect_admin/providers/permission_provider.dart';
 import 'package:careconnect_admin/providers/service_form_provider.dart';
 import 'package:careconnect_admin/providers/service_provider.dart';
 import 'package:careconnect_admin/providers/service_type_from_provider.dart';
 import 'package:careconnect_admin/providers/service_type_provider.dart';
+import 'package:careconnect_admin/screens/no_permission_screen.dart';
 import 'package:careconnect_admin/screens/services/service_details_screen.dart';
 import 'package:careconnect_admin/core/theme/app_colors.dart';
 import 'package:careconnect_admin/widgets/confirm_dialog.dart';
@@ -33,6 +35,7 @@ class _ServicesListScreenState extends State<ServicesListScreen> {
   late ServiceProvider serviceProvider;
   late ServiceTypeProvider serviceTypeProvider;
   late ServiceTypeFromProvider serviceTypeFromProvider;
+  late PermissionProvider permissionProvider;
 
   bool isLoading = false;
 
@@ -81,6 +84,12 @@ class _ServicesListScreenState extends State<ServicesListScreen> {
     serviceProvider = context.read<ServiceProvider>();
     serviceTypeProvider = context.read<ServiceTypeProvider>();
     serviceTypeFromProvider = context.read<ServiceTypeFromProvider>();
+
+    permissionProvider = Provider.of<PermissionProvider>(
+      context,
+      listen: false,
+    );
+
     loadData();
   }
 
@@ -123,6 +132,10 @@ class _ServicesListScreenState extends State<ServicesListScreen> {
     final stats = await serviceProvider.loadStats();
 
     statistics = stats;
+
+    if (mounted) {
+      setState(() {});
+    }
   }
 
   Future<void> loadServiceTypes() async {
@@ -145,6 +158,14 @@ class _ServicesListScreenState extends State<ServicesListScreen> {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
 
+    if (!permissionProvider.canViewServiceScreen()) {
+      return MasterScreen(
+        'Services',
+        NoPermissionScreen(),
+        currentScreen: "Services",
+      );
+    }
+
     return MasterScreen(
       "Services",
       currentScreen: "Services",
@@ -152,58 +173,70 @@ class _ServicesListScreenState extends State<ServicesListScreen> {
         children: [
           Expanded(
             child: SingleChildScrollView(
-              child: Column(
-                children: [
-                  _buildOverview(),
-                  _buildSearch(colorScheme),
-                  Consumer<ServiceProvider>(
-                    builder: (context, serviceProvider, child) {
-                      return _buildResultView();
-                    },
-                  ),
-                ],
+              child: ConstrainedBox(
+                constraints: BoxConstraints(
+                  minHeight:
+                      MediaQuery.of(context).size.height - kToolbarHeight,
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    if (permissionProvider.canViewServiceStatistics())
+                      _buildOverview(),
+                    _buildSearch(colorScheme),
+                    Consumer<ServiceProvider>(
+                      builder: (context, serviceProvider, child) {
+                        return _buildResultView();
+                      },
+                    ),
+                  ],
+                ),
               ),
             ),
           ),
-          Consumer<ServiceTypeProvider>(
-            builder: (context, serviceTypeProvider, child) {
-              return _buildServiceTypesList(colorScheme);
-            },
-          ),
+          if (permissionProvider.canGetServiceTypes())
+            Consumer<ServiceTypeProvider>(
+              builder: (context, serviceTypeProvider, child) {
+                return _buildServiceTypesList(colorScheme);
+              },
+            ),
         ],
       ),
 
-      button: SizedBox(
-        child: Align(
-          alignment: Alignment.topRight,
-          child: PrimaryButton(
-            onPressed: () async {
-              final selectedType = await showServiceTypeDialog(
-                context,
-                serviceTypes!.result,
-              );
+      button: permissionProvider.canInsertService()
+          ? SizedBox(
+              child: Align(
+                alignment: Alignment.topRight,
+                child: PrimaryButton(
+                  onPressed: () async {
+                    // fix
+                    final selectedType = await showServiceTypeDialog(
+                      context,
+                      serviceTypes!.result,
+                    );
 
-              if (selectedType != null) {
-                final result = await Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => ChangeNotifierProvider(
-                      create: (_) => ServiceFormProvider(),
-                      child: ServiceDetailsScreen(
-                        service: null,
-                        serviceTypeId: selectedType,
-                      ),
-                    ),
-                  ),
-                );
+                    if (selectedType != null) {
+                      final result = await Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => ChangeNotifierProvider(
+                            create: (_) => ServiceFormProvider(),
+                            child: ServiceDetailsScreen(
+                              service: null,
+                              serviceTypeId: selectedType,
+                            ),
+                          ),
+                        ),
+                      );
 
-                if (result == true) loadData();
-              }
-            },
-            label: 'Add Service',
-          ),
-        ),
-      ),
+                      if (result == true) loadData();
+                    }
+                  },
+                  label: 'Add Service',
+                ),
+              ),
+            )
+          : null,
     );
   }
 
@@ -282,16 +315,18 @@ class _ServicesListScreenState extends State<ServicesListScreen> {
                   ),
                 ),
               ),
-              IconButton(
-                onPressed: () {
-                  setState(() {
-                    initServiceTypeForm(null);
-                  });
-                  showAddServiceTypeDialog(context, null);
-                },
-                icon: Icon(Icons.add),
-                tooltip: "Add Service Type",
-              ),
+
+              if (permissionProvider.canInsertServiceType())
+                IconButton(
+                  onPressed: () {
+                    setState(() {
+                      initServiceTypeForm(null);
+                    });
+                    showAddServiceTypeDialog(context, null);
+                  },
+                  icon: Icon(Icons.add),
+                  tooltip: "Add Service Type",
+                ),
             ],
           ),
           const Divider(),
@@ -308,11 +343,16 @@ class _ServicesListScreenState extends State<ServicesListScreen> {
                       onEnter: (_) => setHoverState(() => isHovered = true),
                       onExit: (_) => setHoverState(() => isHovered = false),
                       child: Tooltip(
-                        message: "View service type details",
+                        message:
+                            permissionProvider.canGetByIdServiceType() == true
+                            ? "View service type details"
+                            : '',
                         child: GestureDetector(
                           onTap: () {
-                            initServiceTypeForm(type);
-                            showAddServiceTypeDialog(context, type);
+                            if (permissionProvider.canGetByIdServiceType()) {
+                              initServiceTypeForm(type);
+                              showAddServiceTypeDialog(context, type);
+                            }
                           },
                           child: Container(
                             decoration: BoxDecoration(
@@ -369,24 +409,28 @@ class _ServicesListScreenState extends State<ServicesListScreen> {
 
           SizedBox(width: 20),
 
+          isLoading || services?.result == null
+              ? shimmerStatCard(context)
+              : statCard(
+                  context,
+                  "Active Services",
+                  services?.result
+                      .where(
+                        (service) => service.isActive == true,
+                      ) // or service.isActive == true
+                      .length,
+                  Icons.check_circle,
+                  Colors.green,
+                ),
+
+          SizedBox(width: 20),
+
           isLoading || statistics?.averagePrice == null
               ? shimmerStatCard(context)
               : statCard(
                   context,
                   'Average Price',
                   statistics?.averagePrice?.round(),
-                  Icons.attach_money,
-                  Colors.green,
-                ),
-
-          SizedBox(width: 20),
-
-          isLoading || statistics?.averageMemberPrice == null
-              ? shimmerStatCard(context)
-              : statCard(
-                  context,
-                  "Average Member Price",
-                  statistics?.averageMemberPrice?.round(),
                   Icons.attach_money,
                   Colors.orange,
                 ),
@@ -397,6 +441,7 @@ class _ServicesListScreenState extends State<ServicesListScreen> {
 
   Widget _buildSearch(ColorScheme colorScheme) {
     return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
       children: [
         Flexible(
           child: Padding(
@@ -455,25 +500,26 @@ class _ServicesListScreenState extends State<ServicesListScreen> {
           ),
         ),
         SizedBox(width: 8),
-        SizedBox(
-          width: 280,
-          child: CustomDropdownFilter(
-            selectedValue: selectedServiceType?.name,
-            options: serviceTypeOptions,
-            name: "Service Type: ",
-            onChanged: (newType) {
-              setState(() {
-                final idx = serviceTypes?.result.indexWhere(
-                  (s) => s.name == newType,
-                );
-                selectedServiceType = idx == -1
-                    ? null
-                    : serviceTypes?.result[idx!];
-              });
-              loadData();
-            },
+        if (permissionProvider.canGetServiceTypes())
+          SizedBox(
+            width: 280,
+            child: CustomDropdownFilter(
+              selectedValue: selectedServiceType?.name,
+              options: serviceTypeOptions,
+              name: "Service Type: ",
+              onChanged: (newType) {
+                setState(() {
+                  final idx = serviceTypes?.result.indexWhere(
+                    (s) => s.name == newType,
+                  );
+                  selectedServiceType = idx == -1
+                      ? null
+                      : serviceTypes?.result[idx!];
+                });
+                loadData();
+              },
+            ),
           ),
-        ),
         SizedBox(width: 8),
         ConstrainedBox(
           constraints: BoxConstraints(maxWidth: 250),
@@ -562,26 +608,33 @@ class _ServicesListScreenState extends State<ServicesListScreen> {
   }
 
   Widget _buildResultView() {
+    if (isLoading && (services == null || services!.result.isEmpty)) {
+      return SizedBox(
+        height: MediaQuery.of(context).size.height * 0.6,
+        child: const Center(child: CircularProgressIndicator()),
+      );
+    }
+
     return (services != null && services?.result.isEmpty == false)
-        ? GridView.count(
-            crossAxisCount: 2,
-            childAspectRatio: 450 / 200,
-            shrinkWrap: true,
-            physics: NeverScrollableScrollPhysics(),
-            padding: const EdgeInsets.all(64),
-            crossAxisSpacing: 64,
-            mainAxisSpacing: 32,
-            children: [...buildServices(services!.result)],
+        ? Align(
+            alignment: Alignment.topLeft,
+            child: GridView.count(
+              crossAxisCount: 2,
+              shrinkWrap: true,
+              physics: NeverScrollableScrollPhysics(),
+              padding: const EdgeInsets.all(64),
+              crossAxisSpacing: 64,
+              mainAxisSpacing: 32,
+              childAspectRatio: 450 / 200,
+              children: [...buildServices(services!.result)],
+            ),
           )
         : Padding(
             padding: const EdgeInsets.all(128.0),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                NoResultsWidget(
-                  message: 'No results found. Please try again.',
-                  icon: Icons.sentiment_dissatisfied,
-                ),
+                NoResultsWidget(message: 'No results found. Please try again.'),
               ],
             ),
           );
@@ -603,18 +656,33 @@ class _ServicesListScreenState extends State<ServicesListScreen> {
     final colorScheme = theme.colorScheme;
 
     final serviceTypeFromProvider = context.read<ServiceTypeFromProvider>();
+    final permissionProvider = context.read<PermissionProvider>();
 
     return showDialog<void>(
       context: context,
       barrierDismissible: false,
       builder: (BuildContext context) {
+        final isEditMode = serviceType != null;
+        final canView = permissionProvider.canGetByIdServiceType();
+        final canAdd = permissionProvider.canInsertServiceType();
+        final canEdit = permissionProvider.canEditServiceType();
+        final canDelete = permissionProvider.canDeleteServiceType();
+
+        if (!canAdd && !canEdit && !canView) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            CustomSnackbar.show(
+              context, // parent context from the function parameter
+              message: 'You do not have permission to perform this action.',
+              type: SnackbarType.error,
+            );
+          });
+        }
+
         return AlertDialog(
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),
           ),
-          title: serviceType == null
-              ? Text("Add Sercice Type")
-              : Text("Edit Service Type"),
+          title: Text(isEditMode ? "Edit Service Type" : "Add Service Type"),
           content: FormBuilder(
             key: serviceTypeFromProvider.formKey,
             initialValue: _initialValue,
@@ -629,6 +697,7 @@ class _ServicesListScreenState extends State<ServicesListScreen> {
                   required: true,
                   validator:
                       serviceTypeFromProvider.validateServicWorkshopeName,
+                  enabled: (isEditMode && canEdit) || (!isEditMode && canAdd),
                 ),
                 const SizedBox(height: 16),
                 CustomTextField(
@@ -638,12 +707,13 @@ class _ServicesListScreenState extends State<ServicesListScreen> {
                   maxLines: 5,
                   hintText: 'Write a short and clear description...',
                   validator: serviceTypeFromProvider.validateDescription,
+                  enabled: (isEditMode && canEdit) || (!isEditMode && canAdd),
                 ),
               ],
             ),
           ),
           actions: [
-            if (serviceType != null)
+            if (isEditMode && canDelete)
               PrimaryButton(
                 onPressed: () async {
                   final result = deleteServiceType(serviceType);
@@ -668,17 +738,18 @@ class _ServicesListScreenState extends State<ServicesListScreen> {
                   label: 'Cancel',
                 ),
                 SizedBox(width: 10),
-                PrimaryButton(
-                  onPressed: () async {
-                    final result = saveServiceType(serviceType);
+                if ((isEditMode && canEdit) || (!isEditMode && canAdd))
+                  PrimaryButton(
+                    onPressed: () async {
+                      final result = saveServiceType(serviceType);
 
-                    if (result == true) {
-                      loadServiceTypes();
-                      loadData();
-                    }
-                  },
-                  label: 'Save',
-                ),
+                      if (result == true) {
+                        loadServiceTypes();
+                        loadData();
+                      }
+                    },
+                    label: 'Save',
+                  ),
               ],
             ),
           ],
@@ -847,26 +918,33 @@ class _ServiceCardState extends State<ServiceCard> {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
 
+    final permissionProvider = context.read<PermissionProvider>();
+
     double screenWidth = MediaQuery.of(context).size.width;
+
     return Tooltip(
-      message: "View service details.",
+      message: permissionProvider.canGetByIdService() == true
+          ? "View service details."
+          : "",
       child: MouseRegion(
         onEnter: (_) => setState(() => isHovered = true),
         onExit: (_) => setState(() => isHovered = false),
         child: InkWell(
           onTap: () async {
-            final result = await Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => ChangeNotifierProvider(
-                  create: (_) => ServiceFormProvider(),
-                  child: ServiceDetailsScreen(service: widget.service),
+            if (permissionProvider.canGetByIdService()) {
+              final result = await Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => ChangeNotifierProvider(
+                    create: (_) => ServiceFormProvider(),
+                    child: ServiceDetailsScreen(service: widget.service),
+                  ),
                 ),
-              ),
-            );
+              );
 
-            if (result == true) {
-              widget.loadData();
+              if (result == true) {
+                widget.loadData();
+              }
             }
           },
           borderRadius: BorderRadius.circular(12),
@@ -974,24 +1052,23 @@ class _ServiceCardState extends State<ServiceCard> {
                                     ),
                                   ),
                                 ),
-                              SizedBox(width: 15),
-                              if (widget.service.memberPrice != null)
-                                Container(
-                                  decoration: BoxDecoration(
-                                    color: colorScheme.primaryContainer,
+                              // if (widget.service.memberPrice != null)
+                              //   Container(
+                              //     decoration: BoxDecoration(
+                              //       color: colorScheme.primaryContainer,
 
-                                    borderRadius: BorderRadius.circular(4),
-                                  ),
-                                  child: Padding(
-                                    padding: const EdgeInsets.all(4.0),
-                                    child: Text(
-                                      "Member price: ${widget.service.memberPrice}",
-                                      style: TextStyle(
-                                        fontWeight: FontWeight.w500,
-                                      ),
-                                    ),
-                                  ),
-                                ),
+                              //       borderRadius: BorderRadius.circular(4),
+                              //     ),
+                              //     child: Padding(
+                              //       padding: const EdgeInsets.all(4.0),
+                              //       child: Text(
+                              //         "Member price: ${widget.service.memberPrice}",
+                              //         style: TextStyle(
+                              //           fontWeight: FontWeight.w500,
+                              //         ),
+                              //       ),
+                              //     ),
+                              //   ),
                             ],
                           ),
                           Text(

@@ -2,6 +2,7 @@ import 'package:careconnect_mobile/core/theme/app_colors.dart';
 import 'package:careconnect_mobile/models/requests/child_insert_request.dart';
 import 'package:careconnect_mobile/models/requests/child_update_request.dart';
 import 'package:careconnect_mobile/models/responses/child.dart';
+import 'package:careconnect_mobile/providers/permission_provider.dart';
 import 'package:careconnect_mobile/widgets/confim_dialog.dart';
 import 'package:careconnect_mobile/widgets/custom_text_field.dart';
 import 'package:careconnect_mobile/widgets/primary_button.dart';
@@ -10,6 +11,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:form_builder_validators/form_builder_validators.dart';
 import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
 
 class EditChildScreen extends StatefulWidget {
   final Child? child;
@@ -60,6 +62,8 @@ class _EditChildScreenState extends State<EditChildScreen> {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
 
+    final permissionProvider = context.read<PermissionProvider>();
+
     return Scaffold(
       backgroundColor: colorScheme.surfaceContainerLow,
       appBar: AppBar(
@@ -81,7 +85,10 @@ class _EditChildScreenState extends State<EditChildScreen> {
             children: [
               _buildFormCard(colorScheme),
               const SizedBox(height: 30),
-              _buildActionButtons(context),
+              if ((permissionProvider.canEditChild() && widget.child != null) ||
+                  (permissionProvider.canAddChildToClient() &&
+                      widget.child == null))
+                _buildActionButtons(context),
             ],
           ),
         ),

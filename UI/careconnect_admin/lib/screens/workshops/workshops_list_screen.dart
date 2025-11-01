@@ -3,8 +3,10 @@ import 'package:careconnect_admin/models/enums/workshop_status.dart';
 import 'package:careconnect_admin/models/responses/search_result.dart';
 import 'package:careconnect_admin/models/responses/workshop.dart';
 import 'package:careconnect_admin/models/responses/workshop_statistics.dart';
+import 'package:careconnect_admin/providers/permission_provider.dart';
 import 'package:careconnect_admin/providers/workshop_form_provider.dart';
 import 'package:careconnect_admin/providers/workshop_provider.dart';
+import 'package:careconnect_admin/screens/no_permission_screen.dart';
 import 'package:careconnect_admin/screens/workshops/workshop_details_screen.dart';
 import 'package:careconnect_admin/core/theme/app_colors.dart';
 import 'package:careconnect_admin/widgets/confirm_dialog.dart';
@@ -28,6 +30,7 @@ class WorkshopsListScreen extends StatefulWidget {
 
 class _WorkshopsListScreenState extends State<WorkshopsListScreen> {
   late WorkshopProvider workshopProvider;
+  late PermissionProvider permissionProvider;
 
   SearchResult<Workshop>? workshops;
   int currentPage = 0;
@@ -80,6 +83,11 @@ class _WorkshopsListScreenState extends State<WorkshopsListScreen> {
   void initState() {
     super.initState();
     workshopProvider = context.read<WorkshopProvider>();
+    permissionProvider = Provider.of<PermissionProvider>(
+      context,
+      listen: false,
+    );
+
     loadData();
   }
 
@@ -141,6 +149,14 @@ class _WorkshopsListScreenState extends State<WorkshopsListScreen> {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
 
+    if (!permissionProvider.canViewWorkshopScreen()) {
+      return MasterScreen(
+        'Workshops',
+        NoPermissionScreen(),
+        currentScreen: "Workshops",
+      );
+    }
+
     return MasterScreen(
       "Workshops",
       currentScreen: "Workshops",
@@ -148,7 +164,8 @@ class _WorkshopsListScreenState extends State<WorkshopsListScreen> {
         scrollDirection: Axis.vertical,
         child: Column(
           children: [
-            _buildOverview(),
+            if (permissionProvider.canViewWorkshopStatistics())
+              _buildOverview(),
             _buildSearch(colorScheme),
             Consumer<WorkshopProvider>(
               builder: (context, workshopProvider, child) {
@@ -158,27 +175,29 @@ class _WorkshopsListScreenState extends State<WorkshopsListScreen> {
           ],
         ),
       ),
-      button: SizedBox(
-        child: Align(
-          alignment: Alignment.topRight,
-          child: PrimaryButton(
-            onPressed: () async {
-              final result = await Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => ChangeNotifierProvider(
-                    create: (_) => WorkshopFormProvider(),
-                    child: WorkshopDetailsScreen(workshop: null),
-                  ),
-                ),
-              );
+      button: permissionProvider.canInsertWorkshop()
+          ? SizedBox(
+              child: Align(
+                alignment: Alignment.topRight,
+                child: PrimaryButton(
+                  onPressed: () async {
+                    final result = await Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => ChangeNotifierProvider(
+                          create: (_) => WorkshopFormProvider(),
+                          child: WorkshopDetailsScreen(workshop: null),
+                        ),
+                      ),
+                    );
 
-              if (result == true) loadData();
-            },
-            label: 'Add Workshop',
-          ),
-        ),
-      ),
+                    if (result == true) loadData();
+                  },
+                  label: 'Add Workshop',
+                ),
+              ),
+            )
+          : null,
     );
   }
 
@@ -393,19 +412,42 @@ class _WorkshopsListScreenState extends State<WorkshopsListScreen> {
   }
 
   Widget _buildResultView() {
+    if (isLoading && (workshops == null || workshops!.result.isEmpty)) {
+      return SizedBox(
+        height: MediaQuery.of(context).size.height * 0.6,
+        child: const Center(child: CircularProgressIndicator()),
+      );
+    }
+
     return (workshops != null && workshops?.result.isEmpty == false)
-        ? GridView.count(
-            crossAxisCount: 1,
-            childAspectRatio: 350 / 100,
-            shrinkWrap: true,
-            physics: NeverScrollableScrollPhysics(),
-            padding: const EdgeInsets.symmetric(
-              horizontal: 256.0,
-              vertical: 64.0,
+        ? // GridView.count(
+          //     crossAxisCount: 1,
+          //     childAspectRatio: 350 / 100,
+          //     shrinkWrap: true,
+          //     physics: NeverScrollableScrollPhysics(),
+          //     padding: const EdgeInsets.symmetric(
+          //       horizontal: 256.0,
+          //       vertical: 64.0,
+          //     ),
+          //     crossAxisSpacing: 64,
+          //     mainAxisSpacing: 32,
+          //     children: [...buildWorkshops(workshops!.result)],
+          //   )
+          Align(
+            alignment: Alignment.topLeft,
+            child: GridView.count(
+              crossAxisCount: 1,
+              childAspectRatio: 350 / 100,
+              shrinkWrap: true,
+              physics: NeverScrollableScrollPhysics(),
+              padding: const EdgeInsets.symmetric(
+                horizontal: 256.0,
+                vertical: 64.0,
+              ),
+              crossAxisSpacing: 64,
+              mainAxisSpacing: 32,
+              children: [...buildWorkshops(workshops!.result)],
             ),
-            crossAxisSpacing: 64,
-            mainAxisSpacing: 32,
-            children: [...buildWorkshops(workshops!.result)],
           )
         : Padding(
             padding: const EdgeInsets.all(128.0),
@@ -453,25 +495,50 @@ class _WorkshopCardState extends State<WorkshopCard> {
     final colorScheme = theme.colorScheme;
 
     double screenWidth = MediaQuery.of(context).size.width;
+
+    final permissionProvider = context.read<PermissionProvider>();
+
+    final allowedActions = workshopStatusFromString(widget.workshop.status)
+        .allowedActions
+        .where((action) {
+          switch (action) {
+            case "Publish":
+              return permissionProvider.canPublishWorkshop();
+            case "Cancel":
+              return permissionProvider.canCancelWorkshop();
+            case "Close":
+              return permissionProvider.canCloseWorkshop();
+            case "View Participants":
+              return permissionProvider.canViewParticipants();
+            default:
+              return false;
+          }
+        })
+        .toList();
+
     return Tooltip(
-      message: "View workshop details.",
+      message: permissionProvider.canGetByIdWorkshop() == true
+          ? "View workshop details."
+          : "",
       child: MouseRegion(
         onEnter: (_) => setState(() => isHovered = true),
         onExit: (_) => setState(() => isHovered = false),
         child: InkWell(
           onTap: () async {
-            final result = await Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => ChangeNotifierProvider(
-                  create: (_) => WorkshopFormProvider(),
-                  child: WorkshopDetailsScreen(workshop: widget.workshop),
+            if (permissionProvider.canGetByIdWorkshop()) {
+              final result = await Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => ChangeNotifierProvider(
+                    create: (_) => WorkshopFormProvider(),
+                    child: WorkshopDetailsScreen(workshop: widget.workshop),
+                  ),
                 ),
-              ),
-            );
+              );
 
-            if (result == true) {
-              widget.loadData();
+              if (result == true) {
+                widget.loadData();
+              }
             }
           },
           borderRadius: BorderRadius.circular(12),
@@ -613,23 +680,6 @@ class _WorkshopCardState extends State<WorkshopCard> {
                                   ),
                                 ),
                               SizedBox(width: 15),
-                              // if (widget.workshop.memberPrice != null)
-                              //   Container(
-                              //     decoration: BoxDecoration(
-                              //       color: colorScheme.primaryContainer,
-
-                              //       borderRadius: BorderRadius.circular(4),
-                              //     ),
-                              //     child: Padding(
-                              //       padding: const EdgeInsets.all(4.0),
-                              //       child: Text(
-                              //         "Member price: ${widget.workshop.memberPrice}",
-                              //         style: TextStyle(
-                              //           fontWeight: FontWeight.w500,
-                              //         ),
-                              //       ),
-                              //     ),
-                              //   ),
                             ],
                           ),
                         ],
@@ -644,14 +694,69 @@ class _WorkshopCardState extends State<WorkshopCard> {
                         ],
                       ),
 
+                      // Row(
+                      //   mainAxisAlignment: MainAxisAlignment.end,
+                      //   children: workshopStatusFromString(widget.workshop.status)
+                      //       .allowedActions
+                      //       .map(
+                      //         (action) => Padding(
+                      //           padding: const EdgeInsets.only(left: 8.0),
+                      //           child: PrimaryButton(
+                      //             onPressed: () async {
+                      //               if (action != "View Participants") {
+                      //                 final shouldProceed =
+                      //                     await CustomConfirmDialog.show(
+                      //                       context,
+                      //                       icon: Icons.info,
+                      //                       title: '$action Workshop',
+                      //                       content:
+                      //                           'Are you sure you want to $action this workshop?',
+                      //                       confirmText: action,
+                      //                       cancelText: 'Cancel',
+                      //                     );
+
+                      //                 if (shouldProceed != true) return;
+                      //               }
+
+                      //               final result =
+                      //                   await Provider.of<WorkshopProvider>(
+                      //                     context,
+                      //                     listen: false,
+                      //                   ).handleWorkshopAction(
+                      //                     widget.workshop,
+                      //                     action,
+                      //                     context,
+                      //                   );
+
+                      //               if (action != "View Participants") {
+                      //                 CustomSnackbar.show(
+                      //                   context,
+                      //                   message: result
+                      //                       ? 'Workshop successfully changed.'
+                      //                       : 'Something went wrong. Please try again.',
+                      //                   type: result
+                      //                       ? SnackbarType.success
+                      //                       : SnackbarType.error,
+                      //                 );
+                      //               }
+
+                      //               if (result == true) widget.loadData();
+                      //             },
+
+                      //             label: action,
+                      //           ),
+                      //         ),
+                      //       )
+                      //       .toList(),
+                      // ),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.end,
-                        children: workshopStatusFromString(widget.workshop.status)
-                            .allowedActions
+                        children: allowedActions
                             .map(
                               (action) => Padding(
                                 padding: const EdgeInsets.only(left: 8.0),
                                 child: PrimaryButton(
+                                  label: action,
                                   onPressed: () async {
                                     if (action != "View Participants") {
                                       final shouldProceed =
@@ -692,8 +797,6 @@ class _WorkshopCardState extends State<WorkshopCard> {
 
                                     if (result == true) widget.loadData();
                                   },
-
-                                  label: action,
                                 ),
                               ),
                             )

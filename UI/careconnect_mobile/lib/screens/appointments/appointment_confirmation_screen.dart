@@ -10,7 +10,7 @@ import 'package:careconnect_mobile/providers/appointment_provider.dart';
 import 'package:careconnect_mobile/providers/auth_provider.dart';
 import 'package:careconnect_mobile/providers/client_provider.dart';
 import 'package:careconnect_mobile/providers/clients_child_provider.dart';
-import 'package:careconnect_mobile/screens/scheduling_appointment/appointment_success_screen.dart';
+import 'package:careconnect_mobile/screens/appointments/scheduling_appointment/appointment_success_screen.dart';
 import 'package:careconnect_mobile/widgets/confim_dialog.dart';
 import 'package:careconnect_mobile/widgets/primary_button.dart';
 import 'package:careconnect_mobile/widgets/snackbar.dart';

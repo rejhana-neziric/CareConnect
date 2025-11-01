@@ -1,7 +1,9 @@
 import 'dart:async';
 import 'package:careconnect_admin/models/auth_credentials.dart';
+import 'package:careconnect_admin/models/auth_user.dart';
 import 'package:careconnect_admin/providers/auth_provider.dart';
 import 'package:careconnect_admin/providers/notification_provider.dart';
+import 'package:careconnect_admin/providers/permission_provider.dart';
 import 'package:careconnect_admin/screens/appointments/appointment_list_screen.dart';
 import 'package:careconnect_admin/screens/clients/client_list_screen.dart';
 import 'package:careconnect_admin/screens/employee_availability/employee_availability_details_screen.dart';
@@ -44,6 +46,10 @@ class MasterScreen extends StatefulWidget {
 class _MasterScreenState extends State<MasterScreen> {
   final List<String> _debugLogs = [];
 
+  AuthUser? currentUser;
+
+  late PermissionProvider permissionProvider;
+
   @override
   void initState() {
     super.initState();
@@ -64,7 +70,16 @@ class _MasterScreenState extends State<MasterScreen> {
     final colorScheme = theme.colorScheme;
     final themeNotifier = Provider.of<ThemeNotifier>(context);
 
-    //final auth = Provider.of<AuthProvider>(context);
+    final auth = Provider.of<AuthProvider>(context);
+
+    currentUser = auth.user;
+
+    print(currentUser?.permissions);
+
+    permissionProvider = Provider.of<PermissionProvider>(
+      context,
+      listen: false,
+    );
 
     return Scaffold(
       body: Row(
@@ -88,6 +103,7 @@ class _MasterScreenState extends State<MasterScreen> {
                     ),
                   ),
                 ),
+
                 Expanded(
                   child: ListView(
                     padding: EdgeInsets.zero,
@@ -108,143 +124,160 @@ class _MasterScreenState extends State<MasterScreen> {
                         },
                       ),
 
-                      ListTile(
-                        leading: Icon(Icons.badge),
-                        title: Text(
-                          "Employees",
-                          style: TextStyle(fontWeight: FontWeight.w500),
+                      if (currentUser != null &&
+                          permissionProvider.canViewEmployeeScreen())
+                        ListTile(
+                          leading: Icon(Icons.group),
+                          title: Text(
+                            "Employees",
+                            style: TextStyle(fontWeight: FontWeight.w500),
+                          ),
+                          selected: widget.currentScreen == "Employees",
+                          selectedTileColor: colorScheme.primary,
+                          onTap: () {
+                            Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder: (_) => EmployeeListScreen(),
+                              ),
+                            );
+                          },
                         ),
-                        selected: widget.currentScreen == "Employees",
-                        selectedTileColor: colorScheme.primary,
-                        onTap: () {
-                          Navigator.of(context).push(
-                            MaterialPageRoute(
-                              builder: (_) => EmployeeListScreen(),
-                            ),
-                          );
-                        },
-                      ),
 
-                      ListTile(
-                        leading: Icon(Icons.badge),
-                        title: Text(
-                          "Employee Availability",
-                          style: TextStyle(fontWeight: FontWeight.w500),
+                      if (currentUser != null &&
+                          permissionProvider
+                              .canViewEmployeeAvailabilityScreen())
+                        ListTile(
+                          leading: Icon(Icons.event_available),
+                          title: Text(
+                            "Employee Availability",
+                            style: TextStyle(fontWeight: FontWeight.w500),
+                          ),
+                          selected:
+                              widget.currentScreen == "Employee Availability",
+                          selectedTileColor: colorScheme.primary,
+                          onTap: () {
+                            Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder: (context) =>
+                                    EmployeeAvailabilityDetailsScreen(),
+                              ),
+                            );
+                          },
                         ),
-                        selected:
-                            widget.currentScreen == "Employee Availability",
-                        selectedTileColor: colorScheme.primary,
-                        onTap: () {
-                          Navigator.of(context).push(
-                            MaterialPageRoute(
-                              builder: (context) =>
-                                  EmployeeAvailabilityDetailsScreen(),
-                            ),
-                          );
-                        },
-                      ),
 
-                      ListTile(
-                        leading: Icon(Icons.group),
-                        title: Text(
-                          "Clients",
-                          style: TextStyle(fontWeight: FontWeight.w500),
+                      if (currentUser != null &&
+                          permissionProvider.canViewClientScreen())
+                        ListTile(
+                          leading: Icon(Icons.group),
+                          title: Text(
+                            "Clients",
+                            style: TextStyle(fontWeight: FontWeight.w500),
+                          ),
+                          selected: widget.currentScreen == "Clients",
+                          selectedTileColor: colorScheme.primary,
+                          onTap: () {
+                            Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder: (context) => ClientListScreen(),
+                              ),
+                            );
+                          },
                         ),
-                        selected: widget.currentScreen == "Clients",
-                        selectedTileColor: colorScheme.primary,
-                        onTap: () {
-                          Navigator.of(context).push(
-                            MaterialPageRoute(
-                              builder: (context) => ClientListScreen(),
-                            ),
-                          );
-                        },
-                      ),
 
-                      ListTile(
-                        leading: Icon(FontAwesomeIcons.handHoldingHeart),
-                        title: Text(
-                          "Services",
-                          style: TextStyle(fontWeight: FontWeight.w500),
+                      if (currentUser != null &&
+                          permissionProvider.canViewServiceScreen())
+                        ListTile(
+                          leading: Icon(FontAwesomeIcons.handHoldingHeart),
+                          title: Text(
+                            "Services",
+                            style: TextStyle(fontWeight: FontWeight.w500),
+                          ),
+                          selected: widget.currentScreen == "Services",
+                          selectedTileColor: colorScheme.primary,
+                          onTap: () {
+                            Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder: (context) => ServicesListScreen(),
+                              ),
+                            );
+                          },
                         ),
-                        selected: widget.currentScreen == "Services",
-                        selectedTileColor: colorScheme.primary,
-                        onTap: () {
-                          Navigator.of(context).push(
-                            MaterialPageRoute(
-                              builder: (context) => ServicesListScreen(),
-                            ),
-                          );
-                        },
-                      ),
 
-                      ListTile(
-                        leading: Icon(Icons.event),
-                        title: Text(
-                          "Appointments",
-                          style: TextStyle(fontWeight: FontWeight.w500),
+                      if (currentUser != null &&
+                          permissionProvider.canViewAppointmentScreen())
+                        ListTile(
+                          leading: Icon(Icons.event),
+                          title: Text(
+                            "Appointments",
+                            style: TextStyle(fontWeight: FontWeight.w500),
+                          ),
+                          selected: widget.currentScreen == "Appointments",
+                          selectedTileColor: colorScheme.primary,
+                          onTap: () {
+                            Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder: (context) => AppointmentListScreen(),
+                              ),
+                            );
+                          },
                         ),
-                        selected: widget.currentScreen == "Appointments",
-                        selectedTileColor: colorScheme.primary,
-                        onTap: () {
-                          Navigator.of(context).push(
-                            MaterialPageRoute(
-                              builder: (context) => AppointmentListScreen(),
-                            ),
-                          );
-                        },
-                      ),
 
-                      ListTile(
-                        leading: Icon(FontAwesomeIcons.puzzlePiece),
-                        title: Text(
-                          "Workshops",
-                          style: TextStyle(fontWeight: FontWeight.w500),
+                      if (currentUser != null &&
+                          permissionProvider.canViewWorkshopScreen())
+                        ListTile(
+                          leading: Icon(FontAwesomeIcons.puzzlePiece),
+                          title: Text(
+                            "Workshops",
+                            style: TextStyle(fontWeight: FontWeight.w500),
+                          ),
+                          selected: widget.currentScreen == "Workshops",
+                          selectedTileColor: colorScheme.primary,
+                          onTap: () {
+                            Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder: (context) => WorkshopsListScreen(),
+                              ),
+                            );
+                          },
                         ),
-                        selected: widget.currentScreen == "Workshops",
-                        selectedTileColor: colorScheme.primary,
-                        onTap: () {
-                          Navigator.of(context).push(
-                            MaterialPageRoute(
-                              builder: (context) => WorkshopsListScreen(),
-                            ),
-                          );
-                        },
-                      ),
 
-                      ListTile(
-                        leading: Icon(Icons.reviews),
-                        title: Text(
-                          "Reviews",
-                          style: TextStyle(fontWeight: FontWeight.w500),
+                      if (currentUser != null &&
+                          permissionProvider.canViewReview())
+                        ListTile(
+                          leading: Icon(Icons.star_rate),
+                          title: Text(
+                            "Reviews",
+                            style: TextStyle(fontWeight: FontWeight.w500),
+                          ),
+                          selected: widget.currentScreen == "Reviews",
+                          selectedTileColor: colorScheme.primary,
+                          onTap: () {
+                            Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder: (context) => ReviewListScreen(),
+                              ),
+                            );
+                          },
                         ),
-                        selected: widget.currentScreen == "Reviews",
-                        selectedTileColor: colorScheme.primary,
-                        onTap: () {
-                          Navigator.of(context).push(
-                            MaterialPageRoute(
-                              builder: (context) => ReviewListScreen(),
-                            ),
-                          );
-                        },
-                      ),
 
-                      ListTile(
-                        leading: Icon(Icons.insert_chart_outlined),
-                        title: Text(
-                          "Report",
-                          style: TextStyle(fontWeight: FontWeight.w500),
+                      if (currentUser != null &&
+                          permissionProvider.canViewReport())
+                        ListTile(
+                          leading: Icon(Icons.insert_chart_outlined),
+                          title: Text(
+                            "Report",
+                            style: TextStyle(fontWeight: FontWeight.w500),
+                          ),
+                          selected: widget.currentScreen == "Report",
+                          selectedTileColor: colorScheme.primary,
+                          onTap: () {
+                            Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder: (context) => ReportsScreen(),
+                              ),
+                            );
+                          },
                         ),
-                        selected: widget.currentScreen == "Report",
-                        selectedTileColor: colorScheme.primary,
-                        onTap: () {
-                          Navigator.of(context).push(
-                            MaterialPageRoute(
-                              builder: (context) => ReportsScreen(),
-                            ),
-                          );
-                        },
-                      ),
 
                       ListTile(
                         leading: Icon(Icons.notifications),
@@ -261,21 +294,23 @@ class _MasterScreenState extends State<MasterScreen> {
                         ),
                       ),
 
-                      ListTile(
-                        leading: Icon(Icons.security),
-                        title: Text(
-                          "Roles and Permissions",
-                          style: TextStyle(fontWeight: FontWeight.w500),
-                        ),
-                        selected:
-                            widget.currentScreen == "Roles and Permissions",
-                        selectedTileColor: colorScheme.primary,
-                        onTap: () => Navigator.of(context).push(
-                          MaterialPageRoute(
-                            builder: (context) => RolePermissionsScreen(),
+                      if (currentUser != null &&
+                          permissionProvider.canViewRolePermissions())
+                        ListTile(
+                          leading: Icon(Icons.security),
+                          title: Text(
+                            "Roles and Permissions",
+                            style: TextStyle(fontWeight: FontWeight.w500),
+                          ),
+                          selected:
+                              widget.currentScreen == "Roles and Permissions",
+                          selectedTileColor: colorScheme.primary,
+                          onTap: () => Navigator.of(context).push(
+                            MaterialPageRoute(
+                              builder: (context) => RolePermissionsScreen(),
+                            ),
                           ),
                         ),
-                      ),
 
                       Padding(
                         padding: const EdgeInsets.symmetric(

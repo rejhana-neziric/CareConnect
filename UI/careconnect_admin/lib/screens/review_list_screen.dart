@@ -1,8 +1,12 @@
 import 'package:careconnect_admin/core/layouts/master_screen.dart';
+import 'package:careconnect_admin/models/auth_user.dart';
 import 'package:careconnect_admin/models/responses/review.dart';
 import 'package:careconnect_admin/models/responses/search_result.dart';
+import 'package:careconnect_admin/providers/auth_provider.dart';
+import 'package:careconnect_admin/providers/permission_provider.dart';
 import 'package:careconnect_admin/providers/review_provider.dart';
 import 'package:careconnect_admin/core/theme/app_colors.dart';
+import 'package:careconnect_admin/screens/no_permission_screen.dart';
 import 'package:careconnect_admin/widgets/confirm_dialog.dart';
 import 'package:careconnect_admin/widgets/custom_dropdown_fliter.dart';
 import 'package:careconnect_admin/widgets/no_results.dart';
@@ -26,6 +30,8 @@ class _ReviewListScreenState extends State<ReviewListScreen> {
 
   SearchResult<Review>? reviews;
   int currentPage = 0;
+
+  AuthUser? currentUser;
 
   final _ftsController = TextEditingController();
 
@@ -61,11 +67,37 @@ class _ReviewListScreenState extends State<ReviewListScreen> {
     super.didChangeDependencies();
   }
 
+  double get _averageRating {
+    if (reviews == null || reviews!.result.isEmpty) return 0;
+    final validReviews = reviews!.result.where(
+      (r) => r.stars != null && !r.isHidden,
+    );
+    if (validReviews.isEmpty) return 0;
+    return validReviews.map((r) => r.stars!).reduce((a, b) => a + b) /
+        validReviews.length;
+  }
+
   @override
   void initState() {
     super.initState();
+
+    final auth = Provider.of<AuthProvider>(context, listen: false);
+
+    currentUser = auth.user;
+
     reviewProvider = context.read<ReviewProvider>();
-    loadData();
+
+    final permissionProvider = context.read<PermissionProvider>();
+
+    if (permissionProvider.canViewReview()) {
+      if (permissionProvider.canViewAllReviews()) {
+        loadData(); // load all reviews
+      } else if (permissionProvider.canViewOwnReviews()) {
+        loadEmployeeReviews();
+      }
+    }
+
+    //loadData();
   }
 
   Future<SearchResult<Review>?> loadData() async {
@@ -92,11 +124,43 @@ class _ReviewListScreenState extends State<ReviewListScreen> {
       reviews = result;
 
       averageRating = await reviewProvider.getAverage();
+      averageRating = double.parse(averageRating.toStringAsFixed(2));
 
       if (mounted) {
-        setState(() {});
+        setState(() {
+          isLoading = false;
+        });
       }
 
+      return reviews;
+    } finally {
+      setState(() {
+        isLoading = false;
+      });
+    }
+  }
+
+  Future<SearchResult<Review>?> loadEmployeeReviews() async {
+    setState(() {
+      isLoading = true;
+    });
+    try {
+      // reviews = await reviewProvider.loadOwnReviews();
+
+      reviews = await reviewProvider.loadData(
+        employeeId: currentUser!.id,
+        isHidden: false,
+      );
+
+      // averageRating = await reviewProvider.getAverageForEmployee();
+
+      averageRating = _averageRating;
+      averageRating = double.parse(averageRating.toStringAsFixed(2));
+
+      //fix
+      setState(() {
+        isLoading = false;
+      });
       return reviews;
     } finally {
       setState(() {
@@ -109,6 +173,16 @@ class _ReviewListScreenState extends State<ReviewListScreen> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
+
+    final permissionProvider = context.watch<PermissionProvider>();
+
+    if (!permissionProvider.canViewReview()) {
+      return MasterScreen(
+        'Reviews',
+        NoPermissionScreen(),
+        currentScreen: "Reviews",
+      );
+    }
 
     return MasterScreen(
       "Reviews",
@@ -296,10 +370,7 @@ class _ReviewListScreenState extends State<ReviewListScreen> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          NoResultsWidget(
-            message: 'No results found. Please try again.',
-            icon: Icons.sentiment_dissatisfied,
-          ),
+          NoResultsWidget(message: 'No results found. Please try again.'),
         ],
       ),
     );
@@ -331,6 +402,8 @@ class _ReviewCardState extends State<ReviewCard> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
+
+    final permissionProvider = context.watch<PermissionProvider>();
 
     return SizedBox(
       width: 500,
@@ -449,44 +522,85 @@ class _ReviewCardState extends State<ReviewCard> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
-                  PrimaryButton(
-                    onPressed: () async {
-                      final shouldProceed = await CustomConfirmDialog.show(
-                        context,
-                        icon: Icons.info,
-                        title: widget.review.isHidden
-                            ? 'Unhide Review'
-                            : 'Hide Review',
-                        content: widget.review.isHidden
-                            ? 'Are you sure you want to unhide this review?'
-                            : 'Are you sure you want to hide this review?',
-                        confirmText: widget.review.isHidden ? 'Unhide' : 'Hide',
-                        cancelText: 'Cancel',
-                      );
+                  if (permissionProvider.canChangeReviewVisibility())
+                    PrimaryButton(
+                      onPressed: () async {
+                        final shouldProceed = await CustomConfirmDialog.show(
+                          context,
+                          icon: Icons.info,
+                          title: widget.review.isHidden
+                              ? 'Unhide Review'
+                              : 'Hide Review',
+                          content: widget.review.isHidden
+                              ? 'Are you sure you want to unhide this review?'
+                              : 'Are you sure you want to hide this review?',
+                          confirmText: widget.review.isHidden
+                              ? 'Unhide'
+                              : 'Hide',
+                          cancelText: 'Cancel',
+                        );
 
-                      if (shouldProceed != true) return;
+                        if (shouldProceed != true) return;
 
-                      final result = await Provider.of<ReviewProvider>(
-                        context,
-                        listen: false,
-                      ).changeVisibility(widget.review.reviewId);
+                        final result = await Provider.of<ReviewProvider>(
+                          context,
+                          listen: false,
+                        ).changeVisibility(widget.review.reviewId);
 
-                      CustomSnackbar.show(
-                        context,
-                        message: result
-                            ? 'Review visibility successfully changed.'
-                            : 'Something went wrong. Please try again.',
-                        type: result
-                            ? SnackbarType.success
-                            : SnackbarType.error,
-                      );
+                        CustomSnackbar.show(
+                          context,
+                          message: result
+                              ? 'Review visibility successfully changed.'
+                              : 'Something went wrong. Please try again.',
+                          type: result
+                              ? SnackbarType.success
+                              : SnackbarType.error,
+                        );
 
-                      if (result == true) widget.loadData();
-                    },
-                    label: widget.review.isHidden ? 'Unhide' : ' Hide',
-                    backgroundColor: Colors.grey.shade300,
-                    textColor: Colors.black87,
-                  ),
+                        if (result == true) widget.loadData();
+                      },
+                      label: widget.review.isHidden ? 'Unhide' : ' Hide',
+                      backgroundColor: Colors.grey.shade300,
+                      textColor: Colors.black87,
+                    ),
+
+                  if (permissionProvider.canDeleteReview()) ...[
+                    SizedBox(width: 10),
+                    PrimaryButton(
+                      onPressed: () async {
+                        final shouldProceed = await CustomConfirmDialog.show(
+                          context,
+                          icon: Icons.error,
+                          title: 'Delete',
+                          content:
+                              'Are you sure you want to delete this review?',
+                          confirmText: 'Delete',
+                          cancelText: 'Cancel',
+                        );
+
+                        if (shouldProceed != true) return;
+
+                        final result = await Provider.of<ReviewProvider>(
+                          context,
+                          listen: false,
+                        ).delete(widget.review.reviewId);
+
+                        CustomSnackbar.show(
+                          context,
+                          message: result
+                              ? 'Review successfully deleted.'
+                              : 'Something went wrong. Please try again.',
+                          type: result
+                              ? SnackbarType.success
+                              : SnackbarType.error,
+                        );
+
+                        if (result == true) widget.loadData();
+                      },
+                      label: 'Delete',
+                      backgroundColor: colorScheme.error,
+                    ),
+                  ],
                 ],
               ),
             ],

@@ -27,6 +27,7 @@ ReviewSearchObject _$ReviewSearchObjectFromJson(Map<String, dynamic> json) =>
           : ReviewAdditionalData.fromJson(
               json['additionalData'] as Map<String, dynamic>,
             ),
+      employeeId: (json['employeeId'] as num?)?.toInt(),
       page: (json['page'] as num?)?.toInt(),
       sortBy: json['sortBy'] as String?,
       sortAscending: json['sortAscending'] as bool?,
@@ -47,6 +48,7 @@ Map<String, dynamic> _$ReviewSearchObjectToJson(ReviewSearchObject instance) =>
       'employeeFirstNameGTE': instance.employeeFirstNameGTE,
       'employeeLastNameGTE': instance.employeeLastNameGTE,
       'additionalData': instance.additionalData?.toJson(),
+      'employeeId': instance.employeeId,
       'page': instance.page,
       'sortBy': instance.sortBy,
       'sortAscending': instance.sortAscending,

@@ -6,6 +6,8 @@ import 'package:careconnect_admin/models/responses/appointment.dart';
 import 'package:careconnect_admin/models/responses/attendance_status.dart';
 import 'package:careconnect_admin/providers/appointment_provider.dart';
 import 'package:careconnect_admin/providers/attendance_status_provider.dart';
+import 'package:careconnect_admin/providers/permission_provider.dart';
+import 'package:careconnect_admin/screens/no_permission_screen.dart';
 import 'package:careconnect_admin/widgets/confirm_dialog.dart';
 import 'package:careconnect_admin/widgets/custom_date_field.dart';
 import 'package:careconnect_admin/widgets/custom_dropdown_field.dart';
@@ -113,6 +115,16 @@ class _AppointmentDetailsScreenState extends State<AppointmentDetailsScreen> {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
 
+    final permissionProvider = context.watch<PermissionProvider>();
+
+    if (!permissionProvider.canGetByIdAppointment()) {
+      return MasterScreen(
+        'Appointment Details',
+        NoPermissionScreen(),
+        currentScreen: "Appointments",
+      );
+    }
+
     return WillPopScope(
       onWillPop: () async {
         Navigator.pop(context, _hasChanges);
@@ -138,7 +150,7 @@ class _AppointmentDetailsScreenState extends State<AppointmentDetailsScreen> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           // Main Info Card
-                          _buildMainInfoCard(),
+                          _buildMainInfoCard(permissionProvider),
                           const SizedBox(height: 24),
 
                           // Patient & Child Info
@@ -146,10 +158,11 @@ class _AppointmentDetailsScreenState extends State<AppointmentDetailsScreen> {
                           const SizedBox(height: 24),
 
                           // Description & Notes
-                          _buildDescriptionCard(),
+                          _buildDescriptionCard(permissionProvider),
                           const SizedBox(height: 24),
 
-                          _buildActionButtons(),
+                          if (permissionProvider.canEditAppointment())
+                            _buildActionButtons(),
                         ],
                       ),
                     ),
@@ -166,7 +179,7 @@ class _AppointmentDetailsScreenState extends State<AppointmentDetailsScreen> {
                     ),
                     child: SingleChildScrollView(
                       padding: const EdgeInsets.all(16),
-                      child: _buildSidebar(),
+                      child: _buildSidebar(permissionProvider),
                     ),
                   ),
                 ],
@@ -179,7 +192,7 @@ class _AppointmentDetailsScreenState extends State<AppointmentDetailsScreen> {
     );
   }
 
-  Widget _buildMainInfoCard() {
+  Widget _buildMainInfoCard(PermissionProvider permissionProvider) {
     return Card(
       elevation: 0,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -237,6 +250,7 @@ class _AppointmentDetailsScreenState extends State<AppointmentDetailsScreen> {
                       if (value == null) return 'Appointment type is required';
                       return null;
                     },
+                    enabled: permissionProvider.canEditAppointment(),
                   ),
                 ),
                 const SizedBox(width: 16),
@@ -322,7 +336,7 @@ class _AppointmentDetailsScreenState extends State<AppointmentDetailsScreen> {
     );
   }
 
-  Widget _buildDescriptionCard() {
+  Widget _buildDescriptionCard(PermissionProvider permissionProvider) {
     return Card(
       elevation: 0,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -343,6 +357,7 @@ class _AppointmentDetailsScreenState extends State<AppointmentDetailsScreen> {
               name: 'description',
               label: 'Description',
               maxLines: 3,
+              enabled: permissionProvider.canEditAppointment(),
             ),
             const SizedBox(height: 16),
             CustomTextField(
@@ -350,6 +365,7 @@ class _AppointmentDetailsScreenState extends State<AppointmentDetailsScreen> {
               name: 'note',
               label: 'Notes',
               maxLines: 3,
+              enabled: permissionProvider.canEditAppointment(),
             ),
           ],
         ),
@@ -357,7 +373,7 @@ class _AppointmentDetailsScreenState extends State<AppointmentDetailsScreen> {
     );
   }
 
-  Widget _buildSidebar() {
+  Widget _buildSidebar(PermissionProvider permissionProvider) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
 
@@ -377,7 +393,7 @@ class _AppointmentDetailsScreenState extends State<AppointmentDetailsScreen> {
               ),
             ),
             const SizedBox(height: 24),
-            _buildStatusChip(),
+            _buildStatusChip(permissionProvider),
             const SizedBox(height: 24),
             if (widget.appointment.employeeAvailability?.service?.price != null)
               _buildSidebarItem(
@@ -441,18 +457,18 @@ class _AppointmentDetailsScreenState extends State<AppointmentDetailsScreen> {
     );
   }
 
-  Widget _buildStatusChip() {
+  Widget _buildStatusChip(PermissionProvider permissionProvider) {
     return CustomDropdownField<int>(
       width: 600,
       name: 'attendanceStatusId',
       label: 'Attendance Status',
       items: buildAttendanceStatusItems(attendanceStatuses),
-
       required: true,
       validator: (value) {
         if (value == null) return 'Attendance status is required';
         return null;
       },
+      enabled: permissionProvider.canEditAppointment(),
     );
   }
 

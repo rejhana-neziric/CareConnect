@@ -1,9 +1,13 @@
 import 'package:careconnect_admin/core/layouts/master_screen.dart';
 import 'package:careconnect_admin/core/theme/app_colors.dart';
+import 'package:careconnect_admin/models/auth_user.dart';
 import 'package:careconnect_admin/models/responses/employee.dart';
 import 'package:careconnect_admin/models/time_slot.dart';
+import 'package:careconnect_admin/providers/auth_provider.dart';
 import 'package:careconnect_admin/providers/employee_provider.dart';
+import 'package:careconnect_admin/providers/permission_provider.dart';
 import 'package:careconnect_admin/screens/employee_availability/widgets/employee_availability_picker.dart';
+import 'package:careconnect_admin/screens/no_permission_screen.dart';
 import 'package:careconnect_admin/widgets/confirm_dialog.dart';
 import 'package:careconnect_admin/widgets/custom_dropdown_field.dart';
 import 'package:careconnect_admin/widgets/primary_button.dart';
@@ -23,6 +27,7 @@ class EmployeeAvailabilityDetailsScreen extends StatefulWidget {
 class _EmployeeAvailabilityDetailsScreenState
     extends State<EmployeeAvailabilityDetailsScreen> {
   late EmployeeProvider employeeProvider;
+  late PermissionProvider permissionProvider;
 
   List<Employee> employees = [];
   Map<String, String?> employeesOption = {};
@@ -34,10 +39,39 @@ class _EmployeeAvailabilityDetailsScreenState
 
   final _formKey = GlobalKey<FormBuilderState>();
 
+  late bool isAdminMode;
+
+  AuthUser? currentUser;
+
   @override
   void initState() {
     employeeProvider = context.read<EmployeeProvider>();
-    loadEmployees();
+
+    permissionProvider = Provider.of<PermissionProvider>(
+      context,
+      listen: false,
+    );
+
+    isAdminMode = permissionProvider.canViewAllEmployeesAvailability();
+
+    final auth = Provider.of<AuthProvider>(context, listen: false);
+
+    currentUser = auth.user;
+
+    if (isAdminMode) {
+      loadEmployees();
+    } else if (permissionProvider.canViewOwnAvailability()) {
+      // Employee mode — load only their own availability
+      final userId = currentUser?.id; // or however you store it
+      if (userId != null) {
+        selectedEmployeeId = userId;
+        loadAvailability(userId);
+      }
+    } else {
+      //you dont have permission to view any availability
+    }
+
+    //loadEmployees();
 
     super.initState();
   }
@@ -86,6 +120,14 @@ class _EmployeeAvailabilityDetailsScreenState
     final theme = Theme.of(context);
     // final colorScheme = theme.colorScheme;
 
+    if (!permissionProvider.canViewEmployeeAvailabilityScreen()) {
+      return MasterScreen(
+        'Employee Availability',
+        NoPermissionScreen(),
+        currentScreen: "Employee Availability",
+      );
+    }
+
     return MasterScreen(
       "Employee Availability",
       currentScreen: "Employee Availability",
@@ -96,94 +138,83 @@ class _EmployeeAvailabilityDetailsScreenState
           child: Column(
             children: [
               // Employee selection section
-              Card(
-                child: Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          Icon(Icons.person),
-                          const SizedBox(width: 4),
-                          Text(
-                            'Employee Information',
-                            style: theme.textTheme.titleMedium,
-                          ),
-                          const SizedBox(width: 16),
-                          CustomDropdownField(
-                            width: 400,
-                            name: "employee",
-                            label: "Employee Name",
-                            items: buildEmployeesList(employees),
-                            onChanged: (value) async {
-                              if (value == null) return;
-                              setState(() => selectedEmployeeId = value);
-                              await loadAvailability(value);
-                            },
-                          ),
-                          //  ),
-                        ],
-                      ),
-                    ],
+              if (isAdminMode)
+                Card(
+                  child: Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Icon(Icons.person),
+                            const SizedBox(width: 4),
+                            Text(
+                              'Employee Information',
+                              style: theme.textTheme.titleMedium,
+                            ),
+                            const SizedBox(width: 16),
+                            CustomDropdownField(
+                              width: 400,
+                              name: "employee",
+                              label: "Employee Name",
+                              items: buildEmployeesList(employees),
+                              onChanged: (value) async {
+                                if (value == null) return;
+                                setState(() => selectedEmployeeId = value);
+                                await loadAvailability(value);
+                              },
+                            ),
+                            //  ),
+                          ],
+                        ),
+                      ],
+                    ),
                   ),
                 ),
-              ),
 
               const SizedBox(height: 20),
 
-              // Employee Availability picker
-              Expanded(
-                child: EmployeeAvailabilityPicker(
-                  name: 'availability',
-                  // validator: (slots) {
-                  //   if (slots == null || slots.isEmpty) {
-                  //     return 'Please add at least one availability slot';
-                  //   }
-
-                  //   for (int i = 0; i < slots.length; i++) {
-                  //     for (int j = i + 1; j < slots.length; j++) {
-                  //       if (slots.values.toList()[i].day ==
-                  //           slots.values.toList()[j].day) {
-                  //         if (_slotsOverlap(
-                  //           slots.values.toList()[i],
-                  //           slots.values.toList()[j],
-                  //         )) {
-                  //           return 'Overlapping time slots found for ${slots.values.toList()[i].day}';
-                  //         }
-                  //       }
-                  //     }
-                  //   }
-
-                  //   return null;
-                  // },
+              if (permissionProvider.canViewOwnAvailability() || isAdminMode)
+                Expanded(
+                  child: EmployeeAvailabilityPicker(name: 'availability'),
+                )
+              else
+                Expanded(
+                  child: Center(
+                    child: Text(
+                      'Sorry, you do not have permission to view any availability.',
+                    ),
+                  ),
                 ),
-              ),
 
               const SizedBox(height: 20),
 
               // Action buttons
-              Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  Tooltip(
-                    message: 'Revert to last saved values.',
-                    child: TextButton(
-                      onPressed: () async {
-                        if (selectedEmployeeId != null) {
-                          await loadAvailability(selectedEmployeeId!);
-                        }
-                      },
-                      child: const Text('Reset'),
+              if (permissionProvider.canUpdateEmployeeAvailability() ||
+                  permissionProvider.canInsertEmployeeAvailability())
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    if (isAdminMode)
+                      Tooltip(
+                        message: 'Revert to last saved values.',
+                        child: TextButton(
+                          onPressed: () async {
+                            if (selectedEmployeeId != null) {
+                              await loadAvailability(selectedEmployeeId!);
+                            }
+                          },
+                          child: const Text('Reset'),
+                        ),
+                      ),
+                    const SizedBox(width: 8),
+                    PrimaryButton(
+                      onPressed: () => _saveAvailability(),
+                      label: 'Save Availability',
                     ),
-                  ),
-                  const SizedBox(width: 8),
-                  PrimaryButton(
-                    onPressed: () => _saveAvailability(),
-                    label: 'Save Availability',
-                  ),
-                ],
-              ),
+                  ],
+                ),
             ],
           ),
         ),

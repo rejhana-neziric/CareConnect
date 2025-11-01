@@ -5,6 +5,8 @@ import 'package:careconnect_admin/models/responses/search_result.dart';
 import 'package:careconnect_admin/models/responses/workshop.dart';
 import 'package:careconnect_admin/providers/attendance_status_provider.dart';
 import 'package:careconnect_admin/providers/participant_provider.dart';
+import 'package:careconnect_admin/providers/permission_provider.dart';
+import 'package:careconnect_admin/screens/no_permission_screen.dart';
 import 'package:careconnect_admin/widgets/custom_dropdown_fliter.dart';
 import 'package:careconnect_admin/widgets/no_results.dart';
 import 'package:careconnect_admin/widgets/primary_button.dart';
@@ -119,6 +121,16 @@ class _ParticipantListScreeenState extends State<ParticipantListScreeen> {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
 
+    final permissionProvider = context.watch<PermissionProvider>();
+
+    if (!permissionProvider.canViewParticipants()) {
+      return MasterScreen(
+        'Participants',
+        NoPermissionScreen(),
+        currentScreen: "Workshops",
+      );
+    }
+
     return MasterScreen(
       "Participants",
       currentScreen: "Workshops",
@@ -185,6 +197,8 @@ class _ParticipantListScreeenState extends State<ParticipantListScreeen> {
               ),
               const SizedBox(width: 8),
               //Sort By Attendance Status
+
+              // possibly fix if i add later permission for attendace status
               SizedBox(
                 width: 220,
                 child: CustomDropdownFilter(
@@ -261,8 +275,15 @@ class _ParticipantListScreeenState extends State<ParticipantListScreeen> {
   }
 
   Widget _buildResultView(Workshop workshop) {
-    if (isLoading) {
-      return const Expanded(child: Center(child: CircularProgressIndicator()));
+    // if (isLoading) {
+    //   return const Expanded(child: Center(child: CircularProgressIndicator()));
+    // }
+
+    if (isLoading && (result == null || result!.result.isEmpty)) {
+      return SizedBox(
+        height: MediaQuery.of(context).size.height * 0.6,
+        child: const Center(child: CircularProgressIndicator()),
+      );
     }
 
     if (result != null && result?.result.isEmpty == false) {
@@ -289,12 +310,7 @@ class _ParticipantListScreeenState extends State<ParticipantListScreeen> {
       padding: const EdgeInsets.all(128.0),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          NoResultsWidget(
-            message: 'No participant found.',
-            icon: Icons.sentiment_dissatisfied,
-          ),
-        ],
+        children: [NoResultsWidget(message: 'No participant found.')],
       ),
     );
   }
@@ -446,7 +462,7 @@ class _ParticipantTableState extends State<ParticipantTable> {
         if (isLoading)
           Positioned.fill(
             child: Container(
-              color: Colors.white.withAlpha((0.7 * 255).toInt()),
+              color: Colors.transparent,
               child: const Center(child: CircularProgressIndicator()),
             ),
           ),

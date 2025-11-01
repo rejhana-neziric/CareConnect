@@ -370,7 +370,7 @@ class _LoginScreenState extends State<LoginScreen>
             return;
           }
 
-          getPermissions(response.username);
+          await getPermissions(response.username);
 
           final authUser = AuthUser(
             id: response.userId,

@@ -194,7 +194,7 @@ namespace CareConnect.Services
 
         public Models.Responses.Appointment Cancel(int id)
         {
-            var entity = GetById(id);
+            var entity = GetByIdWithIncludes(id);
 
             var state = BaseAppointmentState.CreateAppointmentState(entity.StateMachine);
             return state.Cancel(id);
@@ -202,7 +202,7 @@ namespace CareConnect.Services
 
         public Models.Responses.Appointment Confirm(int id)
         {
-            var entity = GetById(id);
+            var entity = GetByIdWithIncludes(id);
 
             var state = BaseAppointmentState.CreateAppointmentState(entity.StateMachine);
 
@@ -211,7 +211,7 @@ namespace CareConnect.Services
 
         public Models.Responses.Appointment Start(int id)
         {
-            var entity = GetById(id);
+            var entity = GetByIdWithIncludes(id);
 
             var state = BaseAppointmentState.CreateAppointmentState(entity.StateMachine);
             return state.Start(id);
@@ -219,7 +219,7 @@ namespace CareConnect.Services
 
         public Models.Responses.Appointment Complete(int id)
         {
-            var entity = GetById(id);
+            var entity = GetByIdWithIncludes(id);
 
             var state = BaseAppointmentState.CreateAppointmentState(entity.StateMachine);
             return state.Complete(id);
@@ -227,7 +227,7 @@ namespace CareConnect.Services
 
         public Models.Responses.Appointment Reschedule(int id)
         {
-            var entity = GetById(id);
+            var entity = GetByIdWithIncludes(id);
 
             var state = BaseAppointmentState.CreateAppointmentState(entity.StateMachine);
             return state.Reschedule(id);
@@ -235,7 +235,7 @@ namespace CareConnect.Services
 
         public Models.Responses.Appointment RescheduleRequest(int id)
         {
-            var entity = GetById(id);
+            var entity = GetByIdWithIncludes(id);
 
             var state = BaseAppointmentState.CreateAppointmentState(entity.StateMachine);
             return state.RescheduleRequest(id);
@@ -243,7 +243,7 @@ namespace CareConnect.Services
 
         public Models.Responses.Appointment ReschedulePendingApprove(int id, AppointmentRescheduleRequest request)
         {
-            var entity = GetById(id);
+            var entity = GetByIdWithIncludes(id);
 
             var state = BaseAppointmentState.CreateAppointmentState(entity.StateMachine);
             return state.ReschedulePendingApprove(id, request);

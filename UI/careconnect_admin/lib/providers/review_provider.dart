@@ -32,6 +32,8 @@ class ReviewProvider extends BaseProvider<Review> {
     String? userLastNameGTE,
     String? employeeFirstNameGTE,
     String? employeeLastNameGTE,
+    int? employeeId,
+
     int page = 0,
     String? sortBy,
     bool sortAscending = true,
@@ -47,6 +49,8 @@ class ReviewProvider extends BaseProvider<Review> {
       userLastNameGTE: userLastNameGTE,
       employeeFirstNameGTE: employeeFirstNameGTE,
       employeeLastNameGTE: employeeLastNameGTE,
+      employeeId: employeeId,
+
       page: page,
       sortBy: sortBy,
       sortAscending: sortAscending,

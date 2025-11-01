@@ -7,6 +7,8 @@ import 'package:careconnect_mobile/models/responses/user.dart';
 import 'package:careconnect_mobile/providers/auth_provider.dart';
 import 'package:careconnect_mobile/providers/client_provider.dart';
 import 'package:careconnect_mobile/providers/clients_child_provider.dart';
+import 'package:careconnect_mobile/providers/permission_provider.dart';
+import 'package:careconnect_mobile/screens/no_permission_screen.dart';
 import 'package:careconnect_mobile/screens/profile/child_details_screen.dart';
 import 'package:careconnect_mobile/screens/profile/edit_child_screen.dart';
 import 'package:careconnect_mobile/screens/profile/edit_profile_screen.dart';
@@ -54,19 +56,25 @@ class _ProfileScreenState extends State<ProfileScreen>
       duration: const Duration(milliseconds: 1000),
       vsync: this,
     );
+
     _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
       CurvedAnimation(parent: _animationController, curve: Curves.easeInOut),
     );
+
     _animationController.forward();
+
+    final permissionProvider = context.read<PermissionProvider>();
 
     clientsChildProvider = context.read<ClientsChildProvider>();
     clientProvider = context.read<ClientProvider>();
 
-    if (currentUser != null) {
-      _loadClientAndChildren();
-    }
+    if (permissionProvider.canViewProfile()) {
+      if (currentUser != null) {
+        _loadClientAndChildren();
+      }
 
-    loadChildren();
+      loadChildren();
+    }
   }
 
   Future<void> _loadClientAndChildren() async {
@@ -106,6 +114,15 @@ class _ProfileScreenState extends State<ProfileScreen>
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
 
+    final permissionProvider = context.read<PermissionProvider>();
+
+    if (!permissionProvider.canViewProfile()) {
+      return Scaffold(
+        backgroundColor: colorScheme.surfaceContainerLow,
+        body: NoPermissionScreen(),
+      );
+    }
+
     if (isLoading || currenClient == null) {
       return const Center(child: CircularProgressIndicator());
     }
@@ -135,9 +152,11 @@ class _ProfileScreenState extends State<ProfileScreen>
                     const SizedBox(height: 24),
                     _buildChildrenInfo(colorScheme),
                     const SizedBox(height: 24),
-                    _buildDeactivateAccount(colorScheme),
-                    const SizedBox(height: 34),
-                    _buildActionButtons(colorScheme),
+                    if (permissionProvider.canEditClient()) ...[
+                      _buildDeactivateAccount(colorScheme),
+                      const SizedBox(height: 34),
+                      _buildActionButtons(colorScheme),
+                    ],
                   ],
                 ),
               ),
@@ -410,6 +429,8 @@ class _ProfileScreenState extends State<ProfileScreen>
   }
 
   Widget _buildChildrenInfo(ColorScheme colorScheme) {
+    final permissionProvider = context.read<PermissionProvider>();
+
     if (isLoading) {
       return const Center(child: CircularProgressIndicator());
     }
@@ -435,16 +456,17 @@ class _ProfileScreenState extends State<ProfileScreen>
         separatorBuilder: (context, index) => const Divider(),
       ),
 
-      Center(
-        child: TextButton.icon(
-          onPressed: _addChild,
-          icon: Icon(Icons.add, color: colorScheme.primary),
-          label: Text(
-            "Add Child",
-            style: TextStyle(color: colorScheme.primary),
+      if (permissionProvider.canAddChildToClient())
+        Center(
+          child: TextButton.icon(
+            onPressed: _addChild,
+            icon: Icon(Icons.add, color: colorScheme.primary),
+            label: Text(
+              "Add Child",
+              style: TextStyle(color: colorScheme.primary),
+            ),
           ),
         ),
-      ),
     ], colorScheme);
   }
 

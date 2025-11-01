@@ -1,7 +1,9 @@
 import 'package:careconnect_mobile/models/responses/workshop.dart';
+import 'package:careconnect_mobile/providers/permission_provider.dart';
 import 'package:careconnect_mobile/providers/utils.dart';
 import 'package:careconnect_mobile/providers/workshop_provider.dart';
-import 'package:careconnect_mobile/screens/workshop_details_screen.dart';
+import 'package:careconnect_mobile/screens/no_permission_screen.dart';
+import 'package:careconnect_mobile/screens/workshops/workshop_details_screen.dart';
 import 'package:careconnect_mobile/widgets/filter/filter_config.dart';
 import 'package:careconnect_mobile/widgets/filter/filter_option.dart';
 import 'package:careconnect_mobile/widgets/filter/filter_section.dart';
@@ -40,7 +42,9 @@ class _WorkshopsListScreenState extends State<WorkshopsListScreen> {
 
     workshopProvider = context.read<WorkshopProvider>();
 
-    loadWorkshops();
+    final permissionProvider = context.read<PermissionProvider>();
+
+    if (permissionProvider.canGetWorkshops()) loadWorkshops();
   }
 
   Future<void> loadWorkshops() async {
@@ -53,7 +57,7 @@ class _WorkshopsListScreenState extends State<WorkshopsListScreen> {
       price: selectedPriceToFilter,
       sortBy: _sortBy,
       sortAscending: _sortAscending,
-      status: 'Scheduled',
+      //status: 'Scheduled',
       workshopType: selectedWorkshopType,
     );
 
@@ -67,6 +71,17 @@ class _WorkshopsListScreenState extends State<WorkshopsListScreen> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
+
+    final permissionProvider = context.read<PermissionProvider>();
+
+    if (!permissionProvider.canGetWorkshops()) {
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: NoPermissionScreen(),
+        ),
+      );
+    }
 
     return Padding(
       padding: const EdgeInsets.all(8.0),
@@ -93,7 +108,7 @@ class _WorkshopsListScreenState extends State<WorkshopsListScreen> {
                       setState(() {
                         search = value;
                       });
-                      loadWorkshops();
+                      if (permissionProvider.canGetWorkshops()) loadWorkshops();
                     },
                   ),
                 ),
@@ -108,7 +123,6 @@ class _WorkshopsListScreenState extends State<WorkshopsListScreen> {
               ],
             ),
           ),
-
           Expanded(child: _buildWorkshops(colorScheme)),
         ],
       ),

@@ -89,7 +89,7 @@ namespace CareConnect.API.Controllers
         }
 
         [HttpGet("{workshopId}/status")]
-        [PermissionAuthorize("GetWorkshopEnrollmentStatus")]
+        [Authorize] // [PermissionAuthorize("GetWorkshopEnrollmentStatus")]
         public async Task<IActionResult> GetWorkshopEnrollmentStatus([FromQuery] int clientId, [FromRoute] int workshopId, [FromQuery] int? childId = null)
         {
 

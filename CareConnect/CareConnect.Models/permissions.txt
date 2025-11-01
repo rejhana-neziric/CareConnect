@@ -1,22 +1,22 @@
-﻿Appointment: Get, GetById, Insert, Update, Delete, Cancel, Confirm, Start, Complete, Reschedule, RescheduleRequested, ReschedulePendingApproval, AllowedActions, GetAppointmentTypes
+﻿Appointment: Get, GetById, Insert, Update, Delete, Cancel, Confirm, Start, Complete, Reschedule, RescheduleRequested, ReschedulePendingApproval, AllowedActions, GetAppointmentTypes, View
 Child: Get, GetById, Insert, Update, Delete
 ChildrenDiagnosis: Get, GetById, Insert, Update, Delete
 ClientsChild: Get, GetById, Insert, Update, Delete, GetStatistics, GetClientAndChildByIds, GetAppointment
-Client: Get, GetById, Insert, Update, Delete, GetChildren, AddChildren, RemoveChildren
+Client: Get, GetById, Insert, Update, Delete, GetChildren, AddChildren, RemoveChildren, View
 EmployeeAvailability: Get, GetById, Insert, Update, Delete
-Employee: Get, GetById, Insert, Update, Delete, GetStatistics, GetEmployeeAvailability, CreateEmployeeAvailability, UpdateEmployeeAvailability
+Employee: Get, GetBasic, GetById, Insert, Update, Delete, GetStatistics, GetEmployeeAvailability, CreateEmployeeAvailability, UpdateEmployeeAvailability, View, ViewEmployeeAvailability
 EmployeePayHistory: Get, GetById, Insert, Update, Delete
 Instructor: Get, GetById, Insert, Update, Delete
 Member: Get, GetById, Insert, Update, Delete
 Participant: Get, GetById, Insert, Update, Delete
 Payment: Get, GetById, Insert, Update, Delete, CreatePaymentIntent, VerifyPayment
-Report: GetReportData, GetKPI, GetInsights
-Review: Get, GetById, Insert, Update, Delete, ChangeVisibility, GetAverage
+Report: GetReportData, GetKPI, GetInsights, View, Export
+Review: Get, GetById, Insert, Update, Delete, ChangeVisibility, GetAverage, View, ViewAll, ViewOwn
 Role: Get, GetById, Insert, Update, Delete, AssignPermission
-RolePermissions: GetAllRoles, GetAllPermissions, GetGroupedPermissions, GetRolePermissions, UpdateRolePermissions
+RolePermissions: GetAllRoles, GetAllPermissions, GetGroupedPermissions, GetRolePermissions, UpdateRolePermissions, View
 UsersRole: Get, GetById, Insert, Update, Delete
-Service: Get, GetById, Insert, Update, Delete, GetStatistics, GetEmployeesForService
+Service: Get, GetById, Insert, Update, Delete, GetStatistics, GetEmployeesForService, View
 ServiceType: Get, GetById, Insert, Update, Delete
 Session: Get, GetById, Insert, Update, Delete
 User: Login, GetPermission, Get, GetById, Insert, Update, Delete, ChangePassword, GetRolesForUser, AddRoleToUser, RemoveRoleFromUser
-Workshop: Get, GetById, Insert, Update, Delete, Publish, Cancel, Close, AllowedActions, GetStatistics, Enroll, GetWorkshopEnrollmentStatus, TrainModel, PredictForNewWorkshop
+Workshop: Get, GetById, Insert, Update, Delete, Publish, Cancel, Close, AllowedActions, GetStatistics, Enroll, GetWorkshopEnrollmentStatus, TrainModel, PredictForNewWorkshop, View

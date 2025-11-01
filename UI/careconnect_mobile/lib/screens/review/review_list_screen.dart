@@ -4,7 +4,9 @@ import 'package:careconnect_mobile/models/responses/employee.dart';
 import 'package:careconnect_mobile/models/responses/review.dart';
 import 'package:careconnect_mobile/providers/appointment_provider.dart';
 import 'package:careconnect_mobile/providers/auth_provider.dart';
+import 'package:careconnect_mobile/providers/permission_provider.dart';
 import 'package:careconnect_mobile/providers/review_provider.dart';
+import 'package:careconnect_mobile/screens/no_permission_screen.dart';
 import 'package:careconnect_mobile/screens/review/review_details_screen.dart';
 import 'package:careconnect_mobile/widgets/confim_dialog.dart';
 import 'package:careconnect_mobile/widgets/primary_button.dart';
@@ -43,7 +45,9 @@ class _ReviewListScreenState extends State<ReviewListScreen> {
     reviewProvider = context.read<ReviewProvider>();
     appointmentProvider = context.read<AppointmentProvider>();
 
-    loadReviews();
+    final permissionProvider = context.read<PermissionProvider>();
+
+    if (permissionProvider.canGetReviews()) loadReviews();
     loadAppointments();
   }
 
@@ -108,6 +112,15 @@ class _ReviewListScreenState extends State<ReviewListScreen> {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
 
+    final permissionProvider = context.read<PermissionProvider>();
+
+    if (!permissionProvider.canGetReviews()) {
+      return Scaffold(
+        backgroundColor: colorScheme.surfaceContainerLow,
+        body: NoPermissionScreen(),
+      );
+    }
+
     return Scaffold(
       backgroundColor: colorScheme.surfaceContainerLow,
       body: _isLoading
@@ -134,10 +147,19 @@ class _ReviewListScreenState extends State<ReviewListScreen> {
               ),
             ),
 
-      bottomNavigationBar: Padding(
-        padding: EdgeInsetsGeometry.symmetric(vertical: 12, horizontal: 8),
-        child: _buildBottomBar(colorScheme),
-      ),
+      // bottomNavigationBar: Padding(
+      //   padding: EdgeInsetsGeometry.symmetric(vertical: 12, horizontal: 8),
+      //   child: _buildBottomBar(colorScheme),
+      // ),
+      bottomNavigationBar: permissionProvider.canInsertReview()
+          ? Padding(
+              padding: EdgeInsetsGeometry.symmetric(
+                vertical: 12,
+                horizontal: 8,
+              ),
+              child: _buildBottomBar(colorScheme),
+            )
+          : null,
     );
   }
 
@@ -226,13 +248,17 @@ class _ReviewListScreenState extends State<ReviewListScreen> {
   }
 
   Widget _buildActionButtons(Review review) {
+    final permissionProvider = context.read<PermissionProvider>();
+
     return Row(
       children: [
-        IconButton(onPressed: () => _edit(review), icon: Icon(Icons.edit)),
-        IconButton(
-          onPressed: () => _delete(review),
-          icon: Icon(Icons.delete_outline_rounded),
-        ),
+        if (permissionProvider.canEditReview())
+          IconButton(onPressed: () => _edit(review), icon: Icon(Icons.edit)),
+        if (permissionProvider.canDeleteReview())
+          IconButton(
+            onPressed: () => _delete(review),
+            icon: Icon(Icons.delete_outline_rounded),
+          ),
       ],
     );
   }

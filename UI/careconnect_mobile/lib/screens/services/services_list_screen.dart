@@ -1,10 +1,12 @@
 import 'package:careconnect_mobile/models/responses/search_result.dart';
 import 'package:careconnect_mobile/models/responses/service.dart';
 import 'package:careconnect_mobile/models/responses/service_type.dart';
+import 'package:careconnect_mobile/providers/permission_provider.dart';
 import 'package:careconnect_mobile/providers/service_provider.dart';
 import 'package:careconnect_mobile/providers/service_type_provider.dart';
 import 'package:careconnect_mobile/providers/utils.dart';
-import 'package:careconnect_mobile/screens/service_details_screen.dart';
+import 'package:careconnect_mobile/screens/no_permission_screen.dart';
+import 'package:careconnect_mobile/screens/services/service_details_screen.dart';
 import 'package:careconnect_mobile/widgets/filter/filter_config.dart';
 import 'package:careconnect_mobile/widgets/filter/filter_option.dart';
 import 'package:careconnect_mobile/widgets/filter/filter_section.dart';
@@ -46,9 +48,10 @@ class _ServicesListScreenState extends State<ServicesListScreen> {
 
     serviceProvider = context.read<ServiceProvider>();
     serviceTypeProvider = context.read<ServiceTypeProvider>();
+    final permissionProvider = context.read<PermissionProvider>();
 
-    loadServices();
-    loadServiceTypes();
+    if (permissionProvider.canGetServices()) loadServices();
+    if (permissionProvider.canGetServiceTypes()) loadServiceTypes();
   }
 
   Future<void> loadServices() async {
@@ -91,6 +94,17 @@ class _ServicesListScreenState extends State<ServicesListScreen> {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
 
+    final permissionProvider = context.read<PermissionProvider>();
+
+    if (!permissionProvider.canGetServices()) {
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: NoPermissionScreen(),
+        ),
+      );
+    }
+
     return Padding(
       padding: const EdgeInsets.all(8.0),
       child: Column(
@@ -116,7 +130,7 @@ class _ServicesListScreenState extends State<ServicesListScreen> {
                       setState(() {
                         serviceName = value;
                       });
-                      loadServices();
+                      if (permissionProvider.canGetServices()) loadServices();
                     },
                   ),
                 ),
@@ -131,7 +145,6 @@ class _ServicesListScreenState extends State<ServicesListScreen> {
               ],
             ),
           ),
-
           Expanded(child: _buildServices(colorScheme)),
         ],
       ),
@@ -260,7 +273,6 @@ class _ServicesListScreenState extends State<ServicesListScreen> {
                     );
                   },
                   icon: const Icon(Icons.chevron_right, color: Colors.grey),
-                  tooltip: "Open filters",
                 ),
               ],
             ),
@@ -270,35 +282,79 @@ class _ServicesListScreenState extends State<ServicesListScreen> {
     );
   }
 
-  FilterConfig get serviceFilterConfig => FilterConfig(
-    title: 'Filters',
-    sections: [
-      FilterSection(
-        title: 'Service Type',
-        allowMultipleSelection: false,
-        options: _buildServiceTypeOptions(),
-      ),
+  PermissionProvider get permissionProvider =>
+      context.read<PermissionProvider>();
 
+  FilterConfig get serviceFilterConfig {
+    final permissionProvider = context.read<PermissionProvider>();
+
+    final sections = <FilterSection>[];
+
+    if (permissionProvider.canGetServiceTypes()) {
+      sections.add(
+        FilterSection(
+          title: 'Service Type',
+          allowMultipleSelection: false,
+          options: _buildServiceTypeOptions(),
+        ),
+      );
+    }
+
+    sections.add(
       FilterSection(
         title: 'Price',
         allowMultipleSelection: false,
         isPrice: true,
         options: _buildPriceOptions(),
       ),
+    );
 
+    sections.addAll([
       FilterSection(
         title: 'Sort by',
         allowMultipleSelection: false,
         options: _buildSortByOptions(),
       ),
-
       FilterSection(
         title: 'Sort direction',
         allowMultipleSelection: false,
         options: _buildSortDirectionOptions(),
       ),
-    ],
-  );
+    ]);
+
+    return FilterConfig(title: 'Filters', sections: sections);
+  }
+
+  // FilterConfig get serviceFilterConfig => FilterConfig(
+  //   title: 'Filters',
+  //   sections: [
+  //     if (permissionProvider.canGetServiceTypes())
+  //       FilterSection(
+  //         title: 'Service Type',
+  //         allowMultipleSelection: false,
+  //         options: _buildServiceTypeOptions(),
+  //       ),
+
+  //     FilterSection(
+  //       title: 'Price',
+  //       allowMultipleSelection: false,
+  //       isPrice: true,
+  //       options: _buildPriceOptions(),
+  //     ),
+
+  //     FilterSection(
+  //       title: 'Sort by',
+  //       allowMultipleSelection: false,
+  //       options: _buildSortByOptions(),
+  //     ),
+
+  //     FilterSection(
+  //       title: 'Sort direction',
+  //       allowMultipleSelection: false,
+  //       options: _buildSortDirectionOptions(),
+  //     ),
+  //   ],
+  // );
 
   List<FilterOption<String>> _buildSortByOptions() {
     return [

@@ -18,6 +18,7 @@ public static class Permissions
         public const string ReschedulePendingApproval = "Permissions.Appointment.ReschedulePendingApproval";
         public const string AllowedActions = "Permissions.Appointment.AllowedActions";
         public const string GetAppointmentTypes = "Permissions.Appointment.GetAppointmentTypes";
+        public const string View = "Permissions.Appointment.View";
     }
     public static class Child
     {
@@ -56,6 +57,7 @@ public static class Permissions
         public const string GetChildren = "Permissions.Client.GetChildren";
         public const string AddChildren = "Permissions.Client.AddChildren";
         public const string RemoveChildren = "Permissions.Client.RemoveChildren";
+        public const string View = "Permissions.Client.View";
     }
     public static class EmployeeAvailability
     {
@@ -68,6 +70,7 @@ public static class Permissions
     public static class Employee
     {
         public const string Get = "Permissions.Employee.Get";
+        public const string GetBasic = "Permissions.Employee.GetBasic";
         public const string GetById = "Permissions.Employee.GetById";
         public const string Insert = "Permissions.Employee.Insert";
         public const string Update = "Permissions.Employee.Update";
@@ -76,6 +79,8 @@ public static class Permissions
         public const string GetEmployeeAvailability = "Permissions.Employee.GetEmployeeAvailability";
         public const string CreateEmployeeAvailability = "Permissions.Employee.CreateEmployeeAvailability";
         public const string UpdateEmployeeAvailability = "Permissions.Employee.UpdateEmployeeAvailability";
+        public const string View = "Permissions.Employee.View";
+        public const string ViewEmployeeAvailability = "Permissions.Employee.ViewEmployeeAvailability";
     }
     public static class EmployeePayHistory
     {
@@ -124,6 +129,8 @@ public static class Permissions
         public const string GetReportData = "Permissions.Report.GetReportData";
         public const string GetKPI = "Permissions.Report.GetKPI";
         public const string GetInsights = "Permissions.Report.GetInsights";
+        public const string View = "Permissions.Report.View";
+        public const string Export = "Permissions.Report.Export";
     }
     public static class Review
     {
@@ -134,6 +141,9 @@ public static class Permissions
         public const string Delete = "Permissions.Review.Delete";
         public const string ChangeVisibility = "Permissions.Review.ChangeVisibility";
         public const string GetAverage = "Permissions.Review.GetAverage";
+        public const string View = "Permissions.Review.View";
+        public const string ViewAll = "Permissions.Review.ViewAll";
+        public const string ViewOwn = "Permissions.Review.ViewOwn";
     }
     public static class Role
     {
@@ -151,6 +161,7 @@ public static class Permissions
         public const string GetGroupedPermissions = "Permissions.RolePermissions.GetGroupedPermissions";
         public const string GetRolePermissions = "Permissions.RolePermissions.GetRolePermissions";
         public const string UpdateRolePermissions = "Permissions.RolePermissions.UpdateRolePermissions";
+        public const string View = "Permissions.RolePermissions.View";
     }
     public static class UsersRole
     {
@@ -169,6 +180,7 @@ public static class Permissions
         public const string Delete = "Permissions.Service.Delete";
         public const string GetStatistics = "Permissions.Service.GetStatistics";
         public const string GetEmployeesForService = "Permissions.Service.GetEmployeesForService";
+        public const string View = "Permissions.Service.View";
     }
     public static class ServiceType
     {
@@ -216,5 +228,6 @@ public static class Permissions
         public const string GetWorkshopEnrollmentStatus = "Permissions.Workshop.GetWorkshopEnrollmentStatus";
         public const string TrainModel = "Permissions.Workshop.TrainModel";
         public const string PredictForNewWorkshop = "Permissions.Workshop.PredictForNewWorkshop";
+        public const string View = "Permissions.Workshop.View";
     }
 }

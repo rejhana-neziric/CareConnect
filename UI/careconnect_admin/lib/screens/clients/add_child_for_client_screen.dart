@@ -6,6 +6,8 @@ import 'package:careconnect_admin/providers/clients_child_form_provider.dart';
 import 'package:careconnect_admin/providers/clients_child_provider.dart';
 import 'package:careconnect_admin/core/theme/app_colors.dart';
 import 'package:careconnect_admin/core/utils.dart';
+import 'package:careconnect_admin/providers/permission_provider.dart';
+import 'package:careconnect_admin/screens/no_permission_screen.dart';
 import 'package:careconnect_admin/widgets/confirm_dialog.dart';
 import 'package:careconnect_admin/widgets/custom_date_field.dart';
 import 'package:careconnect_admin/widgets/custom_dropdown_field.dart';
@@ -61,6 +63,16 @@ class _AddChildForClientScreenState extends State<AddChildForClientScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final permissionProvider = context.watch<PermissionProvider>();
+
+    if (!permissionProvider.canAddChildToClient()) {
+      return MasterScreen(
+        'Clients Details',
+        NoPermissionScreen(),
+        currentScreen: "Clients",
+      );
+    }
+
     return MasterScreen(
       "Clients Details",
       currentScreen: "Clients",

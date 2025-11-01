@@ -11,6 +11,7 @@ import 'package:careconnect_mobile/providers/employee_provider.dart';
 import 'package:careconnect_mobile/providers/notification_provider.dart';
 import 'package:careconnect_mobile/providers/participant_provider.dart';
 import 'package:careconnect_mobile/providers/payment_provider.dart';
+import 'package:careconnect_mobile/providers/permission_provider.dart';
 import 'package:careconnect_mobile/providers/review_provider.dart';
 import 'package:careconnect_mobile/providers/service_provider.dart';
 import 'package:careconnect_mobile/providers/service_type_provider.dart';
@@ -79,6 +80,9 @@ void main() async {
         ChangeNotifierProvider(
           create: (_) => NotificationProvider(),
           lazy: false,
+        ),
+        ProxyProvider<AuthProvider, PermissionProvider>(
+          update: (_, authProvider, __) => PermissionProvider(authProvider),
         ),
       ],
       child: const MyApp(),

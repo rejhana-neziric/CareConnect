@@ -15,6 +15,16 @@ namespace CareConnect.API.Controllers
     {
         public EmployeeController(IEmployeeService service) : base(service) { }
 
+        [HttpGet("basic")]
+        [PermissionAuthorize("GetBasic")]
+        public async Task<IActionResult> GetBasicList()
+        {
+            var search = new EmployeeSearchObject();    
+            search.AdditionalData = new EmployeeAdditionalData() { IsUserIncluded = true};   
+            var employees = (_service as EmployeeService)!.Get(search).ResultList;
+            return Ok(employees.Select(e => new { e.User.UserId, e.User.FirstName, e.User.LastName}));
+        }
+
         [HttpGet("statistics")]
         [PermissionAuthorize("GetStatistics")]
         public EmployeeStatistics GetStatistics()

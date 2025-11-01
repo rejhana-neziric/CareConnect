@@ -5,13 +5,16 @@ import 'package:careconnect_admin/models/responses/search_result.dart';
 import 'package:careconnect_admin/providers/client_provider.dart';
 import 'package:careconnect_admin/providers/clients_child_form_provider.dart';
 import 'package:careconnect_admin/providers/clients_child_provider.dart';
+import 'package:careconnect_admin/providers/permission_provider.dart';
 import 'package:careconnect_admin/screens/clients/child_details_screen.dart';
 import 'package:careconnect_admin/screens/clients/client_details_screen.dart';
 import 'package:careconnect_admin/core/theme/app_colors.dart';
+import 'package:careconnect_admin/screens/no_permission_screen.dart';
 import 'package:careconnect_admin/widgets/custom_dropdown_fliter.dart';
 import 'package:careconnect_admin/widgets/no_results.dart';
 import 'package:careconnect_admin/widgets/primary_button.dart';
 import 'package:careconnect_admin/widgets/shimmer_stat_card.dart';
+import 'package:careconnect_admin/widgets/snackbar.dart';
 import 'package:careconnect_admin/widgets/stat_card.dart';
 import 'package:data_table_2/data_table_2.dart';
 import 'package:fl_chart/fl_chart.dart';
@@ -29,6 +32,7 @@ class ClientListScreen extends StatefulWidget {
 class _ClientListScreenState extends State<ClientListScreen> {
   late ClientProvider clientProvider;
   late ClientsChildProvider clientsChildProvider;
+  late PermissionProvider permissionProvider;
 
   SearchResult<ClientsChild>? result;
   int currentPage = 0;
@@ -135,6 +139,12 @@ class _ClientListScreenState extends State<ClientListScreen> {
     super.initState();
     clientProvider = context.read<ClientProvider>();
     clientsChildProvider = context.read<ClientsChildProvider>();
+
+    permissionProvider = Provider.of<PermissionProvider>(
+      context,
+      listen: false,
+    );
+
     loadData();
   }
 
@@ -204,16 +214,21 @@ class _ClientListScreenState extends State<ClientListScreen> {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
 
+    if (!permissionProvider.canViewClientScreen()) {
+      return MasterScreen(
+        'Clients',
+        NoPermissionScreen(),
+        currentScreen: "Clients",
+      );
+    }
+
     return MasterScreen(
       "Clients",
       currentScreen: "Clients",
-
-      // SingleChildScrollView(
-      //   padding: const EdgeInsets.all(16),
-      //child:
       Column(
         children: [
-          _buildOverview(),
+          if (permissionProvider.canViewClientsChildStatistic())
+            _buildOverview(),
           _buildSearch(colorScheme),
           Consumer<ClientsChildProvider>(
             builder: (context, clientsChildProvider, child) {
@@ -222,29 +237,30 @@ class _ClientListScreenState extends State<ClientListScreen> {
           ),
         ],
       ),
-      button: SizedBox(
-        child: Align(
-          alignment: Alignment.topRight,
-          child: PrimaryButton(
-            onPressed: () async {
-              final result = await Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => ChangeNotifierProvider(
-                    create: (_) => ClientsChildFormProvider(),
-                    child: ClientDetailsScreen(clientsChild: null),
-                  ),
-                ),
-              );
+      button: permissionProvider.canInsertClient()
+          ? SizedBox(
+              child: Align(
+                alignment: Alignment.topRight,
+                child: PrimaryButton(
+                  onPressed: () async {
+                    final result = await Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => ChangeNotifierProvider(
+                          create: (_) => ClientsChildFormProvider(),
+                          child: ClientDetailsScreen(clientsChild: null),
+                        ),
+                      ),
+                    );
 
-              if (result == true) loadData();
-            },
-            label: 'Add Client',
-            icon: Icons.person_add_alt_1,
-          ),
-        ),
-      ),
-      // ),
+                    if (result == true) loadData();
+                  },
+                  label: 'Add Client',
+                  icon: Icons.person_add_alt_1,
+                ),
+              ),
+            )
+          : null,
     );
   }
 
@@ -268,9 +284,7 @@ class _ClientListScreenState extends State<ClientListScreen> {
                             Icons.groups,
                             Colors.teal,
                           ),
-
                     SizedBox(width: 20),
-
                     isLoading || statistics?.totalChildren == null
                         ? shimmerStatCard(context)
                         : statCard(
@@ -293,9 +307,7 @@ class _ClientListScreenState extends State<ClientListScreen> {
                             Icons.work,
                             Colors.orange,
                           ),
-
                     SizedBox(width: 20),
-
                     isLoading || statistics?.newClientsThisMonth == null
                         ? shimmerStatCard(context)
                         : statCard(
@@ -332,7 +344,6 @@ class _ClientListScreenState extends State<ClientListScreen> {
                 ],
               ),
             ),
-
             SizedBox(width: 20),
             SizedBox(
               height: 220,
@@ -684,6 +695,10 @@ class _ClientListScreenState extends State<ClientListScreen> {
   }
 
   Widget _buildResultView(ColorScheme colorScheme) {
+    if (isLoading && (result == null || result!.result.isEmpty)) {
+      return const Expanded(child: Center(child: CircularProgressIndicator()));
+    }
+
     return (result != null && result?.result.isEmpty == false)
         ? Expanded(
             child: ClientsChildTable(
@@ -698,10 +713,7 @@ class _ClientListScreenState extends State<ClientListScreen> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                NoResultsWidget(
-                  message: 'No results found. Please try again.',
-                  icon: Icons.sentiment_dissatisfied,
-                ),
+                NoResultsWidget(message: 'No results found. Please try again.'),
               ],
             ),
           );
@@ -752,6 +764,14 @@ class _ClientsChildTableState extends State<ClientsChildTable> {
     final clientsChild = widget.result?.result ?? [];
     final totalCount = widget.result?.totalCount ?? 0;
 
+    final permissionProvider = Provider.of<PermissionProvider>(
+      context,
+      listen: false,
+    );
+
+    final canViewClientDetails = permissionProvider.canViewClientDetails();
+    final canViewChildDetails = permissionProvider.canViewChildDetails();
+
     _dataSource = ClientsChildDataSource(
       clientsChild,
       context,
@@ -760,6 +780,8 @@ class _ClientsChildTableState extends State<ClientsChildTable> {
       onPageChanged: _fetchPage,
       pageSize: _pageSize,
       currentPage: currentPage,
+      canViewClientDetails: canViewClientDetails,
+      canViewChildDetails: canViewChildDetails,
     );
   }
 
@@ -819,6 +841,7 @@ class _ClientsChildTableState extends State<ClientsChildTable> {
         PaginatedDataTable2(
           key: ValueKey('${widget.result?.result.hashCode}_$currentPage'),
           wrapInCard: false,
+          renderEmptyRowsInTheEnd: false,
           columns: const [
             DataColumn2(label: Text('Parent Name')),
             DataColumn2(label: Text('Child Name')),
@@ -826,6 +849,11 @@ class _ClientsChildTableState extends State<ClientsChildTable> {
             DataColumn2(label: Text('Child Age')),
             DataColumn2(label: Text('Phone Number')),
             DataColumn2(label: Text('Email')),
+            DataColumn2(
+              label: Text('Actions'),
+              size: ColumnSize.S,
+              fixedWidth: 80,
+            ),
           ],
           source: _dataSource!,
           rowsPerPage: _pageSize,
@@ -845,7 +873,7 @@ class _ClientsChildTableState extends State<ClientsChildTable> {
         if (isLoading)
           Positioned.fill(
             child: Container(
-              color: Colors.white.withAlpha((0.7 * 255).toInt()),
+              color: Colors.transparent,
               child: const Center(child: CircularProgressIndicator()),
             ),
           ),
@@ -862,6 +890,8 @@ class ClientsChildDataSource extends DataTableSource {
   final int pageSize;
   final int currentPage;
   final ColorScheme colorScheme;
+  final bool canViewClientDetails;
+  final bool canViewChildDetails;
 
   ClientsChildDataSource(
     this.clientsChild,
@@ -871,6 +901,8 @@ class ClientsChildDataSource extends DataTableSource {
     this.onPageChanged,
     this.pageSize = 10,
     this.currentPage = 0,
+    required this.canViewClientDetails,
+    required this.canViewChildDetails,
   });
 
   final ValueNotifier<int?> hoveredRowNotifier = ValueNotifier(null);
@@ -1001,6 +1033,76 @@ class ClientsChildDataSource extends DataTableSource {
         ),
         DataCell(Text(clientChild.client.user?.phoneNumber ?? "")),
         DataCell(Text(clientChild.client.user?.email ?? "")),
+
+        DataCell(
+          Center(
+            child: PopupMenuButton<String>(
+              onSelected: (value) async {
+                if (value == 'client') {
+                  if (!canViewClientDetails) {
+                    CustomSnackbar.show(
+                      context,
+                      message:
+                          'You do not have permission to perform this action.',
+                      type: SnackbarType.error,
+                    );
+                  } else {
+                    final result = await Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => ChangeNotifierProvider(
+                          create: (_) => ClientsChildFormProvider(),
+                          child: ClientDetailsScreen(clientsChild: clientChild),
+                        ),
+                      ),
+                    );
+
+                    if (result == true && onPageChanged != null) {
+                      onPageChanged!(currentPage);
+                    }
+                  }
+                } else if (value == 'child') {
+                  if (!canViewChildDetails) {
+                    CustomSnackbar.show(
+                      context,
+                      message:
+                          'You do not have permission to perform this action.',
+                      type: SnackbarType.error,
+                    );
+                  } else {
+                    final result = await Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => ChangeNotifierProvider(
+                          create: (_) => ClientsChildFormProvider(),
+                          child: ChildDetailsScreen(
+                            client: clientChild.client,
+                            child: clientChild.child,
+                          ),
+                        ),
+                      ),
+                    );
+
+                    if (result == true && onPageChanged != null) {
+                      onPageChanged!(currentPage);
+                    }
+                  }
+                }
+              },
+              itemBuilder: (context) => [
+                const PopupMenuItem(
+                  value: 'client',
+                  child: Text('View client details'),
+                ),
+                const PopupMenuItem(
+                  value: 'child',
+                  child: Text('View child details'),
+                ),
+              ],
+              child: const Icon(Icons.more_vert),
+            ),
+          ),
+        ),
       ],
     );
   }

@@ -2,6 +2,7 @@ import 'package:careconnect_mobile/core/theme/app_colors.dart';
 import 'package:careconnect_mobile/models/requests/client_update_request.dart';
 import 'package:careconnect_mobile/models/requests/user_update_request.dart';
 import 'package:careconnect_mobile/models/responses/client.dart';
+import 'package:careconnect_mobile/providers/permission_provider.dart';
 import 'package:careconnect_mobile/screens/profile/widgets/profile_header.dart';
 import 'package:careconnect_mobile/widgets/confim_dialog.dart';
 import 'package:careconnect_mobile/widgets/custom_text_field.dart';
@@ -10,6 +11,7 @@ import 'package:careconnect_mobile/widgets/snackbar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:form_builder_validators/form_builder_validators.dart';
+import 'package:provider/provider.dart';
 
 class EditProfileScreen extends StatefulWidget {
   final Client client;
@@ -83,6 +85,8 @@ class _EditProfileScreenState extends State<EditProfileScreen>
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
 
+    final permissionProvider = context.read<PermissionProvider>();
+
     return Scaffold(
       backgroundColor: colorScheme.surfaceContainerLow,
       body: FadeTransition(
@@ -106,8 +110,10 @@ class _EditProfileScreenState extends State<EditProfileScreen>
                       const SizedBox(height: 24),
                       _buildStatusSection(colorScheme),
                       const SizedBox(height: 24),
-                      _buildActionButtons(colorScheme),
-                      const SizedBox(height: 32),
+                      if (permissionProvider.canEditClient()) ...[
+                        _buildActionButtons(colorScheme),
+                        const SizedBox(height: 32),
+                      ],
                     ],
                   ),
                 ),

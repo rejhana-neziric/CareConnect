@@ -7,7 +7,8 @@ import 'package:careconnect_mobile/providers/auth_provider.dart';
 import 'package:careconnect_mobile/providers/child_provider.dart';
 import 'package:careconnect_mobile/providers/client_provider.dart';
 import 'package:careconnect_mobile/providers/clients_child_provider.dart';
-import 'package:careconnect_mobile/screens/appointment_details_screen.dart';
+import 'package:careconnect_mobile/providers/permission_provider.dart';
+import 'package:careconnect_mobile/screens/appointments/appointment_details_screen.dart';
 import 'package:careconnect_mobile/screens/login_screen.dart';
 import 'package:careconnect_mobile/screens/profile/edit_child_screen.dart';
 import 'package:careconnect_mobile/widgets/confim_dialog.dart';
@@ -40,6 +41,7 @@ class _ChildDetailsScreenState extends State<ChildDetailsScreen>
   late ChildProvider childProvider;
   late ClientsChildProvider clientsChildProvider;
   late ClientProvider clientProvider;
+  late PermissionProvider permissionProvider;
 
   List<Appointment> appointments = [];
 
@@ -80,9 +82,10 @@ class _ChildDetailsScreenState extends State<ChildDetailsScreen>
     childProvider = context.read<ChildProvider>();
     clientsChildProvider = context.read<ClientsChildProvider>();
     clientProvider = context.read<ClientProvider>();
+    permissionProvider = context.read<PermissionProvider>();
 
-    _loadAppointments();
-    _getChildren();
+    if (permissionProvider.canGetAppointments()) _loadAppointments();
+    if (permissionProvider.canRemoveChildFromClient()) _getChildren();
   }
 
   Future<void> _loadAppointments() async {
@@ -137,11 +140,16 @@ class _ChildDetailsScreenState extends State<ChildDetailsScreen>
                   children: [
                     _buildChildInfoCard(colorScheme),
                     const SizedBox(height: 20),
-                    _buildAppointmentsSection(colorScheme),
-                    const SizedBox(height: 20),
-                    _buildDeleteChildInformation(colorScheme),
-                    const SizedBox(height: 20),
-                    _buildActionButtons(colorScheme),
+                    if (permissionProvider.canGetAppointments()) ...[
+                      _buildAppointmentsSection(colorScheme),
+                      const SizedBox(height: 20),
+                    ],
+                    if (permissionProvider.canRemoveChildFromClient()) ...[
+                      _buildDeleteChildInformation(colorScheme),
+                      const SizedBox(height: 20),
+                    ],
+                    if (permissionProvider.canEditChild())
+                      _buildActionButtons(colorScheme),
                   ],
                 ),
               ),

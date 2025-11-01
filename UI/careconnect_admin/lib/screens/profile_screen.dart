@@ -10,8 +10,10 @@ import 'package:careconnect_admin/models/search_objects/employee_additional_data
 import 'package:careconnect_admin/providers/auth_provider.dart';
 import 'package:careconnect_admin/providers/employee_form_provider.dart';
 import 'package:careconnect_admin/providers/employee_provider.dart';
+import 'package:careconnect_admin/providers/permission_provider.dart';
 import 'package:careconnect_admin/providers/user_form_provider.dart';
 import 'package:careconnect_admin/providers/user_provider.dart';
+import 'package:careconnect_admin/screens/no_permission_screen.dart';
 import 'package:careconnect_admin/widgets/confirm_dialog.dart';
 import 'package:careconnect_admin/widgets/custom_date_field.dart';
 import 'package:careconnect_admin/widgets/custom_dropdown_field.dart';
@@ -224,9 +226,19 @@ class _ProfileScreenState extends State<ProfileScreen> {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
 
+    final permissionProvider = context.watch<PermissionProvider>();
+
+    if (!permissionProvider.canGetByIdUser()) {
+      return MasterScreen(
+        'My Profile',
+        NoPermissionScreen(),
+        currentScreen: "Profile",
+      );
+    }
+
     return MasterScreen(
       "My Profile",
-
+      currentScreen: "Profile",
       isLoading
           ? const Center(child: CircularProgressIndicator())
           : Scaffold(
@@ -266,14 +278,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         const SizedBox(height: 24),
                         _buildQuickInfo(),
                         const Spacer(),
-                        PrimaryButton(
-                          onPressed: () => _showChangePasswordDialog(
-                            context,
-                            currentUser?.id,
+                        if (permissionProvider.canChangeUserPassword())
+                          PrimaryButton(
+                            onPressed: () => _showChangePasswordDialog(
+                              context,
+                              currentUser?.id,
+                            ),
+                            icon: Icons.lock_outline,
+                            label: 'Change Password',
                           ),
-                          icon: Icons.lock_outline,
-                          label: 'Change Password',
-                        ),
                         const SizedBox(height: 24),
                       ],
                     ),
@@ -305,7 +318,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 ],
               ),
             ),
-      currentScreen: "Profile",
     );
   }
 
@@ -486,6 +498,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Widget _buildHeader() {
+    final permissionProvider = context.read<PermissionProvider>();
+
+    final canEditProfile = permissionProvider.canEditUser();
+
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
@@ -495,33 +511,34 @@ class _ProfileScreenState extends State<ProfileScreen> {
         ),
         Row(
           children: [
-            if (_isEditing) ...[
-              Tooltip(
-                message: 'Revert to last saved values.',
-                child: TextButton(
-                  onPressed: _isLoading
-                      ? null
-                      : () {
-                          setState(() {
-                            _isEditing = false;
-                            initForm();
-                          });
-                        },
-                  child: const Text('Cancel'),
+            if (canEditProfile)
+              if (_isEditing) ...[
+                Tooltip(
+                  message: 'Revert to last saved values.',
+                  child: TextButton(
+                    onPressed: _isLoading
+                        ? null
+                        : () {
+                            setState(() {
+                              _isEditing = false;
+                              initForm();
+                            });
+                          },
+                    child: const Text('Cancel'),
+                  ),
                 ),
-              ),
 
-              const SizedBox(width: 12),
+                const SizedBox(width: 12),
 
-              PrimaryButton(
-                onPressed: _isLoading ? () => null : _saveProfile,
-                label: _isLoading ? 'Saving...' : 'Save Changes',
-              ),
-            ] else
-              PrimaryButton(
-                onPressed: () => setState(() => _isEditing = true),
-                label: 'Edit Profile',
-              ),
+                PrimaryButton(
+                  onPressed: _isLoading ? () => null : _saveProfile,
+                  label: _isLoading ? 'Saving...' : 'Save Changes',
+                ),
+              ] else
+                PrimaryButton(
+                  onPressed: () => setState(() => _isEditing = true),
+                  label: 'Edit Profile',
+                ),
           ],
         ),
       ],

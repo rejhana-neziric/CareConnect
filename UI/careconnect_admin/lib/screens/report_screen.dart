@@ -2,7 +2,9 @@ import 'package:careconnect_admin/core/layouts/master_screen.dart';
 import 'package:careconnect_admin/models/enums/period_filter.dart';
 import 'package:careconnect_admin/models/responses/kpi_data.dart';
 import 'package:careconnect_admin/models/responses/report_data.dart';
+import 'package:careconnect_admin/providers/permission_provider.dart';
 import 'package:careconnect_admin/providers/report_provider.dart';
+import 'package:careconnect_admin/screens/no_permission_screen.dart';
 import 'package:careconnect_admin/widgets/snackbar.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
@@ -105,6 +107,16 @@ class _ReportsScreenState extends State<ReportsScreen> {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
 
+    final permissionProvider = context.watch<PermissionProvider>();
+
+    if (!permissionProvider.canViewReport()) {
+      return MasterScreen(
+        'Report',
+        NoPermissionScreen(),
+        currentScreen: "Report",
+      );
+    }
+
     return MasterScreen(
       "Report",
       Scaffold(
@@ -168,15 +180,26 @@ class _ReportsScreenState extends State<ReportsScreen> {
                   children: [
                     _buildFilterSection(colorScheme),
                     SizedBox(height: 20),
-                    _buildKPICards(colorScheme),
-                    SizedBox(height: 20),
-                    _buildInsightCard(colorScheme),
-                    SizedBox(height: 20),
-                    _buildChartsSection(colorScheme),
-                    SizedBox(height: 20),
-                    _buildDataTable(),
-                    SizedBox(height: 20),
-                    _buildExportSection(),
+
+                    if (permissionProvider.canGetKPI()) ...[
+                      _buildKPICards(colorScheme),
+                      SizedBox(height: 20),
+                    ],
+
+                    if (permissionProvider.canGetInsights()) ...[
+                      _buildInsightCard(colorScheme),
+                      SizedBox(height: 20),
+                    ],
+
+                    if (permissionProvider.canGetReportData()) ...[
+                      _buildChartsSection(colorScheme),
+                      SizedBox(height: 20),
+                      _buildDataTable(),
+                      SizedBox(height: 20),
+                    ],
+
+                    if (permissionProvider.canExportReport())
+                      _buildExportSection(),
                   ],
                 ),
               ),
