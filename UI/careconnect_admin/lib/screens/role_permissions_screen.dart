@@ -41,8 +41,6 @@ class _RolePermissionsScreenState extends State<RolePermissionsScreen> {
     rolePermissionsProvider = context.read<RolePermissionsProvider>();
     roleProvider = context.read<RoleProvider>();
 
-    final permissionProvider = context.read<PermissionProvider>();
-
     _loadData();
   }
 
@@ -445,16 +443,13 @@ class _RolePermissionsScreenState extends State<RolePermissionsScreen> {
             .where((p) => selectedPermissions.contains(p.permissionId))
             .length;
         final allSelected = selectedCount == groupPermissions.length;
-        // final someSelected = selectedCount > 0 && !allSelected;
 
         return Container(
           margin: EdgeInsets.only(bottom: 16),
           decoration: BoxDecoration(
             color: colorScheme.surfaceContainerLow,
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(
-              color: Colors.grey[400]!, //change
-            ),
+            border: Border.all(color: Colors.grey[400]!),
             boxShadow: [
               BoxShadow(
                 color: Colors.black.withOpacity(0.03),

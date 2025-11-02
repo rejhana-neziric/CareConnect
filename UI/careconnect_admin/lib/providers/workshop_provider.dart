@@ -132,8 +132,6 @@ class WorkshopProvider extends BaseProvider<Workshop> {
         builder: (context) => ParticipantListScreeen(workshop: workshop),
       ),
     );
-
-    //      MaterialPageRoute(builder: (_) => ParticipantListScreeen(workshop: workshop)),
   }
 
   Future<bool> changeState(int id, String action) async {

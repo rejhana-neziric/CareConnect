@@ -50,7 +50,7 @@ namespace CareConnect.API.Controllers
         }
 
         [HttpGet("{id}/allowedActions")]
-        [PermissionAuthorize("AllowedActions")]
+        [AllowAnonymous]
         public List<string> AllowedActions(int id)
         {
             return (_service as IWorkshopService)!.AllowedActions(id);
@@ -89,10 +89,9 @@ namespace CareConnect.API.Controllers
         }
 
         [HttpGet("{workshopId}/status")]
-        [Authorize] // [PermissionAuthorize("GetWorkshopEnrollmentStatus")]
+        [Authorize]
         public async Task<IActionResult> GetWorkshopEnrollmentStatus([FromQuery] int clientId, [FromRoute] int workshopId, [FromQuery] int? childId = null)
         {
-
             var isEnrolled = await (_service as IWorkshopService)!.IsEnrolledInWorkshopAsync(clientId, childId, workshopId);
             return Ok(new { isEnrolled });
         }

@@ -8,4 +8,9 @@ class AttendanceStatusProvider extends BaseProvider<AttendanceStatus> {
   AttendanceStatus fromJson(data) {
     return AttendanceStatus.fromJson(data);
   }
+
+  @override
+  int? getId(AttendanceStatus item) {
+    return item.attendanceStatusId;
+  }
 }

@@ -107,12 +107,6 @@ namespace CareConnect.Services
                 {
                     additionalData.IncludeList.Add("Qualification");
                 }
-
-                //if (additionalData.IsEmployeeAvailabilityIncluded.HasValue && additionalData.IsEmployeeAvailabilityIncluded == true)
-                //{
-                //    additionalData.IncludeList.Add("EmployeeAvailabilities");
-                //    additionalData.IncludeList.Add("EmployeeAvailabilities.Service");
-                //}
             }
 
             base.AddInclude(additionalData, ref query);
@@ -161,9 +155,7 @@ namespace CareConnect.Services
         {
             return Context.Employees
                 .Include(e => e.EmployeeAvailabilities).ThenInclude(e => e.Service)
-                .Include(e => e.EmployeePayHistories)
                 .Include(e => e.Reviews)
-                .Include(e => e.Sessions)
                 .Include(e => e.User)
                 .Include(e => e.Qualification)
                 .First(e => e.EmployeeId == id);
@@ -173,9 +165,6 @@ namespace CareConnect.Services
         {
             if (entity.Qualification != null)
                 Context.Remove(entity.Qualification);
-
-            foreach (var history in entity.EmployeePayHistories)
-                Context.Remove(history);
 
             foreach (var availability in entity.EmployeeAvailabilities)
                 Context.Remove(availability);
@@ -208,26 +197,6 @@ namespace CareConnect.Services
             };
         }
 
-        //public List<Models.Responses.EmployeeAvailability> GetEmployeeAvailability(int employeeId)
-        //{
-        //    var employee = Context.Employees.Find(employeeId);
-
-        //    if (employee == null) return null; 
-
-        //    var response = Context.EmployeeAvailabilities.Where(x => x.EmployeeId == employeeId).Include(x => x.Service).ToList();
-
-        //    if (response.Any() == false) return null; 
-
-        //    List<Models.Responses.EmployeeAvailability> list = new List<Models.Responses.EmployeeAvailability>();   
-
-        //    foreach (var availability in response)
-        //    {
-        //        list.Add(Mapper.Map<Models.Responses.EmployeeAvailability>(availability));  
-        //    }
-
-        //    return list;    
-        //}
-
         public List<Models.Responses.EmployeeAvailability> GetEmployeeAvailability(int employeeId, DateTime? date = null)
         {
             var employee = Context.Employees.Find(employeeId);
@@ -257,17 +226,15 @@ namespace CareConnect.Services
 
                 if (date.HasValue)
                 {
-                    // only check bookings if a date is provided
                     bool isBooked = Context.Appointments.Any(a =>
                         a.EmployeeAvailabilityId == availability.EmployeeAvailabilityId &&
                         a.Date.Date == date.Value.Date
                     );
 
-                    mapped.IsBooked = isBooked; // add this property in your DTO
+                    mapped.IsBooked = isBooked; 
                 }
                 else
                 {
-                    // no date -> return all, but maybe set default to false
                     mapped.IsBooked = false;
                 }
 

@@ -11,9 +11,7 @@ namespace CareConnect.Services
     {
         public string GetUserId(HubConnectionContext connection)
         {
-            // Example: use the authenticated username as userId
             return connection.User?.Identity?.Name;
         }
     }
-
 }

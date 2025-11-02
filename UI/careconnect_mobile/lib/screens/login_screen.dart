@@ -169,7 +169,7 @@ class _LoginScreenState extends State<LoginScreen>
                             _buildAnimatedTextField(
                               name: 'username',
                               label: 'Username',
-                              icon: Icons.person_outline,
+                              icon: Icons.alternate_email,
                               validators: [
                                 FormBuilderValidators.required(
                                   errorText: "Username is required",

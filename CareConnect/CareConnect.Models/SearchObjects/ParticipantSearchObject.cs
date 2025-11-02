@@ -20,6 +20,5 @@ namespace CareConnect.Models.SearchObjects
         public DateTime? RegistrationDateLTE { get; set; }
 
         public int? UserId { get; set; }
-
     }
 }

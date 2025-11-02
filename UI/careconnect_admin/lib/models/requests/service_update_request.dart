@@ -7,7 +7,6 @@ class ServiceUpdateRequest {
   String? name;
   String? description;
   double? price;
-  double? memberPrice;
   bool? isActive;
   int? serviceTypeId;
 
@@ -15,7 +14,6 @@ class ServiceUpdateRequest {
     this.name,
     this.description,
     this.price,
-    this.memberPrice,
     this.isActive,
     this.serviceTypeId,
   });

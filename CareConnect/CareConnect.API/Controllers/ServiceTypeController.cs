@@ -12,11 +12,6 @@ namespace CareConnect.API.Controllers
     [Route("[controller]")]
     public class ServiceTypeController : BaseCRUDController<ServiceType, ServiceTypeSearchObject, BaseAdditionalSearchRequestData, ServiceTypeInsertRequest, ServiceTypeUpdateRequest>
     {
-        public ServiceTypeController(IServiceTypeService service) : base(service) 
-        { 
-            
-        
-        }
-
+        public ServiceTypeController(IServiceTypeService service) : base(service) { }
     }
 }

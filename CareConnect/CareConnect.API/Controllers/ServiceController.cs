@@ -17,14 +17,14 @@ namespace CareConnect.API.Controllers
         [PermissionAuthorize("GetStatistics")]
         public ServiceStatistics GetStatistics()
         {
-            return (_service as ServiceService).GetStatistics();
+            return (_service as ServiceService)!.GetStatistics();
         }
 
         [HttpGet("{serviceId}/employees")]
         [PermissionAuthorize("GetEmployeesForService")]
         public List<Models.Responses.Employee> GetEmployeesForService(int serviceId)
         { 
-            return (_service as ServiceService).GetEmployeesForService(serviceId);
+            return (_service as ServiceService)!.GetEmployeesForService(serviceId);
         }
     }
 }

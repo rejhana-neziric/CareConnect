@@ -93,11 +93,6 @@ class AppointmentSuccessScreen extends StatelessWidget {
               PrimaryButton(
                 label: 'Back to Home',
                 onPressed: () {
-                  // Navigator.push(
-                  //   context,
-                  //   MaterialPageRoute(builder: (_) => EmployeeListScreen()),
-                  // );
-
                   Navigator.of(context).push(
                     MaterialPageRoute(
                       builder: (context) => MasterScreen('Home', HomeScreen()),

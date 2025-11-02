@@ -17,7 +17,7 @@ namespace CareConnect.Models.Requests
 
         public int? MaxParticipants { get; set; }
 
-        public int? Participants { get; set; }
+        public int Participants { get; set; } = 0; 
 
         public string? Notes { get; set; }
 

@@ -9,9 +9,5 @@ namespace CareConnect.Models.Responses
         public bool EmploymentStatus { get; set; }
 
         public virtual User User { get; set; } = null!;
-
-        //public virtual ICollection<ClientsChild> ClientsChildren { get; set; } = new List<ClientsChild>();
-
-
     }
 }

@@ -13,7 +13,5 @@ namespace CareConnect.Models.Responses
         public string? Description { get; set; }
 
         public int? NumberOfServices { get; set; }
-
-        //public virtual ICollection<Service> Services { get; set; } = new List<Service>();
     }
 }

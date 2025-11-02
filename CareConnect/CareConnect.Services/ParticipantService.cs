@@ -25,6 +25,7 @@ namespace CareConnect.Services
             query = base.AddFilter(search, query);
 
             query = query.Include(x => x.Child);
+            query = query.Include(x => x.AttendanceStatus); 
 
             if (search?.WorkshopId.HasValue == true)
             {
@@ -130,47 +131,7 @@ namespace CareConnect.Services
                 .Include(w => w.Workshop)
                 .Include(a => a.AttendanceStatus)
                 .Include(c => c.Child)
-                .First(p => p.UserId == id);
-        }
-
-        public override Models.Responses.Participant GetById(int id, ParticipantAdditionalData additionalData = null)
-        {
-            var query = Context.Set<Participant>().AsQueryable();
-
-            if (additionalData != null)
-            {
-                AddInclude(additionalData, ref query);
-            }
-
-            var entity = query.FirstOrDefault(e => EF.Property<int>(e, "UserId") == id);
-
-            if (entity == null) return null;
-
-            return Mapper.Map<Models.Responses.Participant>(entity);
-        }
-
-        public override void BeforeDelete(Participant entity)
-        {
-            //foreach (var child in entity.ClientsChildren)
-            //    Context.Remove(child);
-
-            //foreach (var review in entity)
-            //    Context.Remove(review);
-
-            base.BeforeDelete(entity);
-        }
-
-        public override void AfterDelete(int id)
-        {
-            //var user = Context.Users.Find(id);
-
-            //if (user != null)
-            //{
-            //    Context.Remove(user);
-            //    Context.SaveChanges();
-            //}
-
-            base.AfterDelete(id);
+                .First(p => p.ParticipantId == id);
         }
     }
 }

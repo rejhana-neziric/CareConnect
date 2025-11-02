@@ -8,8 +8,6 @@ namespace CareConnect.Models.Requests
     {
         public int? AttendanceStatusId { get; set; }
 
-        public DateTime? RegistrationDate { get; set; }
-
         [JsonIgnore]
         public DateTime? ModifiedDate { get; set; } = DateTime.Now;
     }

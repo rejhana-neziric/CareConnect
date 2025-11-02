@@ -143,15 +143,6 @@ class _ServiceDetailsScreenState extends State<ServiceDetailsScreen>
                 Icons.attach_money,
                 colorScheme,
               ),
-
-              //const SizedBox(width: 12),
-              // if (widget.service.memberPrice != null)
-              //   _buildPriceCard(
-              //     'Member price',
-              //     widget.service.serviceType?.name,
-              //     Icons.card_membership,
-              //     colorScheme,
-              //   ),
             ],
           ),
           if (widget.service.description != null) ...[
@@ -367,14 +358,6 @@ class _ServiceDetailsScreenState extends State<ServiceDetailsScreen>
   }
 
   void _scheduleAppointment(Employee employee) {
-    // HapticFeedback.lightImpact();
-    // showModalBottomSheet(
-    //   context: context,
-    //   isScrollControlled: true,
-    //   backgroundColor: Colors.transparent,
-    //   builder: (context) => _buildAppointmentBottomSheet(employee),
-    // );
-
     if (currentUser == null) return;
 
     Navigator.push(

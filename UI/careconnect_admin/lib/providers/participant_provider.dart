@@ -14,7 +14,7 @@ class ParticipantProvider extends BaseProvider<Participant> {
 
   @override
   int? getId(Participant item) {
-    return item.user?.userId;
+    return item.participantId;
   }
 
   Future<SearchResult<Participant>?> loadData({

@@ -74,8 +74,6 @@ class _MasterScreenState extends State<MasterScreen> {
 
     currentUser = auth.user;
 
-    print(currentUser?.permissions);
-
     permissionProvider = Provider.of<PermissionProvider>(
       context,
       listen: false,
@@ -96,7 +94,6 @@ class _MasterScreenState extends State<MasterScreen> {
                   child: Text(
                     'CareConnect',
                     style: TextStyle(
-                      // color: AppColors.mauveGray,
                       color: colorScheme.primary,
                       fontSize: 30,
                       fontWeight: FontWeight.w700,

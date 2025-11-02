@@ -15,7 +15,6 @@ WorkshopInsertRequest _$WorkshopInsertRequestFromJson(
   date: DateTime.parse(json['date'] as String),
   price: (json['price'] as num?)?.toDouble(),
   maxParticipants: (json['maxParticipants'] as num?)?.toInt(),
-  participants: (json['participants'] as num?)?.toInt(),
   notes: json['notes'] as String?,
 );
 
@@ -28,6 +27,5 @@ Map<String, dynamic> _$WorkshopInsertRequestToJson(
   'date': instance.date.toIso8601String(),
   'price': instance.price,
   'maxParticipants': instance.maxParticipants,
-  'participants': instance.participants,
   'notes': instance.notes,
 };

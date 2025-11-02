@@ -1,4 +1,5 @@
-﻿using CareConnect.Models.Responses;
+﻿using CareConnect.Models.Requests;
+using CareConnect.Models.Responses;
 using CareConnect.Models.SearchObjects;
 using System;
 using System.Collections.Generic;
@@ -8,7 +9,9 @@ using System.Threading.Tasks;
 
 namespace CareConnect.Services
 {
-    public interface IAttendanceStatusService : IService<AttendanceStatus, AttendanceStatusSearchObject, AttendanceStatusAdditionalData>
+    public interface IAttendanceStatusService 
+        : ICRUDService<AttendanceStatus, AttendanceStatusSearchObject, AttendanceStatusAdditionalData, AttendanceStatusUpsertRequest, AttendanceStatusUpsertRequest> 
     {
+
     }
 }

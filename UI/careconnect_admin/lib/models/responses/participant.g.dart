@@ -7,11 +7,15 @@ part of 'participant.dart';
 // **************************************************************************
 
 Participant _$ParticipantFromJson(Map<String, dynamic> json) => Participant(
+  participantId: (json['participantId'] as num).toInt(),
   registrationDate: DateTime.parse(json['registrationDate'] as String),
   modifiedDate: DateTime.parse(json['modifiedDate'] as String),
-  attendanceStatus: AttendanceStatus.fromJson(
-    json['attendanceStatus'] as Map<String, dynamic>,
-  ),
+  attendanceStatus: json['attendanceStatus'] == null
+      ? null
+      : AttendanceStatus.fromJson(
+          json['attendanceStatus'] as Map<String, dynamic>,
+        ),
+  attendanceStatusId: (json['attendanceStatusId'] as num).toInt(),
   user: json['user'] == null
       ? null
       : User.fromJson(json['user'] as Map<String, dynamic>),
@@ -25,8 +29,10 @@ Participant _$ParticipantFromJson(Map<String, dynamic> json) => Participant(
 
 Map<String, dynamic> _$ParticipantToJson(Participant instance) =>
     <String, dynamic>{
+      'participantId': instance.participantId,
       'registrationDate': instance.registrationDate.toIso8601String(),
       'modifiedDate': instance.modifiedDate.toIso8601String(),
+      'attendanceStatusId': instance.attendanceStatusId,
       'attendanceStatus': instance.attendanceStatus,
       'user': instance.user,
       'workshop': instance.workshop,

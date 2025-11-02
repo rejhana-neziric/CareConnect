@@ -13,8 +13,6 @@ public partial class Service
 
     public decimal? Price { get; set; }
 
-    public decimal? MemberPrice { get; set; }
-
     public bool IsActive { get; set; } = true;
 
     public int ServiceTypeId { get; set; }

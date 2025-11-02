@@ -22,36 +22,6 @@ class EmployeeProvider extends BaseProvider<Employee> {
     return item.user?.userId;
   }
 
-  // Future<List<EmployeeAvailability>> getEmployeeAvailability(
-  //   int employeeId,
-  // ) async {
-  //   var url = "$baseUrl$endpoint/$employeeId/availability";
-  //   var uri = Uri.parse(url);
-  //   var headers = createHeaders();
-
-  //   var response = await http.get(uri, headers: headers);
-
-  //   if (isValidResponse(response)) {
-  //     if (response.body.isNotEmpty) {
-  //       var data = jsonDecode(response.body);
-
-  //       List<EmployeeAvailability> result = [];
-
-  //       for (var item in data) {
-  //         result.add(EmployeeAvailability.fromJson(item));
-  //       }
-
-  //       notifyListeners();
-
-  //       return result;
-  //     } else {
-  //       return [];
-  //     }
-  //   } else {
-  //     throw new Exception("Unknown error");
-  //   }
-  // }
-
   Future<SearchResult<Employee>?> loadData({
     String? fts,
     String? firstNameGTE,
@@ -96,7 +66,6 @@ class EmployeeProvider extends BaseProvider<Employee> {
     int employeeId, {
     DateTime? date,
   }) async {
-    // Build URL with optional query parameter
     var url = "$baseUrl$endpoint/$employeeId/availability";
     if (date != null) {
       final formattedDate = DateFormat('yyyy-MM-dd').format(date);

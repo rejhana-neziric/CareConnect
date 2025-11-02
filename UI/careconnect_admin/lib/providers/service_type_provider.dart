@@ -40,10 +40,4 @@ class ServiceTypeProvider extends BaseProvider<ServiceType> {
     notifyListeners();
     return result;
   }
-
-  // Future<ServiceStatistics> loadStats() async {
-  //   final statistics = await getStatistics();
-  //   notifyListeners();
-  //   return statistics;
-  // }
 }

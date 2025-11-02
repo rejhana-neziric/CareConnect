@@ -28,14 +28,6 @@ public static class Permissions
         public const string Update = "Permissions.Child.Update";
         public const string Delete = "Permissions.Child.Delete";
     }
-    public static class ChildrenDiagnosis
-    {
-        public const string Get = "Permissions.ChildrenDiagnosis.Get";
-        public const string GetById = "Permissions.ChildrenDiagnosis.GetById";
-        public const string Insert = "Permissions.ChildrenDiagnosis.Insert";
-        public const string Update = "Permissions.ChildrenDiagnosis.Update";
-        public const string Delete = "Permissions.ChildrenDiagnosis.Delete";
-    }
     public static class ClientsChild
     {
         public const string Get = "Permissions.ClientsChild.Get";
@@ -81,30 +73,6 @@ public static class Permissions
         public const string UpdateEmployeeAvailability = "Permissions.Employee.UpdateEmployeeAvailability";
         public const string View = "Permissions.Employee.View";
         public const string ViewEmployeeAvailability = "Permissions.Employee.ViewEmployeeAvailability";
-    }
-    public static class EmployeePayHistory
-    {
-        public const string Get = "Permissions.EmployeePayHistory.Get";
-        public const string GetById = "Permissions.EmployeePayHistory.GetById";
-        public const string Insert = "Permissions.EmployeePayHistory.Insert";
-        public const string Update = "Permissions.EmployeePayHistory.Update";
-        public const string Delete = "Permissions.EmployeePayHistory.Delete";
-    }
-    public static class Instructor
-    {
-        public const string Get = "Permissions.Instructor.Get";
-        public const string GetById = "Permissions.Instructor.GetById";
-        public const string Insert = "Permissions.Instructor.Insert";
-        public const string Update = "Permissions.Instructor.Update";
-        public const string Delete = "Permissions.Instructor.Delete";
-    }
-    public static class Member
-    {
-        public const string Get = "Permissions.Member.Get";
-        public const string GetById = "Permissions.Member.GetById";
-        public const string Insert = "Permissions.Member.Insert";
-        public const string Update = "Permissions.Member.Update";
-        public const string Delete = "Permissions.Member.Delete";
     }
     public static class Participant
     {
@@ -189,14 +157,6 @@ public static class Permissions
         public const string Insert = "Permissions.ServiceType.Insert";
         public const string Update = "Permissions.ServiceType.Update";
         public const string Delete = "Permissions.ServiceType.Delete";
-    }
-    public static class Session
-    {
-        public const string Get = "Permissions.Session.Get";
-        public const string GetById = "Permissions.Session.GetById";
-        public const string Insert = "Permissions.Session.Insert";
-        public const string Update = "Permissions.Session.Update";
-        public const string Delete = "Permissions.Session.Delete";
     }
     public static class User
     {

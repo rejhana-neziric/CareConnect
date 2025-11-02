@@ -27,14 +27,6 @@ class AppPermissions {
   static const childUpdate = 'Permissions.Child.Update';
   static const childDelete = 'Permissions.Child.Delete';
 
-  // ChildrenDiagnosis
-  static const childrenDiagnosisGet = 'Permissions.ChildrenDiagnosis.Get';
-  static const childrenDiagnosisGetById =
-      'Permissions.ChildrenDiagnosis.GetById';
-  static const childrenDiagnosisInsert = 'Permissions.ChildrenDiagnosis.Insert';
-  static const childrenDiagnosisUpdate = 'Permissions.ChildrenDiagnosis.Update';
-  static const childrenDiagnosisDelete = 'Permissions.ChildrenDiagnosis.Delete';
-
   // ClientsChild
   static const clientsChildGet = 'Permissions.ClientsChild.Get';
   static const clientsChildGetById = 'Permissions.ClientsChild.GetById';
@@ -87,31 +79,6 @@ class AppPermissions {
   static const employeeView = 'Permissions.Employee.View';
   static const employeeViewEmployeeAvailability =
       'Permissions.Employee.ViewEmployeeAvailability';
-
-  // EmployeePayHistory
-  static const employeePayHistoryGet = 'Permissions.EmployeePayHistory.Get';
-  static const employeePayHistoryGetById =
-      'Permissions.EmployeePayHistory.GetById';
-  static const employeePayHistoryInsert =
-      'Permissions.EmployeePayHistory.Insert';
-  static const employeePayHistoryUpdate =
-      'Permissions.EmployeePayHistory.Update';
-  static const employeePayHistoryDelete =
-      'Permissions.EmployeePayHistory.Delete';
-
-  // Instructor
-  static const instructorGet = 'Permissions.Instructor.Get';
-  static const instructorGetById = 'Permissions.Instructor.GetById';
-  static const instructorInsert = 'Permissions.Instructor.Insert';
-  static const instructorUpdate = 'Permissions.Instructor.Update';
-  static const instructorDelete = 'Permissions.Instructor.Delete';
-
-  // Member
-  static const memberGet = 'Permissions.Member.Get';
-  static const memberGetById = 'Permissions.Member.GetById';
-  static const memberInsert = 'Permissions.Member.Insert';
-  static const memberUpdate = 'Permissions.Member.Update';
-  static const memberDelete = 'Permissions.Member.Delete';
 
   // Participant
   static const participantGet = 'Permissions.Participant.Get';
@@ -194,13 +161,6 @@ class AppPermissions {
   static const serviceTypeInsert = 'Permissions.ServiceType.Insert';
   static const serviceTypeUpdate = 'Permissions.ServiceType.Update';
   static const serviceTypeDelete = 'Permissions.ServiceType.Delete';
-
-  // Session
-  static const sessionGet = 'Permissions.Session.Get';
-  static const sessionGetById = 'Permissions.Session.GetById';
-  static const sessionInsert = 'Permissions.Session.Insert';
-  static const sessionUpdate = 'Permissions.Session.Update';
-  static const sessionDelete = 'Permissions.Session.Delete';
 
   // User
   static const userLogin = 'Permissions.User.Login';

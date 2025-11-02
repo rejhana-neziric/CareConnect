@@ -706,36 +706,6 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
     );
   }
 
-  // Widget _buildAverageRating(colorScheme) {
-  //   final total = reviews.fold<int>(
-  //     0,
-  //     (sum, review) => sum + (review.stars ?? 0),
-  //   );
-
-  //   final rating = reviews.isEmpty ? 0.0 : total / reviews.length;
-
-  //   return Padding(
-  //     padding: const EdgeInsets.only(top: 2),
-  //     child: Row(
-  //       mainAxisAlignment: MainAxisAlignment.center,
-  //       children: [
-  //         RatingBarIndicator(
-  //           rating: rating,
-  //           itemBuilder: (context, index) =>
-  //               const Icon(Icons.star, color: Colors.amber),
-  //           itemCount: 5,
-  //           itemSize: 10.0,
-  //           unratedColor: colorScheme.onSurface,
-  //           direction: Axis.horizontal,
-  //         ),
-  //         SizedBox(width: 4),
-  //         Text(rating.toString(), style: TextStyle(fontSize: 13)),
-  //         SizedBox(width: 4),
-  //         Text("(${reviews.length.toString()} reviews)"),
-  //       ],
-  //     ),
-  //   );
-  // }
 
   Widget _buildBottomBar(ColorScheme colorScheme) {
     final permissionProvider = context.read<PermissionProvider>();

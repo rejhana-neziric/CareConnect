@@ -1031,8 +1031,14 @@ class ClientsChildDataSource extends DataTableSource {
             (DateTime.now().year - clientChild.child.birthDate.year).toString(),
           ),
         ),
-        DataCell(Text(clientChild.client.user?.phoneNumber ?? "")),
-        DataCell(Text(clientChild.client.user?.email ?? "")),
+        DataCell(
+          Text(
+            clientChild.client.user?.phoneNumber == null
+                ? "Not provided"
+                : '+387 ${clientChild.client.user?.phoneNumber}',
+          ),
+        ),
+        DataCell(Text(clientChild.client.user?.email ?? "Not provided")),
 
         DataCell(
           Center(

@@ -84,26 +84,6 @@ class EmployeeProvider extends BaseProvider<Employee> {
     return result;
   }
 
-  // Future<Employee> getEmployeeAvailability(int employeeId) async {
-
-  //   GetEmployeeAvailability
-
-  //   final filterObject = EmployeeSearchObject(
-  //     additionalData: EmployeeAdditionalData(
-  //       isUserIncluded: true,
-  //       isEmployeeAvailabilityIncluded: true,
-  //     ),
-  //     includeTotalCount: true,
-  //   );
-
-  //   final filter = filterObject.toJson();
-
-  //   final result = await getById(employeeId, filter: filter);
-
-  //   notifyListeners();
-  //   return result;
-  // }
-
   Future<List<EmployeeAvailability>> getEmployeeAvailability(
     int employeeId,
   ) async {
@@ -137,7 +117,6 @@ class EmployeeProvider extends BaseProvider<Employee> {
   Future<Employee> createEmployeeAvailability(
     int employeeId,
     List<TimeSlot> availability,
-    //List<EmployeeAvailabilityInsertRequest> availability,
   ) async {
     var url = "$baseUrl$endpoint/$employeeId/availability";
     var uri = Uri.parse(url);
@@ -165,18 +144,14 @@ class EmployeeProvider extends BaseProvider<Employee> {
 
   Future<Employee> updateEmployeeAvailability({
     required int employeeId,
-    // required List<TimeSlot> currentSlots,
-    // required List<TimeSlot> originalSlots,
+
     required Map<int, TimeSlot> currentSlots,
     required Map<int, TimeSlot> originalSlots,
   }) async {
     final changes = _detectChanges(employeeId, currentSlots, originalSlots);
 
     if (!changes.hasChanges) {
-      // No changes, return current data
-      // final current = await getEmployeeAvailability(employeeId);
       final current = await getById(employeeId);
-      // if (current != null) return current;
       return current;
     }
 
@@ -211,24 +186,6 @@ class EmployeeProvider extends BaseProvider<Employee> {
     final toUpdate = <int, EmployeeAvailabilityUpdateRequest>{};
     final toDelete = <int>[];
 
-    // Convert to maps for easier comparison
-    // final currentMap = <String, TimeSlot>{};
-    // final originalMap = <String, TimeSlot>{};
-
-    // Generate temporary IDs for comparison
-    for (int i = 0; i < current.length; i++) {
-      // final key = '${current[i].day}_${current[i].start}_${current[i].end}';
-      // currentMap[key] = current[i];
-
-      // final key = '${current[i].day}_${current[i].start}_${current[i].end}';
-      // currentMap[key] = current[i];
-    }
-
-    // for (int i = 0; i < original.length; i++) {
-    //   final key = '${original[i].day}_${original[i].start}_${original[i].end}';
-    //   originalMap[key] = original[i];
-    // }
-
     current.forEach((key, slot) {
       if (!original.containsKey(key)) {
         toCreate.add(
@@ -242,51 +199,19 @@ class EmployeeProvider extends BaseProvider<Employee> {
             (slot.service?.serviceId.toString() !=
                 originalSlot.service?.serviceId.toString())) {
           //fix
-          toUpdate.addAll(
-            {
-              key: EmployeeAvailabilityUpdateRequest.fromTimeSlot(
-                slot,
-                employeeId,
-              ),
-            },
-            //as Map<int, EmployeeAvailabilityUpdateRequest>,
-          );
+          toUpdate.addAll({
+            key: EmployeeAvailabilityUpdateRequest.fromTimeSlot(
+              slot,
+              employeeId,
+            ),
+          });
         }
       }
     });
 
-    // Find new slots (in current but not in original)
-    // currentMap.forEach((key, slot) {
-    //   if (!originalMap.containsKey(key)) {
-    //     toCreate.add(
-    //       EmployeeAvailabilityInsertRequest.fromTimeSlot(slot, employeeId),
-    //     );
-    //   } else {
-    //     // Check if services changed
-    //     final originalSlot = originalMap[key]!;
-    //     if (slot.service?.serviceId.toString() !=
-    //         originalSlot.service?.serviceId.toString()) {
-    //       toUpdate.add(
-    //         EmployeeAvailabilityUpdateRequest.fromTimeSlot(slot, employeeId),
-    //       );
-    //     }
-    //   }
-    // });
-
-    // Find deleted slots (in original but not in current)
-    // originalMap.forEach((key, slot) {
-    //   if (!currentMap.containsKey(key)) {
-    //     toDelete.add(
-    //       key,
-    //     ); // In real implementation, this would be the actual ID
-    //   }
-    // });
-
     original.forEach((key, slot) {
       if (!current.containsKey(key)) {
-        toDelete.add(
-          key,
-        ); // In real implementation, this would be the actual ID
+        toDelete.add(key);
       }
     });
 

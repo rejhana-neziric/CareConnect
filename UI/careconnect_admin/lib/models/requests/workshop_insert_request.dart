@@ -10,7 +10,6 @@ class WorkshopInsertRequest {
   DateTime date;
   double? price;
   int? maxParticipants;
-  int? participants;
   String? notes;
 
   WorkshopInsertRequest({
@@ -20,7 +19,6 @@ class WorkshopInsertRequest {
     required this.date,
     this.price,
     this.maxParticipants,
-    this.participants,
     this.notes,
   });
 

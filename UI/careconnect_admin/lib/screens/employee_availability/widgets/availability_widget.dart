@@ -167,10 +167,6 @@ class _AvailabilityWidgetState extends State<AvailabilityWidget> {
         Expanded(
           child: showWeekView ? _buildWeekView(colorScheme) : _buildListView(),
         ),
-        // SizedBox(
-        //   height: 400, // or MediaQuery.of(context).size.height * 0.6
-        //   child: showWeekView ? _buildWeekView(colorScheme) : _buildListView(),
-        // ),
       ],
     );
   }

@@ -13,7 +13,5 @@ namespace CareConnect.Models.Responses
         public DateTime ProcurementYear { get; set; }
 
         public DateTime ModifiedDate { get; set; }
-
-        //public virtual ICollection<Employee> Employees { get; set; } = new List<Employee>();
     }
 }

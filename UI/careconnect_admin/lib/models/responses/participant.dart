@@ -8,17 +8,21 @@ part 'participant.g.dart'; // Don't open or edit this
 
 @JsonSerializable()
 class Participant {
+  int participantId;
   DateTime registrationDate;
   DateTime modifiedDate;
-  AttendanceStatus attendanceStatus;
+  int attendanceStatusId;
+  AttendanceStatus? attendanceStatus;
   User? user;
   Workshop? workshop;
   Child? child;
 
   Participant({
+    required this.participantId,
     required this.registrationDate,
     required this.modifiedDate,
-    required this.attendanceStatus,
+    this.attendanceStatus,
+    required this.attendanceStatusId,
     this.user,
     this.workshop,
     this.child,

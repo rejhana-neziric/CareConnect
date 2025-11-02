@@ -42,7 +42,6 @@ class ServiceProvider extends BaseProvider<Service> {
   Future<SearchResult<Service>?> loadData({
     String? fts,
     double? price,
-    double? memberPrice,
     bool? isActive,
     int? serviceTypeId,
     int page = 0,
@@ -52,7 +51,6 @@ class ServiceProvider extends BaseProvider<Service> {
     final filterObject = ServiceSearchObject(
       nameGTE: fts,
       price: price,
-      memberPrice: memberPrice,
       isActive: isActive,
       serviceTypeId: serviceTypeId,
       page: page,

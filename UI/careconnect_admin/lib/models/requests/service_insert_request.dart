@@ -7,7 +7,6 @@ class ServiceInsertRequest {
   String name;
   String? description;
   double? price;
-  double? memberPrice;
   bool isActive;
   int serviceTypeId;
 
@@ -15,7 +14,6 @@ class ServiceInsertRequest {
     required this.name,
     this.description,
     this.price,
-    this.memberPrice,
     required this.isActive,
     required this.serviceTypeId,
   });

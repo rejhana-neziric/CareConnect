@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Text;
 
 namespace CareConnect.Models.Responses
@@ -24,13 +25,12 @@ namespace CareConnect.Models.Responses
 
         public string? Notes { get; set; }
 
+        public string? PaymentIntentId { get; set; }
+
+        [NotMapped]
+        public bool Paid => PaymentIntentId != null;
+
         public DateTime ModifiedDate { get; set; }
-
-        //public virtual ICollection<Participant> ParticipantsNavigation { get; set; } = new List<Participant>();
-
-        //public virtual ICollection<Review> Reviews { get; set; } = new List<Review>();
-
-        //public virtual ICollection<Session> Sessions { get; set; } = new List<Session>();
 
         public  string WorkshopType { get; set; } = null!;
     }

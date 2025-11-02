@@ -142,30 +142,6 @@ namespace CareConnect.Services
                 .First(r => r.ReviewId == id);
         }
 
-        public override void BeforeDelete(Review entity)
-        {
-            //foreach (var child in entity.ClientsChildren)
-            //    Context.Remove(child);
-
-            //foreach (var review in entity)
-            //    Context.Remove(review);
-
-            base.BeforeDelete(entity);
-        }
-
-        public override void AfterDelete(int id)
-        {
-            //var user = Context.Users.Find(id);
-
-            //if (user != null)
-            //{
-            //    Context.Remove(user);
-            //    Context.SaveChanges();
-            //}
-
-            base.AfterDelete(id);
-        }
-
         public Models.Responses.Review ChangeVisibility(int id)
         {
             var review = Context.Reviews.Find(id);
@@ -181,7 +157,6 @@ namespace CareConnect.Services
             return Mapper.Map<Models.Responses.Review>(review); 
         }
 
-
         public double GetAverage(int? employeeId)
         {
             IQueryable<Review> query = Context.Reviews.Where(x => !x.IsHidden && x.Stars.HasValue);
@@ -195,6 +170,5 @@ namespace CareConnect.Services
 
             return average;
         }
-
     }
 }

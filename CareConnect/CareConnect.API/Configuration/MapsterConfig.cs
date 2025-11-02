@@ -28,28 +28,11 @@ namespace CareConnect.API.Configuration
                 .IgnoreNullValues(true)
                 .Ignore(dest => dest.ModifiedDate);
 
-            /*
-            TypeAdapterConfig<Client, Models.Responses.Client>.NewConfig()
-                 .Map(dest => dest.Children, src => src.ClientsChildren.Select(cc => cc.Child));
-            */
-
-            TypeAdapterConfig<Child, Models.Responses.Child>.NewConfig()
-                .Map(dest => dest.Diagnoses, src => src.ChildrenDiagnoses.Select(cd => cd.Diagnosis));
-
             TypeAdapterConfig<ChildUpdateRequest, Child>
                 .NewConfig()
                 .PreserveReference(true)
                 .IgnoreNullValues(true)
                 .Ignore(dest => dest.ModifiedDate); 
-                //.Ignore(dest => dest.BirthDate);
-
-            TypeAdapterConfig<InstructorUpdateRequest, Instructor>
-                .NewConfig()
-                .PreserveReference(true)
-                .IgnoreNullValues(true); 
-
-            TypeAdapterConfig<MemberInsertRequest, Member>.NewConfig()
-                .Map(dest => dest.MemberId, src => src.ClientId);
 
             TypeAdapterConfig<WorkshopUpdateRequest, Workshop>
                 .NewConfig()
@@ -57,11 +40,6 @@ namespace CareConnect.API.Configuration
                 .IgnoreNullValues(true)
                 .Ignore(dest => dest.ModifiedDate)
                 .Ignore(dest => dest.Date); 
-
-            TypeAdapterConfig<SessionUpdateRequest, Session>
-                .NewConfig()
-                .PreserveReference(true)
-                .IgnoreNullValues(true); 
             
             TypeAdapterConfig<ServiceUpdateRequest, Service>
                 .NewConfig()
@@ -89,28 +67,19 @@ namespace CareConnect.API.Configuration
                 .PreserveReference(true)
                 .IgnoreNullValues(true); 
 
-            TypeAdapterConfig<ChildrenDiagnosisUpdateRequest, ChildrenDiagnosis>
-                .NewConfig()
-                .PreserveReference(true)
-                .IgnoreNullValues(true); 
-
             TypeAdapterConfig<EmployeeAvailabilityUpdateRequest, EmployeeAvailability>
                 .NewConfig()
                 .PreserveReference(true)
                 .IgnoreNullValues(true);
-
-            //TypeAdapterConfig<ClientsChild, Models.Responses.ClientsChild>.NewConfig()
-            //    .Map(dest => dest.LastAppointment, src => src.Appointments.OrderByDescending(a => a.Date).FirstOrDefault().Date);
-
 
             TypeAdapterConfig<ServiceType, Models.Responses.ServiceType>
                 .NewConfig()
                 .Map(dest => dest.NumberOfServices,
                      src => src.Services != null ? src.Services.Count : 0);
 
-
             TypeAdapterConfig<User, Models.Responses.User>
                 .NewConfig()
-                .Map(dest => dest.Roles, src => src.UsersRoles.Select(ur => ur.Role.Name).ToList());}
+                .Map(dest => dest.Roles, src => src.UsersRoles.Select(ur => ur.Role.Name).ToList());
+        }
     }
 }

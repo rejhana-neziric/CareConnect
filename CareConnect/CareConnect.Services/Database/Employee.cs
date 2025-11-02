@@ -23,11 +23,7 @@ public partial class Employee
 
     public virtual User User { get; set; } = null!;
 
-    public virtual ICollection<EmployeePayHistory> EmployeePayHistories { get; set; } = new List<EmployeePayHistory>();
-
     public virtual Qualification? Qualification { get; set; }
 
     public virtual ICollection<Review> Reviews { get; set; } = new List<Review>();
-
-    public virtual ICollection<Session> Sessions { get; set; } = new List<Session>();
 }

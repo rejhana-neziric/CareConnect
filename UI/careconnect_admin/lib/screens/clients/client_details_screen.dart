@@ -203,6 +203,10 @@ class _ClientDetailsScreenState extends State<ClientDetailsScreen> {
                     (permissionProvider.canInsertClient() &&
                         widget.clientsChild == null))
                   _saveRow(),
+                const SizedBox(height: 20),
+                if (permissionProvider.canDeleteClient() &&
+                    widget.clientsChild != null)
+                  _buildDeactivateAccount(),
               ],
             ),
           ),
@@ -700,7 +704,7 @@ class _ClientDetailsScreenState extends State<ClientDetailsScreen> {
                                           type: SnackbarType.error,
                                         );
                                       } else {
-                                        final result = await Navigator.push(
+                                        await Navigator.push(
                                           context,
                                           MaterialPageRoute(
                                             builder: (_) =>
@@ -973,5 +977,83 @@ class _ClientDetailsScreenState extends State<ClientDetailsScreen> {
         ],
       ),
     );
+  }
+
+  Widget _buildDeactivateAccount() {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: colorScheme.surfaceContainerLowest,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.red),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Delete Client Account',
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              color: Colors.red[700],
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Deleting this client’s account will permanently remove all their personal information, '
+            'appointments, and related data from the system. '
+            'This action cannot be undone.',
+            style: TextStyle(fontSize: 14, color: colorScheme.onSurface),
+          ),
+          const SizedBox(height: 16),
+
+          PrimaryButton(
+            label: 'Delete Account',
+            icon: Icons.delete_forever,
+            backgroundColor: Colors.red[600],
+            onPressed: confirmDeactivation,
+          ),
+        ],
+      ),
+    );
+  }
+
+  void confirmDeactivation() async {
+    if (widget.clientsChild == null || widget.clientsChild?.client.user == null)
+      return;
+
+    final confirm = await CustomConfirmDialog.show(
+      context,
+      icon: Icons.warning,
+      iconBackgroundColor: Colors.red,
+      title: 'Permanently Delete Account',
+      content:
+          'Are you sure you want to permanently delete this client’s account?\n\n'
+          'All personal data, history, and related records will be permanently erased. '
+          'This action cannot be reverted.',
+      confirmText: 'Deactivate',
+      cancelText: 'Cancel',
+    );
+
+    if (confirm) {
+      final success = await clientProvider.delete(
+        widget.clientsChild!.client.user!.userId,
+      );
+
+      if (!mounted) return;
+
+      CustomSnackbar.show(
+        context,
+        message: success
+            ? 'Your account has been deactivated.'
+            : 'Failed to deactivate account. Please try again later.',
+        type: success ? SnackbarType.success : SnackbarType.error,
+      );
+
+      Navigator.pop(context, true);
+    }
   }
 }

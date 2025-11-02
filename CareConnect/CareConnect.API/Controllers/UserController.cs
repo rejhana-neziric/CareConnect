@@ -14,7 +14,6 @@ namespace CareConnect.API.Controllers
     [Authorize]
     public class UserController :  BaseCRUDController<Models.Responses.User, BaseSearchObject<BaseAdditionalSearchRequestData>, BaseAdditionalSearchRequestData, UserInsertRequest, UserUpdateRequest>
     {
-
         public UserController(IUserService service) : base(service)
         {
         }

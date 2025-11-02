@@ -30,6 +30,14 @@ class PermissionProvider {
     return hasPermission(AppPermissions.employeeGetStatistics);
   }
 
+  bool canGetEmployees() {
+    return hasPermission(AppPermissions.employeeGet);
+  }
+
+  bool canGetChildren() {
+    return hasPermission(AppPermissions.childGet);
+  }
+
   // view employee details on employee details screen
   bool canGetByIdEmployee() {
     return hasPermission(AppPermissions.employeeGetById);
@@ -38,14 +46,6 @@ class PermissionProvider {
   // view employee availability screen
   bool canViewEmployeeAvailabilityScreen() {
     return hasPermission(AppPermissions.employeeViewEmployeeAvailability);
-  }
-
-  bool canManageEmployeeAvailability() {
-    return hasAnyPermission([
-      AppPermissions.employeeGetAvailability,
-      AppPermissions.employeeCreateAvailability,
-      AppPermissions.employeeUpdateAvailability,
-    ]);
   }
 
   bool canInsertEmployeeAvailability() {
@@ -105,6 +105,10 @@ class PermissionProvider {
     ]);
   }
 
+  bool canGetAppointmentsForChild() {
+    return hasPermission(AppPermissions.clientsChildGetAppointment);
+  }
+
   bool canManageAppointment() {
     return hasAllPermissions([
       AppPermissions.appointmentStart,
@@ -159,6 +163,14 @@ class PermissionProvider {
 
   bool canViewParticipants() {
     return hasPermission(AppPermissions.participantGet);
+  }
+
+  bool canEditParticipant() {
+    return hasPermission(AppPermissions.participantUpdate);
+  }
+
+  bool canGetByIdParticipant() {
+    return hasPermission(AppPermissions.participantGetById);
   }
 
   bool canDeleteWorkshop() {
@@ -267,31 +279,6 @@ class PermissionProvider {
     return hasPermission(AppPermissions.clientsChildUpdate);
   }
 
-  // Payment Permissions - think if needed
-  bool canViewPayment() {
-    return hasPermission(AppPermissions.paymentGet);
-  }
-
-  bool canEditPayment() {
-    return hasPermission(AppPermissions.paymentUpdate);
-  }
-
-  bool canInsertPayment() {
-    return hasPermission(AppPermissions.paymentInsert);
-  }
-
-  bool canDeletePayment() {
-    return hasPermission(AppPermissions.paymentDelete);
-  }
-
-  bool canCreatePaymentIntent() {
-    return hasPermission(AppPermissions.paymentCreatePaymentIntent);
-  }
-
-  bool canVerifyPayment() {
-    return hasPermission(AppPermissions.paymentVerifyPayment);
-  }
-
   // Report Permissions
   bool canViewReport() {
     return hasPermission(AppPermissions.reportView);
@@ -386,8 +373,6 @@ class PermissionProvider {
     return hasPermission(AppPermissions.rolePermissionsGetAllRoles);
   }
 
-  // role get i assign permission are not needed, get all permission too, get role permissions
-
   bool canInsertRole() {
     return hasPermission(AppPermissions.roleInsert);
   }
@@ -432,7 +417,6 @@ class PermissionProvider {
 
   // Service Permissions
 
-  // note that for viewing service, employees etc. user have to have get permission too
   bool canViewServiceScreen() {
     return hasPermission(AppPermissions.serviceView);
   }

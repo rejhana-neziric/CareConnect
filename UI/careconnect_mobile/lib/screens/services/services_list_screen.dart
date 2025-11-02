@@ -325,37 +325,6 @@ class _ServicesListScreenState extends State<ServicesListScreen> {
     return FilterConfig(title: 'Filters', sections: sections);
   }
 
-  // FilterConfig get serviceFilterConfig => FilterConfig(
-  //   title: 'Filters',
-  //   sections: [
-  //     if (permissionProvider.canGetServiceTypes())
-  //       FilterSection(
-  //         title: 'Service Type',
-  //         allowMultipleSelection: false,
-  //         options: _buildServiceTypeOptions(),
-  //       ),
-
-  //     FilterSection(
-  //       title: 'Price',
-  //       allowMultipleSelection: false,
-  //       isPrice: true,
-  //       options: _buildPriceOptions(),
-  //     ),
-
-  //     FilterSection(
-  //       title: 'Sort by',
-  //       allowMultipleSelection: false,
-  //       options: _buildSortByOptions(),
-  //     ),
-
-  //     FilterSection(
-  //       title: 'Sort direction',
-  //       allowMultipleSelection: false,
-  //       options: _buildSortDirectionOptions(),
-  //     ),
-  //   ],
-  // );
-
   List<FilterOption<String>> _buildSortByOptions() {
     return [
       FilterOption<String>(

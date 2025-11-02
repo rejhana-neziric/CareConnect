@@ -1,4 +1,3 @@
-import 'package:careconnect_mobile/widgets/primary_button.dart';
 import 'package:flutter/material.dart';
 
 class NoPermissionScreen extends StatelessWidget {

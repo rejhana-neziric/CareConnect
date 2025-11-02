@@ -87,11 +87,6 @@ class WorkshopFormProvider
                   formData['maxParticipants'].toString().isEmpty
               ? null
               : int.tryParse(formData['maxParticipants']),
-          participants:
-              formData['participants'] == null ||
-                  formData['participants'].toString().isEmpty
-              ? null
-              : int.tryParse(formData['participants']),
           notes: formData['notes'],
         );
 
@@ -111,11 +106,6 @@ class WorkshopFormProvider
                   formData['maxParticipants'].toString().isEmpty
               ? null
               : int.tryParse(formData['maxParticipants']),
-          participants:
-              formData['participants'] == null ||
-                  formData['participants'].toString().isEmpty
-              ? null
-              : int.tryParse(formData['participants']),
           notes: formData['notes'],
         );
 

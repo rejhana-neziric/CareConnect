@@ -16,11 +16,5 @@ namespace CareConnect.Models.Responses
 
         public string Gender { get; set; } = null!;
 
-        //public virtual ICollection<ChildrenDiagnosis> ChildrenDiagnoses { get; set; } = new List<ChildrenDiagnosis>();
-
-        public virtual ICollection<Diagnosis> Diagnoses { get; set; } = new List<Diagnosis>();
-
-
-        //public virtual ICollection<ClientsChild> ClientsChildren { get; set; } = new List<ClientsChild>();
     }
 }

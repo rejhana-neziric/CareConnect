@@ -7,7 +7,6 @@ class ServiceSearchObject {
   String? fts;
   String? nameGTE;
   double? price;
-  double? memberPrice;
   bool? isActive;
   int? serviceTypeId;
   int? page;
@@ -20,7 +19,6 @@ class ServiceSearchObject {
     this.fts,
     this.nameGTE,
     this.price,
-    this.memberPrice,
     this.isActive,
     this.serviceTypeId,
     this.page,

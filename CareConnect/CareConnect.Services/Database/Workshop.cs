@@ -21,7 +21,7 @@ public partial class Workshop
 
     public int? MaxParticipants { get; set; }
 
-    public int? Participants { get; set; }
+    public int? Participants { get; set; } = 0;
 
     public string? Notes { get; set; }
 
@@ -29,5 +29,4 @@ public partial class Workshop
 
     public virtual ICollection<Participant> ParticipantsNavigation { get; set; } = new List<Participant>();
 
-    public ICollection<Enrollment> Enrollments { get; set; } = new List<Enrollment>();
 }

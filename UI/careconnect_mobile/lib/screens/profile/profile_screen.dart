@@ -537,37 +537,6 @@ class _ProfileScreenState extends State<ProfileScreen>
 
                 const SizedBox(height: 8),
 
-                // Diagnoses
-                // if (child.diagnoses.isNotEmpty)
-                //   Wrap(
-                //     spacing: 6,
-                //     runSpacing: -6,
-                //     children: child.diagnoses
-                //         .map(
-                //           (d) => Chip(
-                //             label: Text(d.name),
-                //             backgroundColor: colorScheme.primary.withOpacity(
-                //               0.1,
-                //             ),
-                //             labelStyle: TextStyle(
-                //               color: colorScheme.primary,
-                //               fontSize: 12,
-                //             ),
-                //             materialTapTargetSize:
-                //                 MaterialTapTargetSize.shrinkWrap,
-                //           ),
-                //         )
-                //         .toList(),
-                //   )
-                // else
-                //   Text(
-                //     "No diagnoses",
-                //     style: TextStyle(
-                //       fontSize: 12,
-                //       color: Colors.grey[500],
-                //       fontStyle: FontStyle.italic,
-                //     ),
-                //   ),
                 OutlinedButton.icon(
                   onPressed: () => _viewChildInfo(child),
                   icon: const Icon(Icons.person, size: 18),
@@ -635,16 +604,12 @@ class _ProfileScreenState extends State<ProfileScreen>
         user: UserUpdateRequest(status: false),
       );
 
-      final updatedClient = await clientProvider.update(
+      await clientProvider.update(
         currenClient!.user!.userId,
         updatedClientRequest,
       );
 
-      if (updatedClient != null) {
-        return true;
-      } else {
-        return false;
-      }
+      return true;
     } catch (e) {
       return false;
     }
@@ -775,9 +740,7 @@ extension ProfileScreenIntegration on _ProfileScreenState {
               updatedClient,
             );
 
-            if (mounted) {
-              setState(() {});
-            }
+            if (mounted) {}
           },
         ),
       ),

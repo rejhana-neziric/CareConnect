@@ -12,10 +12,6 @@ namespace CareConnect.Models.Responses
 
         public string Status { get; set; }
 
-        public virtual PaymentPurpose PaymentPurpose { get; set; } = null!;
-
-        public virtual PaymentStatus PaymentStatus { get; set; } = null!;
-
         public virtual User User { get; set; } = null!;
     }
 }

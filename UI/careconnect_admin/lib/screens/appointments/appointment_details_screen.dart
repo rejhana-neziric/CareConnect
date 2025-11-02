@@ -3,6 +3,7 @@ import 'package:careconnect_admin/core/theme/app_colors.dart';
 import 'package:careconnect_admin/models/enums/appointment_status.dart';
 import 'package:careconnect_admin/models/requests/appointment_update_request.dart';
 import 'package:careconnect_admin/models/responses/appointment.dart';
+import 'package:careconnect_admin/models/requests/attendance_status_insert_request.dart';
 import 'package:careconnect_admin/models/responses/attendance_status.dart';
 import 'package:careconnect_admin/providers/appointment_provider.dart';
 import 'package:careconnect_admin/providers/attendance_status_provider.dart';
@@ -154,7 +155,7 @@ class _AppointmentDetailsScreenState extends State<AppointmentDetailsScreen> {
                           const SizedBox(height: 24),
 
                           // Patient & Child Info
-                          _buildPatientInfoCard(),
+                          _buildClientInfoCard(),
                           const SizedBox(height: 24),
 
                           // Description & Notes
@@ -270,7 +271,7 @@ class _AppointmentDetailsScreenState extends State<AppointmentDetailsScreen> {
     );
   }
 
-  Widget _buildPatientInfoCard() {
+  Widget _buildClientInfoCard() {
     return Card(
       elevation: 0,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -458,18 +459,188 @@ class _AppointmentDetailsScreenState extends State<AppointmentDetailsScreen> {
   }
 
   Widget _buildStatusChip(PermissionProvider permissionProvider) {
-    return CustomDropdownField<int>(
-      width: 600,
-      name: 'attendanceStatusId',
-      label: 'Attendance Status',
-      items: buildAttendanceStatusItems(attendanceStatuses),
-      required: true,
-      validator: (value) {
-        if (value == null) return 'Attendance status is required';
-        return null;
-      },
-      enabled: permissionProvider.canEditAppointment(),
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Expanded(
+          child: CustomDropdownField<int>(
+            width: 600,
+            name: 'attendanceStatusId',
+            label: 'Attendance Status',
+            items: buildAttendanceStatusItems(attendanceStatuses),
+            required: true,
+            validator: (value) {
+              if (value == null) return 'Attendance status is required';
+              return null;
+            },
+            enabled: permissionProvider.canEditAppointment(),
+          ),
+        ),
+        const SizedBox(width: 8),
+        IconButton(
+          tooltip: 'Manage Attendance Statuses',
+          icon: const Icon(Icons.settings_outlined),
+          color: Colors.grey[700],
+          onPressed: () => _openManageStatusesDialog(context),
+        ),
+      ],
     );
+  }
+
+  void _openManageStatusesDialog(BuildContext context) async {
+    final colorScheme = Theme.of(context).colorScheme;
+
+    showDialog(
+      context: context,
+      builder: (context) {
+        TextEditingController nameController = TextEditingController();
+        AttendanceStatus? editingStatus;
+
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return AlertDialog(
+              title: Text(
+                'Manage Attendance Statuses',
+                style: TextStyle(
+                  color: colorScheme.primary,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              content: SizedBox(
+                width: 500,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    // Existing statuses list
+                    if (attendanceStatuses.isEmpty)
+                      const Text('No statuses found.'),
+                    if (attendanceStatuses.isNotEmpty)
+                      ...attendanceStatuses.map((status) {
+                        return ListTile(
+                          title: Text(status.name),
+                          trailing: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              IconButton(
+                                icon: const Icon(
+                                  Icons.edit,
+                                  color: Colors.grey,
+                                ),
+                                onPressed: () {
+                                  nameController.text = status.name;
+                                  editingStatus = status;
+                                  setState(() {});
+                                },
+                              ),
+                              IconButton(
+                                icon: const Icon(
+                                  Icons.delete,
+                                  color: Colors.red,
+                                ),
+                                onPressed: () async {
+                                  final result = await _deleteStatus(
+                                    status.attendanceStatusId,
+                                  );
+                                  setState(() {
+                                    if (result == true) {
+                                      attendanceStatuses.remove(status);
+                                      loadAttendanceStatus();
+                                    }
+                                  });
+                                },
+                              ),
+                            ],
+                          ),
+                        );
+                      }),
+                    const Divider(),
+                    TextField(
+                      controller: nameController,
+                      decoration: InputDecoration(
+                        labelText: editingStatus == null
+                            ? 'Add new status'
+                            : 'Edit status',
+                        border: const OutlineInputBorder(),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              actions: [
+                TextButton(
+                  child: const Text('Cancel'),
+                  onPressed: () => Navigator.pop(context),
+                ),
+
+                PrimaryButton(
+                  onPressed: () async {
+                    final name = nameController.text.trim();
+                    if (name.isEmpty) return;
+
+                    if (editingStatus == null) {
+                      await _addStatus(name);
+                      setState(() {
+                        loadAttendanceStatus();
+                      });
+                    } else {
+                      final updatedStatus = await _updateStatus(
+                        editingStatus!.attendanceStatusId, // fix
+                        name,
+                      );
+                      setState(() {
+                        final index = attendanceStatuses.indexWhere(
+                          (status) =>
+                              status.attendanceStatusId ==
+                              updatedStatus.attendanceStatusId,
+                        );
+
+                        if (index != -1) {
+                          attendanceStatuses[index] = updatedStatus;
+                        }
+
+                        editingStatus = null;
+                      });
+                    }
+
+                    nameController.clear();
+                  },
+                  label: editingStatus == null ? 'Add' : 'Update',
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Future<AttendanceStatus> _addStatus(String name) async {
+    final newStatus = AttendanceStatusInsertRequest(name: name);
+    return await attendanceStatusProvider.insert(newStatus);
+  }
+
+  Future<AttendanceStatus> _updateStatus(int id, String name) async {
+    final updated = AttendanceStatus(attendanceStatusId: id, name: name);
+    return await attendanceStatusProvider.update(id, updated);
+  }
+
+  Future<bool> _deleteStatus(int id) async {
+    final result = await attendanceStatusProvider.delete(id);
+
+    if (result == false) {
+      Navigator.pop(context);
+
+      CustomSnackbar.show(
+        context,
+        message:
+            'Sorry, you cannot delete attendance status that was used in appointment or workshop.',
+        type: SnackbarType.error,
+      );
+
+      return false;
+    }
+
+    return true;
   }
 
   List<DropdownMenuItem<int>> buildAttendanceStatusItems(
@@ -478,7 +649,7 @@ class _AppointmentDetailsScreenState extends State<AppointmentDetailsScreen> {
     return attendanceStatuses.map((attendanceStatus) {
       return DropdownMenuItem<int>(
         value: attendanceStatus.attendanceStatusId,
-        child: Text(attendanceStatus.name ?? 'Not provided'),
+        child: Text(attendanceStatus.name),
       );
     }).toList();
   }

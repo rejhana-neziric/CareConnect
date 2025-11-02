@@ -31,10 +31,8 @@ namespace CareConnect.Services.WorkshopML
             _modelPath = modelPath;
             _logger = logger;   
 
-            // Map workshop types to numbers
             _workshopTypeMapping = new Dictionary<string, float>();
 
-            // Try to load existing model
             if (File.Exists(_modelPath))
             {
                 LoadModel();
@@ -43,14 +41,13 @@ namespace CareConnect.Services.WorkshopML
 
         public void TrainModel(List<Workshop> historicalWorkshops)
         {
-            if (historicalWorkshops == null || historicalWorkshops.Count < 10) //change
+            if (historicalWorkshops == null || historicalWorkshops.Count < 10) 
             {
                 throw new InvalidOperationException("Need at least 10 completed workshops to train the model.");
             }
 
             BuildWorkshopTypeMapping(historicalWorkshops);
 
-            // Transforming workshops to training data
             var trainingData = historicalWorkshops
                 .Where(w => w.Participants.HasValue && w.Participants.Value > 0)
                 .Select(w => TransformToWorkshopData(w))
@@ -106,7 +103,6 @@ namespace CareConnect.Services.WorkshopML
             var predictionEngine = _mlContext.Model.CreatePredictionEngine<WorkshopData, WorkshopPrediction>(_model);
             var prediction = predictionEngine.Predict(input);
 
-            // Ensuring prediction is within valid range
             prediction.PredictedParticipants = Math.Max(0, prediction.PredictedParticipants);
             if (workshop.MaxParticipants.HasValue)
             {
@@ -181,7 +177,6 @@ namespace CareConnect.Services.WorkshopML
             float daysUntilWorkshop = (float)(date - modifiedDate).TotalDays;
             float priceToMaxRatio = maxParticipants > 0 ? price / maxParticipants : 0;
 
-            // Participants property may not exist in insert request
             float participants = 0;
             var participantsProp = w.GetType().GetProperty("Participants");
             if (participantsProp != null && participantsProp.GetValue(w) != null)

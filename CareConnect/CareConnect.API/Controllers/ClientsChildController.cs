@@ -20,21 +20,21 @@ namespace CareConnect.API.Controllers
         [PermissionAuthorize("GetStatistics")]
         public ClientsChildStatistics GetStatistics()
         {
-            return (_service as ClientsChildService).GetStatistics();
+            return (_service as ClientsChildService)!.GetStatistics();
         }
 
         [HttpGet("{clientId}/{childId}")]
         [PermissionAuthorize("GetClientAndChildByIds")]
         public Models.Responses.ClientsChild GetById(int clientId, int childId)
         {
-            return (_service as ClientsChildService).GetClientAndChildByIds(clientId, childId);
+            return (_service as ClientsChildService)!.GetClientAndChildByIds(clientId, childId);
         }
 
         [HttpGet("{clientId}/{childId}/appointment")]
         [PermissionAuthorize("GetAppointment")]
         public List<Appointment> GetAppointment(int clientId, int childId)
         {
-            return (_service as ClientsChildService).GetAppointment(clientId, childId);
+            return (_service as ClientsChildService)!.GetAppointment(clientId, childId);
         }
 
         [AllowAnonymous]

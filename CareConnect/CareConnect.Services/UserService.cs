@@ -94,15 +94,6 @@ namespace CareConnect.Services
 
             if (user == null) return null;
 
-            //var roles = user.UsersRoles
-            //                  .Select(x => new
-            //                  {
-            //                      x.Role.RoleId,
-            //                      x.Role.Name,
-            //                      x.Role.Description
-            //                  })
-            //                  .ToList<object>();
-
             var roles = await Context.Roles
                 .Include(r => r.Permissions)
                 .Include(r => r.UsersRoles)

@@ -9,10 +9,10 @@ class CustomConfirmDialog extends StatelessWidget {
   final String confirmText;
   final String? cancelText;
   final VoidCallback onConfirm;
-  final VoidCallback? onCancel; // 🔹 Make nullable
+  final VoidCallback? onCancel;
 
   const CustomConfirmDialog({
-    Key? key,
+    super.key,
     required this.icon,
     this.iconBackgroundColor = Colors.deepOrange,
     required this.title,
@@ -20,8 +20,8 @@ class CustomConfirmDialog extends StatelessWidget {
     this.confirmText = 'Continue',
     this.cancelText,
     required this.onConfirm,
-    this.onCancel, // 🔹 Optional
-  }) : super(key: key);
+    this.onCancel,
+  });
 
   static Future<bool> show(
     BuildContext context, {
@@ -30,7 +30,7 @@ class CustomConfirmDialog extends StatelessWidget {
     required String title,
     required String content,
     String confirmText = 'Continue',
-    String? cancelText, // 🔹 Optional now
+    String? cancelText,
   }) {
     return showDialog<bool>(
       context: context,
@@ -46,7 +46,7 @@ class CustomConfirmDialog extends StatelessWidget {
           onConfirm: () => Navigator.of(context).pop(true),
           onCancel: cancelText != null
               ? () => Navigator.of(context).pop(false)
-              : null, // 🔹 Only provide if cancelText exists
+              : null,
         );
       },
     ).then((value) => value ?? false);
@@ -54,6 +54,9 @@ class CustomConfirmDialog extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return Dialog(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       elevation: 4,
@@ -91,7 +94,10 @@ class CustomConfirmDialog extends StatelessWidget {
                     const SizedBox(height: 8),
                     Text(
                       content,
-                      style: TextStyle(fontSize: 14, color: Colors.grey[700]),
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: colorScheme.onSurface,
+                      ),
                     ),
                     const SizedBox(height: 24),
                     Row(

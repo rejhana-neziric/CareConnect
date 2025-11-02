@@ -9,7 +9,6 @@ class Service {
   final String name;
   final String? description;
   final double? price;
-  final double? memberPrice;
   final bool isActive;
   final DateTime modifiedDate;
   ServiceType? serviceType;
@@ -20,7 +19,6 @@ class Service {
     required this.name,
     this.description,
     this.price,
-    this.memberPrice,
     required this.isActive,
     required this.modifiedDate,
     this.serviceType,

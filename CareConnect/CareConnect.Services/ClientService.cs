@@ -120,42 +120,99 @@ namespace CareConnect.Services
 
         public override void BeforeDelete(Client entity)
         {
-            var client = Context.Clients.Where(x => x.User.UserId == entity.User.UserId).Include(x => x.ClientsChildren).ThenInclude(x => x.Child).FirstOrDefault();    
+            var client = Context.Clients
+                                        .Include(c => c.ClientsChildren)
+                                        .ThenInclude(cc => cc.Child)
+                                        .FirstOrDefault(c => c.ClientId == entity.ClientId);
 
-            foreach (var clientsChild in client.ClientsChildren)
+            if (client != null)
             {
-                
-                Context.Remove(clientsChild);
-                Context.Remove(clientsChild.Child); 
+                foreach (var clientsChild in client.ClientsChildren)
+                {
+                    if (!Context.ClientsChildren.Any(cc => cc.ChildId == clientsChild.ChildId && cc.ClientId != client.ClientId))
+                    {
+                        Context.Remove(clientsChild.Child);
+                    }
+                    Context.Remove(clientsChild);
+                }
             }
-
-            //foreach (var review in entity)
-            //    Context.Remove(review);
 
             base.BeforeDelete(entity);
         }
 
-        public override void AfterDelete(int id)
+        public override void AfterDelete(int clientId)
         {
-            var user = Context.Users.Find(id);
+            var user = Context.Users.FirstOrDefault(u => u.UserId == Context.Clients
+                .Where(c => c.ClientId == clientId)
+                .Select(c => c.User.UserId)
+                .FirstOrDefault());
 
             if (user != null)
             {
                 Context.Remove(user);
-                Context.SaveChanges();
             }
 
-            base.AfterDelete(id);
+            base.AfterDelete(clientId);
+        }
+
+        public override bool Delete(int id)
+        {
+            using var transaction = Context.Database.BeginTransaction();
+
+            try
+            {
+                var client = Context.Clients
+                    .Include(c => c.ClientsChildren)
+                        .ThenInclude(cc => cc.Child)
+                    .Include(c => c.User)
+                    .FirstOrDefault(c => c.ClientId == id);
+
+                if (client == null) return false;
+
+                foreach (var clientsChild in client.ClientsChildren.ToList())
+                {
+                    var child = clientsChild.Child;
+
+                    Context.ClientsChildren.Remove(clientsChild);
+
+                    bool isChildShared = Context.ClientsChildren
+                        .Any(cc => cc.ChildId == child.ChildId && cc.ClientId != id);
+
+                    if (!isChildShared)
+                    {
+                        Context.Children.Remove(child);
+                    }
+                }
+
+                Context.Clients.Remove(client);
+
+                if (client.User != null)
+                {
+                    var userRoles = Context.UsersRoles.Where(ur => ur.UserId == client.User.UserId).ToList();
+                    Context.UsersRoles.RemoveRange(userRoles);
+                    Context.Users.Remove(client.User);
+                }
+
+                var reviews = Context.Reviews.Where(r => r.UserId == client.User.UserId).ToList();
+                Context.Reviews.RemoveRange(reviews);
+
+                Context.SaveChanges();
+                transaction.Commit();
+
+                return true;
+            }
+            catch
+            {
+                transaction.Rollback();
+                return false;
+            }
         }
 
         public Models.Responses.Client AddChildToClient(int id, ChildInsertRequest childInsertRequest)
         {
             var client = Context.Clients.Include(x => x.User).First(x => x.ClientId == id);
 
-
             return Mapper.Map<Models.Responses.Client>(client);
         }
-
-
     }
 }

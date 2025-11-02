@@ -39,7 +39,7 @@ class CustomSnackbar {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         duration: duration,
-        behavior: SnackBarBehavior.floating, // full-width on mobile
+        behavior: SnackBarBehavior.floating,
         backgroundColor: bgColor,
         content: Row(
           children: [

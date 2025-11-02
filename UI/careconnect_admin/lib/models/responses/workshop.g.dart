@@ -18,6 +18,7 @@ Workshop _$WorkshopFromJson(Map<String, dynamic> json) => Workshop(
   notes: json['notes'] as String?,
   modifiedDate: DateTime.parse(json['modifiedDate'] as String),
   workshopType: json['workshopType'] as String,
+  paid: json['paid'] as bool,
 );
 
 Map<String, dynamic> _$WorkshopToJson(Workshop instance) => <String, dynamic>{
@@ -32,4 +33,5 @@ Map<String, dynamic> _$WorkshopToJson(Workshop instance) => <String, dynamic>{
   'notes': instance.notes,
   'modifiedDate': instance.modifiedDate.toIso8601String(),
   'workshopType': instance.workshopType,
+  'paid': instance.paid,
 };

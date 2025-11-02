@@ -182,7 +182,7 @@ namespace CareConnect.API.Controllers
         }
 
         [HttpGet("{id}/allowedActions")]
-        [PermissionAuthorize("AllowedActions")]
+        [AllowAnonymous]
         public List<string> AllowedActions(int id)
         {
             return (_service as IAppointmentService)!.AllowedActions(id);
@@ -204,7 +204,7 @@ namespace CareConnect.API.Controllers
                 EmployeeId = appointment.EmployeeAvailability.Employee.User.UserId,
                 Status = status,
                 AppointmentDate = appointment.Date,
-                ServiceName = appointment.EmployeeAvailability.Service.Name,
+                ServiceName = appointment.EmployeeAvailability.Service == null ? "No service name provided" : appointment.EmployeeAvailability.Service.Name,
                 ChangedAt = DateTime.Now,
             };
         }

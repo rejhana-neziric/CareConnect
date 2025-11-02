@@ -1,4 +1,5 @@
-﻿using CareConnect.Models.Responses;
+﻿using CareConnect.Models.Requests;
+using CareConnect.Models.Responses;
 using CareConnect.Models.SearchObjects;
 using CareConnect.Services;
 using Microsoft.AspNetCore.Authorization;
@@ -9,13 +10,12 @@ namespace CareConnect.API.Controllers
     [ApiController]
     [Route("[controller]")]
     [AllowAnonymous]
-    public class AttendanceStatusController : BaseController<AttendanceStatus, AttendanceStatusSearchObject, AttendanceStatusAdditionalData>
+    public class AttendanceStatusController : BaseCRUDController<AttendanceStatus, AttendanceStatusSearchObject, AttendanceStatusAdditionalData, AttendanceStatusUpsertRequest, AttendanceStatusUpsertRequest>
     {
-        //private readonly IAttendanceStatusService _service;
 
         public AttendanceStatusController(IAttendanceStatusService service) : base(service)
         {
-            //_service = service;
+
         }
     }
 }

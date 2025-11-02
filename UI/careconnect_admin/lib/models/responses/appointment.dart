@@ -1,8 +1,6 @@
 import 'package:careconnect_admin/models/responses/attendance_status.dart';
 import 'package:careconnect_admin/models/responses/clients_child.dart';
-
 import 'package:careconnect_admin/models/responses/employee_availability.dart';
-
 import 'package:json_annotation/json_annotation.dart';
 
 part 'appointment.g.dart';

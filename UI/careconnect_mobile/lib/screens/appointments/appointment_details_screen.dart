@@ -1,6 +1,5 @@
 import 'package:careconnect_mobile/core/theme/app_colors.dart';
 import 'package:careconnect_mobile/models/enums/appointment_status.dart';
-import 'package:careconnect_mobile/models/requests/appointment_reschedule_request.dart';
 import 'package:careconnect_mobile/models/responses/appointment.dart';
 import 'package:careconnect_mobile/providers/appointment_provider.dart';
 import 'package:careconnect_mobile/providers/permission_provider.dart';
@@ -640,12 +639,7 @@ class _AppointmentDetailsScreenState extends State<AppointmentDetailsScreen> {
     },
   );
 
-  Future<void> _requestNewAppointmentTime(
-    //   {
-    //   required int appointmentId,
-    //   required AppointmentRescheduleRequest request,
-    // }
-  ) async {
+  Future<void> _requestNewAppointmentTime() async {
     Navigator.push(
       context,
       MaterialPageRoute(
@@ -659,32 +653,5 @@ class _AppointmentDetailsScreenState extends State<AppointmentDetailsScreen> {
         ),
       ),
     );
-
-    // final shouldProceed = await CustomConfirmDialog.show(
-    //   context,
-    //   icon: Icons.info,
-    //   iconBackgroundColor: AppColors.mauveGray,
-    //   title: '',
-    //   content: '',
-    //   confirmText: 'Confirm new time',
-    //   cancelText: 'Cancel',
-    // );
-
-    // if (shouldProceed != true) return;
-
-    // final success = await appointmentProvider.requestNewAppointmentTime(
-    //   appointmentId: appointmentId,
-    //   request: request,
-    // );
-
-    // if (!mounted) return;
-
-    // CustomSnackbar.show(
-    //   context,
-    //   message: success
-    //       ? 'You have successfully chose new appointment time. You will be notified when employee reviews request.'
-    //       : 'Something went wrong. Please try again.',
-    //   type: success ? SnackbarType.success : SnackbarType.error,
-    // );
   }
 }

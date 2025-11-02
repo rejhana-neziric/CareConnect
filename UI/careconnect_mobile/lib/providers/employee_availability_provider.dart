@@ -37,7 +37,6 @@ class EmployeeAvailabilityProvider extends BaseProvider<EmployeeAvailability> {
       sortAscending: sortAscending,
       additionalData: EmployeeAvailabilityAdditionalData(
         isEmployeeIncluded: true,
-        // isQualificationIncluded: true,
       ),
       includeTotalCount: true,
     );

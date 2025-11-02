@@ -18,15 +18,9 @@ namespace CareConnect.Models.Responses
 
         public string Username { get; set; } = null!;
 
-        //public string PasswordHash { get; set; } = null!;
-
-        //public string PasswordSalt { get; set; } = null!;
-
         public bool Status { get; set; }
 
         public DateTime? BirthDate { get; set; }
-
-        //public DateTime ModifiedDate { get; set; }
 
         public string Gender { get; set; } = null!;
 

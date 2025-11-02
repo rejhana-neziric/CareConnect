@@ -37,11 +37,6 @@ namespace CareConnect.Services
                 }
             }
 
-            if (search?.MemberPrice.HasValue == true)
-            {
-                query = query.Where(x => x.MemberPrice == search.MemberPrice);
-            }
-
             if (search?.IsActive.HasValue == true)
             {
                 query = query.Where(x => x.IsActive == search.IsActive);
@@ -58,7 +53,6 @@ namespace CareConnect.Services
                 {
                     "name" => search.SortAscending ? query.OrderBy(x => x.Name) : query.OrderByDescending(x => x.Name),
                     "price" => search.SortAscending ? query.OrderBy(x => x.Price) : query.OrderByDescending(x => x.Price),
-                    "memberPrice" => search.SortAscending ? query.OrderBy(x => x.MemberPrice) : query.OrderByDescending(x => x.MemberPrice),
                     _ => query
                 };
             }
@@ -68,33 +62,7 @@ namespace CareConnect.Services
 
         protected override void AddInclude(ServiceAdditionalData additionalData, ref IQueryable<Database.Service> query)
         {
-            /*
-            if (additionalData != null)
-            {
-                if (additionalData.IsEmployeeIncluded.HasValue && additionalData.IsEmployeeIncluded == true)
-                {
-                    additionalData.IncludeList.Add("Employee");
-                    additionalData.IncludeList.Add("Employee.User");
-
-                }
-
-                if (additionalData.IsInstructorIncluded.HasValue && additionalData.IsInstructorIncluded == true)
-                {
-                    additionalData.IncludeList.Add("Instructor");
-                }
-
-                if (additionalData.IsWorkshopIncluded.HasValue && additionalData.IsWorkshopIncluded == true)
-                {
-                    additionalData.IncludeList.Add("Workshop");
-                }
-            }
-*/
             base.AddInclude(additionalData, ref query);
-        }
-
-        public override void BeforeInsert(ServiceInsertRequest request, Database.Service entity)
-        {
-            base.BeforeInsert(request, entity);
         }
 
         public override void BeforeUpdate(ServiceUpdateRequest request, ref Database.Service entity)
@@ -115,23 +83,7 @@ namespace CareConnect.Services
             foreach (var service in entity.EmployeeAvailabilities)
                 Context.Remove(service);
 
-            //foreach (var review in entity)
-            //    Context.Remove(review);
-
             base.BeforeDelete(entity);
-        }
-
-        public override void AfterDelete(int id)
-        {
-            //var user = Context.Users.Find(id);
-
-            //if (user != null)
-            //{
-            //    Context.Remove(user);
-            //    Context.SaveChanges();
-            //}
-
-            base.AfterDelete(id);
         }
 
         public ServiceStatistics GetStatistics()
@@ -144,11 +96,8 @@ namespace CareConnect.Services
             {
                 TotalServices = Context.Services.Count(),
                 AveragePrice = Context.Services.Average(x => x.Price),
-                AverageMemberPrice = Context.Services.Average(x => x.MemberPrice),
-
             };
         }
-
 
         public List<Models.Responses.Employee> GetEmployeesForService(int serviceId)
         {

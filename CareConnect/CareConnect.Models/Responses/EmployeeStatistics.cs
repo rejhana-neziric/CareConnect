@@ -6,7 +6,6 @@ namespace CareConnect.Models.Responses
 {
     public class EmployeeStatistics
     {
-
         public int TotalEmployees { get; set; }
 
         public int EmployedThisMonth { get; set; }

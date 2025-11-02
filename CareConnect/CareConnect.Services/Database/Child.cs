@@ -17,9 +17,5 @@ public partial class Child
 
     public DateTime ModifiedDate { get; set; }
 
-    public virtual ICollection<ChildrenDiagnosis> ChildrenDiagnoses { get; set; } = new List<ChildrenDiagnosis>();
-
     public virtual ICollection<ClientsChild> ClientsChildren { get; set; } = new List<ClientsChild>();
-
-    public ICollection<Enrollment> Enrollments { get; set; } = new List<Enrollment>();
 }

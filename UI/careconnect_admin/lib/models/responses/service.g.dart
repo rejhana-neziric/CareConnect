@@ -11,7 +11,6 @@ Service _$ServiceFromJson(Map<String, dynamic> json) => Service(
   name: json['name'] as String,
   description: json['description'] as String?,
   price: (json['price'] as num?)?.toDouble(),
-  memberPrice: (json['memberPrice'] as num?)?.toDouble(),
   isActive: json['isActive'] as bool,
   modifiedDate: DateTime.parse(json['modifiedDate'] as String),
   serviceType: json['serviceType'] == null
@@ -25,7 +24,6 @@ Map<String, dynamic> _$ServiceToJson(Service instance) => <String, dynamic>{
   'name': instance.name,
   'description': instance.description,
   'price': instance.price,
-  'memberPrice': instance.memberPrice,
   'isActive': instance.isActive,
   'modifiedDate': instance.modifiedDate.toIso8601String(),
   'serviceType': instance.serviceType,

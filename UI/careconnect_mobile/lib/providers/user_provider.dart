@@ -46,15 +46,11 @@ class UserProvider extends BaseProvider<User> {
 
       List<String> result = [];
 
-      // result = data;
-
       for (var item in data) {
         result.add(item as String);
-        // _items = result;
       }
 
       notifyListeners();
-      print(result);
       return result;
     } else {
       throw new Exception("Unknown error");

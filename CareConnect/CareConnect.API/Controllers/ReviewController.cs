@@ -17,14 +17,14 @@ namespace CareConnect.API.Controllers
         [PermissionAuthorize("ChangeVisibility")]
         public Review ChangeVisibility(int id)
         {
-            return (_service as ReviewService).ChangeVisibility(id);
+            return (_service as ReviewService)!.ChangeVisibility(id);
         }
 
         [HttpGet("average")]
         [PermissionAuthorize("GetAverage")]
         public double GetAverage(int? employeeId)
         {
-            return (_service as ReviewService).GetAverage(employeeId);
+            return (_service as ReviewService)!.GetAverage(employeeId);
         }
     }
 }

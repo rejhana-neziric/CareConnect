@@ -91,13 +91,11 @@ class _ReviewListScreenState extends State<ReviewListScreen> {
 
     if (permissionProvider.canViewReview()) {
       if (permissionProvider.canViewAllReviews()) {
-        loadData(); // load all reviews
+        loadData();
       } else if (permissionProvider.canViewOwnReviews()) {
         loadEmployeeReviews();
       }
     }
-
-    //loadData();
   }
 
   Future<SearchResult<Review>?> loadData() async {
@@ -145,19 +143,14 @@ class _ReviewListScreenState extends State<ReviewListScreen> {
       isLoading = true;
     });
     try {
-      // reviews = await reviewProvider.loadOwnReviews();
-
       reviews = await reviewProvider.loadData(
         employeeId: currentUser!.id,
         isHidden: false,
       );
 
-      // averageRating = await reviewProvider.getAverageForEmployee();
-
       averageRating = _averageRating;
       averageRating = double.parse(averageRating.toStringAsFixed(2));
 
-      //fix
       setState(() {
         isLoading = false;
       });

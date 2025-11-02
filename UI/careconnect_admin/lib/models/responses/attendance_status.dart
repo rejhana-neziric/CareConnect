@@ -4,10 +4,10 @@ part 'attendance_status.g.dart';
 
 @JsonSerializable()
 class AttendanceStatus {
-  int? attendanceStatusId;
-  String? name;
+  int attendanceStatusId;
+  String name;
 
-  AttendanceStatus({this.attendanceStatusId, this.name});
+  AttendanceStatus({required this.attendanceStatusId, required this.name});
 
   factory AttendanceStatus.fromJson(Map<String, dynamic> json) =>
       _$AttendanceStatusFromJson(json);

@@ -589,7 +589,7 @@ class _EmployeeTableState extends State<EmployeeTable> {
               fixedWidth: 120,
             ),
           ],
-          source: _dataSource!, //ovo moze biti prazno
+          source: _dataSource!,
           rowsPerPage: _pageSize,
           onPageChanged: (start) {
             final newPage = start ~/ _pageSize;

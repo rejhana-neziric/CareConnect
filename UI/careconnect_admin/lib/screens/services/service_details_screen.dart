@@ -67,9 +67,6 @@ class _ServiceDetailsScreenState extends State<ServiceDetailsScreen> {
         "price": widget.service?.price == null
             ? ""
             : widget.service?.price.toString(),
-        "memberPrice": widget.service?.memberPrice == null
-            ? ""
-            : widget.service?.memberPrice.toString(),
         "isActive": widget.service?.isActive,
         "modifiedDate": widget.service?.modifiedDate,
         "serviceTypeId": widget.service == null

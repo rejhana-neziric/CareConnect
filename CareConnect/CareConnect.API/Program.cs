@@ -1,4 +1,4 @@
-using CareConnect.API;
+﻿using CareConnect.API;
 using CareConnect.API.Configuration;
 using CareConnect.API.Filters;
 using CareConnect.Models;
@@ -23,6 +23,7 @@ using System.Reflection;
 using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.SignalR;
 using CareConnect.Services.WorkshopML;
+using CareConnect.Services.Seeders;
 
 var envFilePath = Path.Combine(Directory.GetParent(Directory.GetCurrentDirectory())!.FullName, ".env");
 Env.Load(envFilePath);
@@ -40,26 +41,20 @@ StripeConfiguration.ApiKey = stripeSettings["SecretKey"];
 MapsterConfig.RegisterMappings();
 
 // Add services to the container.
-
 builder.Services.AddTransient<IUserService, UserService>(); 
 builder.Services.AddTransient<IEmployeeService, EmployeeService>();
 builder.Services.AddTransient<IEmployeeAvailabilityService, EmployeeAvailabilityService>();
-builder.Services.AddTransient<IEmployeePayHistoryService, EmployeePayHistoryService>();
 builder.Services.AddTransient<IAppointmentService, AppointmentService>();
 builder.Services.AddTransient<IAttendanceStatusService, AttendanceStatusService>();
 builder.Services.AddTransient<IClientService, ClientService>();
 builder.Services.AddTransient<IChildService, ChildService>();
 builder.Services.AddTransient<IClientsChildService, ClientsChildService>();
-builder.Services.AddTransient<IChildrenDiagnosisService, ChildrenDiagnosisService>();
-builder.Services.AddTransient<IInstructorService, InstructorService>();
-builder.Services.AddTransient<IMemberService, MemberService>();
 builder.Services.AddTransient<IParticipantService, ParticipantService>();
 builder.Services.AddTransient<IPaymentService, PaymentService>();
 builder.Services.AddTransient<IReviewService, CareConnect.Services.ReviewService>();
 builder.Services.AddTransient<IRoleService, RoleService>();
 builder.Services.AddTransient<IRolePermissionsService, RolePermissionsService>();
 builder.Services.AddTransient<IUsersRoleService, UsersRoleService>();
-builder.Services.AddTransient<ISessionService, SessionService>();
 builder.Services.AddTransient<IServiceService, ServiceService>();
 builder.Services.AddTransient<IServiceTypeService, ServiceTypeService>();
 builder.Services.AddTransient<IWorkshopService, WorkshopService>();
@@ -119,7 +114,6 @@ builder.Services.AddControllers(x =>
         options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
     });
 
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
 {
@@ -224,9 +218,19 @@ app.MapHub<NotificationHub>("/notificationHub");
 
 using (var scope = app.Services.CreateScope())
 {
-    var dataContext = scope.ServiceProvider.GetRequiredService<CareConnectContext>();
-   
-    dataContext.Database.Migrate(); 
+    var context = scope.ServiceProvider.GetRequiredService<CareConnectContext>();
+
+    // Check if the database already exists
+    var databaseExists = await context.Database.CanConnectAsync();
+
+    // Apply migrations (creates DB if missing)
+    await context.Database.MigrateAsync();
+
+    // Run seeding only if database was just created
+    if (!databaseExists)
+    {
+        DatabaseSeeder.Seed(context);
+    }
 }
 
 app.Run();

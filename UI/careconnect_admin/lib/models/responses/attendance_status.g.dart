@@ -8,8 +8,8 @@ part of 'attendance_status.dart';
 
 AttendanceStatus _$AttendanceStatusFromJson(Map<String, dynamic> json) =>
     AttendanceStatus(
-      attendanceStatusId: (json['attendanceStatusId'] as num?)?.toInt(),
-      name: json['name'] as String?,
+      attendanceStatusId: (json['attendanceStatusId'] as num).toInt(),
+      name: json['name'] as String,
     );
 
 Map<String, dynamic> _$AttendanceStatusToJson(AttendanceStatus instance) =>

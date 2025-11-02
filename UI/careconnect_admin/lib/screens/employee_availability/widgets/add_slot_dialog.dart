@@ -33,8 +33,8 @@ class _AddSlotDialogState extends State<AddSlotDialog> {
 
   @override
   Widget build(BuildContext context) {
-    // final theme = Theme.of(context);
-    // final colorScheme = theme.colorScheme;
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
 
     return AlertDialog(
       title: Text('Add Availability for ${widget.day}'),
@@ -54,6 +54,27 @@ class _AddSlotDialogState extends State<AddSlotDialog> {
                       final time = await showTimePicker(
                         context: context,
                         initialTime: startTime,
+                        builder: (context, child) {
+                          return Theme(
+                            data: Theme.of(context).copyWith(
+                              timePickerTheme: TimePickerThemeData(
+                                backgroundColor:
+                                    colorScheme.surfaceContainerLowest,
+                                dialHandColor: colorScheme.primary,
+                                dialBackgroundColor:
+                                    colorScheme.surfaceContainerLow,
+                                hourMinuteTextColor: colorScheme.onSurface,
+                                hourMinuteColor: MaterialStateColor.resolveWith(
+                                  (states) =>
+                                      states.contains(MaterialState.selected)
+                                      ? colorScheme.primary
+                                      : colorScheme.surfaceContainerLow,
+                                ),
+                              ),
+                            ),
+                            child: child!,
+                          );
+                        },
                       );
                       if (time != null) {
                         setState(() => startTime = time);
@@ -69,6 +90,27 @@ class _AddSlotDialogState extends State<AddSlotDialog> {
                       final time = await showTimePicker(
                         context: context,
                         initialTime: endTime,
+                        builder: (context, child) {
+                          return Theme(
+                            data: Theme.of(context).copyWith(
+                              timePickerTheme: TimePickerThemeData(
+                                backgroundColor:
+                                    colorScheme.surfaceContainerLowest,
+                                dialHandColor: colorScheme.primary,
+                                dialBackgroundColor:
+                                    colorScheme.surfaceContainerLow,
+                                hourMinuteTextColor: colorScheme.onSurface,
+                                hourMinuteColor: MaterialStateColor.resolveWith(
+                                  (states) =>
+                                      states.contains(MaterialState.selected)
+                                      ? colorScheme.primary
+                                      : colorScheme.surfaceContainerLow,
+                                ),
+                              ),
+                            ),
+                            child: child!,
+                          );
+                        },
                       );
                       if (time != null) {
                         setState(() => endTime = time);

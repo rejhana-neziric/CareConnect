@@ -420,20 +420,7 @@ class _WorkshopsListScreenState extends State<WorkshopsListScreen> {
     }
 
     return (workshops != null && workshops?.result.isEmpty == false)
-        ? // GridView.count(
-          //     crossAxisCount: 1,
-          //     childAspectRatio: 350 / 100,
-          //     shrinkWrap: true,
-          //     physics: NeverScrollableScrollPhysics(),
-          //     padding: const EdgeInsets.symmetric(
-          //       horizontal: 256.0,
-          //       vertical: 64.0,
-          //     ),
-          //     crossAxisSpacing: 64,
-          //     mainAxisSpacing: 32,
-          //     children: [...buildWorkshops(workshops!.result)],
-          //   )
-          Align(
+        ? Align(
             alignment: Alignment.topLeft,
             child: GridView.count(
               crossAxisCount: 1,
@@ -694,61 +681,6 @@ class _WorkshopCardState extends State<WorkshopCard> {
                         ],
                       ),
 
-                      // Row(
-                      //   mainAxisAlignment: MainAxisAlignment.end,
-                      //   children: workshopStatusFromString(widget.workshop.status)
-                      //       .allowedActions
-                      //       .map(
-                      //         (action) => Padding(
-                      //           padding: const EdgeInsets.only(left: 8.0),
-                      //           child: PrimaryButton(
-                      //             onPressed: () async {
-                      //               if (action != "View Participants") {
-                      //                 final shouldProceed =
-                      //                     await CustomConfirmDialog.show(
-                      //                       context,
-                      //                       icon: Icons.info,
-                      //                       title: '$action Workshop',
-                      //                       content:
-                      //                           'Are you sure you want to $action this workshop?',
-                      //                       confirmText: action,
-                      //                       cancelText: 'Cancel',
-                      //                     );
-
-                      //                 if (shouldProceed != true) return;
-                      //               }
-
-                      //               final result =
-                      //                   await Provider.of<WorkshopProvider>(
-                      //                     context,
-                      //                     listen: false,
-                      //                   ).handleWorkshopAction(
-                      //                     widget.workshop,
-                      //                     action,
-                      //                     context,
-                      //                   );
-
-                      //               if (action != "View Participants") {
-                      //                 CustomSnackbar.show(
-                      //                   context,
-                      //                   message: result
-                      //                       ? 'Workshop successfully changed.'
-                      //                       : 'Something went wrong. Please try again.',
-                      //                   type: result
-                      //                       ? SnackbarType.success
-                      //                       : SnackbarType.error,
-                      //                 );
-                      //               }
-
-                      //               if (result == true) widget.loadData();
-                      //             },
-
-                      //             label: action,
-                      //           ),
-                      //         ),
-                      //       )
-                      //       .toList(),
-                      // ),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.end,
                         children: allowedActions

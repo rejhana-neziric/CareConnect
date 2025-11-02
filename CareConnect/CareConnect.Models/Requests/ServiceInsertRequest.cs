@@ -13,8 +13,6 @@ namespace CareConnect.Models.Requests
 
         public decimal? Price { get; set; }
 
-        public decimal? MemberPrice { get; set; }
-
         public bool IsActive { get; set; } = true;
 
         public int ServiceTypeId { get; set; }

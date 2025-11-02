@@ -15,6 +15,7 @@ class Workshop {
   final String? notes;
   final DateTime modifiedDate;
   final String workshopType;
+  final bool paid;
 
   Workshop({
     required this.workshopId,
@@ -28,6 +29,7 @@ class Workshop {
     this.notes,
     required this.modifiedDate,
     required this.workshopType,
+    required this.paid,
   });
 
   factory Workshop.fromJson(Map<String, dynamic> json) =>

@@ -9,14 +9,14 @@ class PrimaryButton extends StatelessWidget {
   final String? tooltip;
 
   const PrimaryButton({
-    Key? key,
+    super.key,
     required this.onPressed,
     required this.label,
     this.icon,
     this.backgroundColor,
     this.textColor,
     this.tooltip,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -31,27 +31,6 @@ class PrimaryButton extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
     );
-
-    // if (icon != null) {
-    //   return TextButton.icon(
-    //     onPressed: onPressed,
-    //     icon: Icon(icon, color: fgColor),
-    //     label: Text(
-    //       label,
-    //       style: TextStyle(color: fgColor, fontWeight: FontWeight.w500),
-    //     ),
-    //     style: style,
-    //   );
-    // } else {
-    //   return TextButton(
-    //     onPressed: onPressed,
-    //     style: style,
-    //     child: Text(
-    //       label,
-    //       style: TextStyle(color: fgColor, fontWeight: FontWeight.w500),
-    //     ),
-    //   );
-    // }
 
     final buttonChild = icon != null
         ? TextButton.icon(
@@ -72,7 +51,6 @@ class PrimaryButton extends StatelessWidget {
             ),
           );
 
-    // Wrap with Tooltip only if tooltip is provided
     return tooltip != null
         ? Tooltip(message: tooltip!, child: buttonChild)
         : buttonChild;

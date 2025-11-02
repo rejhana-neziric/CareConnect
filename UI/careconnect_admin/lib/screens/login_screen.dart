@@ -87,10 +87,6 @@ class _LoginScreenState extends State<LoginScreen>
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
 
-    // userProvider = context.read<UserProvider>();
-
-    // final formKey = GlobalKey<FormBuilderState>();
-
     return Scaffold(
       body: Container(
         decoration: BoxDecoration(
@@ -175,7 +171,7 @@ class _LoginScreenState extends State<LoginScreen>
                                 _buildAnimatedTextField(
                                   name: 'username',
                                   label: 'Username',
-                                  icon: Icons.person_outline,
+                                  icon: Icons.alternate_email,
                                   validators: [
                                     FormBuilderValidators.required(
                                       errorText: "Username is required",

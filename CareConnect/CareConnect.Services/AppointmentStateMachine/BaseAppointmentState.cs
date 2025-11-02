@@ -72,23 +72,23 @@ namespace CareConnect.Services.AppointmentStateMachine
             switch(stateName) 
             {
                 case "Initial":
-                    return _serviceProvider.GetService<InitialAppointmentState>();
+                    return _serviceProvider.GetService<InitialAppointmentState>()!;
                 case "Scheduled":
-                    return _serviceProvider.GetService<ScheduledAppointmentState>();
+                    return _serviceProvider.GetService<ScheduledAppointmentState>()!;
                 case "Confirmed":
-                    return _serviceProvider.GetService<ConfirmedAppointmentState>();
+                    return _serviceProvider.GetService<ConfirmedAppointmentState>()!;
                 case "Rescheduled":
-                    return _serviceProvider.GetService<RescheduledAppointmentState>();
+                    return _serviceProvider.GetService<RescheduledAppointmentState>()!;
                 case "RescheduleRequested":
-                    return _serviceProvider.GetService<RescheduleRequestedAppointmentState>();
+                    return _serviceProvider.GetService<RescheduleRequestedAppointmentState>()!;
                 case "ReschedulePendingApproval":
-                    return _serviceProvider.GetService<ReschedulePendingApprovalAppointmentState>(); 
+                    return _serviceProvider.GetService<ReschedulePendingApprovalAppointmentState>()!; 
                 case "Canceled":
-                    return _serviceProvider.GetService<CanceledAppointmentState>();
+                    return _serviceProvider.GetService<CanceledAppointmentState>()!;
                 case "Started":
-                    return _serviceProvider.GetService<StartedAppointmentService>();
+                    return _serviceProvider.GetService<StartedAppointmentService>()!;
                 case "Completed":
-                    return _serviceProvider.GetService<CompletedAppointmentState>();
+                    return _serviceProvider.GetService<CompletedAppointmentState>()!;
 
                 default :
                     throw new Exception($"State {stateName} not defined."); 

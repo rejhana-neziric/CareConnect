@@ -1052,23 +1052,6 @@ class _ServiceCardState extends State<ServiceCard> {
                                     ),
                                   ),
                                 ),
-                              // if (widget.service.memberPrice != null)
-                              //   Container(
-                              //     decoration: BoxDecoration(
-                              //       color: colorScheme.primaryContainer,
-
-                              //       borderRadius: BorderRadius.circular(4),
-                              //     ),
-                              //     child: Padding(
-                              //       padding: const EdgeInsets.all(4.0),
-                              //       child: Text(
-                              //         "Member price: ${widget.service.memberPrice}",
-                              //         style: TextStyle(
-                              //           fontWeight: FontWeight.w500,
-                              //         ),
-                              //       ),
-                              //     ),
-                              //   ),
                             ],
                           ),
                           Text(

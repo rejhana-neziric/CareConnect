@@ -112,24 +112,6 @@ class _FilterWidgetState extends State<FilterWidget> {
     }
   }
 
-  // void _applyFilters() {
-  //   Map<String, List<String>> selectedFilters = {};
-
-  //   for (var section in sections) {
-  //     List<String> selectedOptions = section.options
-  //         .where((option) => option.isSelected)
-  //         .map((option) => option.key)
-  //         .toList();
-
-  //     if (selectedOptions.isNotEmpty) {
-  //       selectedFilters[section.title.toLowerCase()] = selectedOptions;
-  //     }
-  //   }
-
-  //   widget.onApply(selectedFilters);
-  //   Navigator.of(context).pop();
-  // }
-
   void _applyFilters() {
     Map<String, List<String>> selectedFilters = {};
 
@@ -184,7 +166,7 @@ class _FilterWidgetState extends State<FilterWidget> {
 
     return Container(
       decoration: BoxDecoration(
-        color: colorScheme.surfaceContainerLow, //Colors.white,
+        color: colorScheme.surfaceContainerLow,
         borderRadius: BorderRadius.only(
           topLeft: Radius.circular(20),
           topRight: Radius.circular(20),
@@ -231,7 +213,7 @@ class _FilterWidgetState extends State<FilterWidget> {
                   child: Text(
                     widget.config.clearAllText,
                     style: TextStyle(
-                      color: colorScheme.primary, //Color(0xFFFF6B35),
+                      color: colorScheme.primary,
                       fontSize: 16,
                       fontWeight: FontWeight.w500,
                     ),
@@ -260,7 +242,7 @@ class _FilterWidgetState extends State<FilterWidget> {
                           style: TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.w600,
-                            color: colorScheme.onSurface, //Colors.black87,
+                            color: colorScheme.onSurface,
                           ),
                         ),
                         const SizedBox(height: 12),
@@ -291,7 +273,7 @@ class _FilterWidgetState extends State<FilterWidget> {
                                   decoration: BoxDecoration(
                                     color: option.isSelected
                                         ? colorScheme
-                                              .primary //const Color(0xFFFF6B35)
+                                              .primary
                                         : Colors.grey[100],
                                     borderRadius: BorderRadius.circular(20),
                                   ),
@@ -328,7 +310,7 @@ class _FilterWidgetState extends State<FilterWidget> {
               onPressed: _applyFilters,
               style: ElevatedButton.styleFrom(
                 backgroundColor:
-                    colorScheme.primaryContainer, //const Color(0xFFFF6B35),
+                    colorScheme.primaryContainer, 
                 foregroundColor: Colors.white,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(25),

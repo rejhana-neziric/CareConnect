@@ -12,7 +12,6 @@ ServiceUpdateRequest _$ServiceUpdateRequestFromJson(
   name: json['name'] as String?,
   description: json['description'] as String?,
   price: (json['price'] as num?)?.toDouble(),
-  memberPrice: (json['memberPrice'] as num?)?.toDouble(),
   isActive: json['isActive'] as bool?,
   serviceTypeId: (json['serviceTypeId'] as num?)?.toInt(),
 );
@@ -23,7 +22,6 @@ Map<String, dynamic> _$ServiceUpdateRequestToJson(
   'name': instance.name,
   'description': instance.description,
   'price': instance.price,
-  'memberPrice': instance.memberPrice,
   'isActive': instance.isActive,
   'serviceTypeId': instance.serviceTypeId,
 };

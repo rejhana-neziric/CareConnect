@@ -5,6 +5,7 @@ using CareConnect.Services.Database;
 using EasyNetQ.Logging;
 using MapsterMapper;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.ML;
 using System.Linq.Dynamic.Core;
 using System.Security.Permissions;
 using System.Xml;
@@ -17,12 +18,6 @@ namespace CareConnect.Services
         public CareConnectContext Context { get; set; }
 
         public IMapper Mapper { get; }
-
-        //public ClientsChildService(CareConnectContext context, IMapper mapper)
-        //{
-        //    Context = context;
-        //    Mapper = mapper;
-        //}
 
         private readonly IChildService _childService;
         private readonly IClientService _clientService; 
@@ -42,9 +37,8 @@ namespace CareConnect.Services
             query = base.AddFilter(search, query);
 
             query = query.Include(x => x.Child).Include(x => x.Client).ThenInclude(x => x.User);
-           // query = query.Include(x => x.Appointments);
 
-                query = query.Include(x => x.Client).ThenInclude(x => x.User);
+            query = query.Include(x => x.Client).ThenInclude(x => x.User);
 
             if (!string.IsNullOrWhiteSpace(search.FTS))
             {
@@ -110,17 +104,10 @@ namespace CareConnect.Services
                     additionalData.IncludeList.Add("Child");
                 }
 
-
                 if (additionalData.IsClientIncluded.HasValue && additionalData.IsClientIncluded == true)
                 {
                     additionalData.IncludeList.Add("Client");
                 }
-
-
-                //if (additionalData.IsAppoinmentIncluded.HasValue && additionalData.IsAppoinmentIncluded == true)
-                //{
-                //    additionalData.IncludeList.Add("Appointments");
-                //}
             }
 
             base.AddInclude(additionalData, ref query);
@@ -134,13 +121,11 @@ namespace CareConnect.Services
 
             if (client == null) return;
 
-            // change later
-            var roleId = Context.Roles.Where(x => x.Name == "Superadmin").Select(x => x.RoleId).FirstOrDefault();
+            var roleId = Context.Roles.Where(x => x.Name == "Employee").Select(x => x.RoleId).FirstOrDefault();
 
             if (roleId == 0) return;
 
             var alreadyExists = Context.UsersRoles.Any(x => x.UserId == entity.ClientId && x.RoleId == roleId);
-
 
             if(!alreadyExists) 
             {
@@ -170,28 +155,6 @@ namespace CareConnect.Services
 
             return Mapper.Map<List<Models.Responses.Child>>(children);
         }
-
-        //public Models.Responses.ClientsChild AddChildToClient(int clientId, int childId)
-        //{
-        //    var clientsChild = new Database.ClientsChild()
-        //    {
-        //        ClientId = clientId,
-        //        ChildId = childId,
-        //        ModifiedDate = DateTime.Now
-        //    };
-
-        //    Context.Add(clientsChild);
-        //    Context.SaveChanges();
-
-        //    var response = Context.ClientsChildren.Include(c => c.Client)
-        //                                            .ThenInclude(u => u.User)
-        //                                          .Include(c => c.Child)
-        //                                          .FirstOrDefault(c => c.ClientId == clientId && c.ChildId == childId);
-
-        //    if (response == null) return null;
-
-        //    return Mapper.Map<Models.Responses.ClientsChild>(response);
-        //}
 
         public Models.Responses.ClientsChild AddChildToClient(int clientId, ChildInsertRequest childInsertRequest)
         {
@@ -230,7 +193,6 @@ namespace CareConnect.Services
             }
         }
 
-        // to think about 
         public bool RemoveChildFromClient(int clientId, int childId)
         {
             using var transaction = Context.Database.BeginTransaction();
@@ -258,8 +220,6 @@ namespace CareConnect.Services
             }
         }
 
-
-        //todo: maybe change to async
         public override Models.Responses.ClientsChild Insert(ClientsChildInsertRequest request)
         {
             using var transaction = Context.Database.BeginTransaction();
@@ -335,7 +295,6 @@ namespace CareConnect.Services
             return Mapper.Map<Models.Responses.ClientsChild>(clientsChild);
         }
 
-
         public ClientsChildStatistics GetStatistics()
         {
             var now = DateTime.Now;
@@ -347,8 +306,8 @@ namespace CareConnect.Services
                 TotalParents = Context.Clients.Count(),
                 TotalChildren = Context.Children.Count(),
                 EmployedParents = Context.Clients.Count(x => x.EmploymentStatus == true),
-                NewClientsThisMonth = Context.Members.Where(m => m.JoinedDate >= startOfMonth && m.JoinedDate < startOfNextMonth).Count(), 
-            ChildrenPerAgeGroup = Context.Children.GroupBy(d =>
+                NewClientsThisMonth = Context.Clients.Where(m => m.CreatedDate >= startOfMonth && m.CreatedDate < startOfNextMonth).Count(), 
+                 ChildrenPerAgeGroup = Context.Children.GroupBy(d =>
                     d.BirthDate.Year <= DateTime.Now.Year - 6 ? "6+" :
                     d.BirthDate.Year <= DateTime.Now.Year - 4 ? "4-6" : "0-3")
                         .Select(g => new AgeGroup
@@ -383,7 +342,7 @@ namespace CareConnect.Services
 
             if (client == null || child == null || clientsChild == null) return null;
 
-            var response = Context.ClientsChildren.Where(x => x.ClientId == clientId && x.ChildId == childId).SelectMany(x => x.Appointments).ToList();
+            var response = Context.ClientsChildren.Where(x => x.ClientId == clientId && x.ChildId == childId).SelectMany(x => x.Appointments).Include(x => x.EmployeeAvailability).ThenInclude(x => x.Employee).ThenInclude(x => x.User).Include(x => x.EmployeeAvailability).ThenInclude(x=> x.Service).ToList();
 
             if (response.Any() == false) return null;
 
@@ -396,6 +355,5 @@ namespace CareConnect.Services
 
             return list;
         }
-
     }
 }

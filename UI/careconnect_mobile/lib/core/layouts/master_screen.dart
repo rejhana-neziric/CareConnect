@@ -17,7 +17,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:provider/provider.dart';
 
 class MasterScreen extends StatefulWidget {
-  MasterScreen(this.title, this.child, {super.key});
+  const MasterScreen(this.title, this.child, {super.key});
 
   final String title;
   final Widget child;
@@ -65,10 +65,8 @@ class _MasterScreenState extends State<MasterScreen> {
                 onTap: () {
                   Navigator.of(context).push(
                     MaterialPageRoute(
-                      builder: (context) => MasterScreen(
-                        'Notifications',
-                        NotificationsScreen(),
-                      ), // NotificationsScreen(),
+                      builder: (context) =>
+                          MasterScreen('Notifications', NotificationsScreen()),
                     ),
                   );
                 },
@@ -88,18 +86,21 @@ class _MasterScreenState extends State<MasterScreen> {
               icon: Icons.home,
               screen: const HomeScreen(),
             ),
+
             _buildDrawerItem(
               context,
               title: "Services",
               icon: FontAwesomeIcons.handHoldingHeart,
               screen: const ServicesListScreen(),
             ),
+
             _buildDrawerItem(
               context,
               title: "Workshops",
               icon: FontAwesomeIcons.puzzlePiece,
               screen: const WorkshopsListScreen(),
             ),
+
             _buildDrawerItem(
               context,
               title: "My Reviews",
@@ -107,12 +108,6 @@ class _MasterScreenState extends State<MasterScreen> {
               screen: ReviewListScreen(),
             ),
 
-            // _buildDrawerItem(
-            //   context,
-            //   title: "Employees",
-            //   icon: Icons.people,
-            //   screen: const EmployeeListScreen(),
-            // ),
             Padding(
               padding: const EdgeInsets.symmetric(
                 horizontal: 16.0,
@@ -147,7 +142,6 @@ class _MasterScreenState extends State<MasterScreen> {
       ),
       body: //widget.child,
       Container(
-        //color: AppColors.lightGray,
         color: colorScheme.surfaceContainerLow,
         child: widget.child,
       ),

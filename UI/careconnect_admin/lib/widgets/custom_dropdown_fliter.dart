@@ -67,9 +67,7 @@ class CustomDropdownFilter extends StatelessWidget {
             );
           }).toList(),
           onChanged: (String? newValue) {
-            //if (newValue != null) {
             onChanged(newValue);
-            //}
           },
           selectedItemBuilder: (BuildContext context) {
             return options.entries.map((entry) {

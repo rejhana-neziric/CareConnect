@@ -27,11 +27,6 @@ class ServiceFormProvider
               formData['price'] == null || formData['price'].toString().isEmpty
               ? null
               : double.tryParse(formData['price']),
-          memberPrice:
-              formData['memberPrice'] == null ||
-                  formData['memberPrice'].toString().isEmpty
-              ? null
-              : double.tryParse(formData['memberPrice']),
           isActive: formData['isActive'],
           serviceTypeId: formData['serviceTypeId'],
         );
@@ -45,11 +40,6 @@ class ServiceFormProvider
               formData['price'] == null || formData['price'].toString().isEmpty
               ? null
               : double.tryParse(formData['price']),
-          memberPrice:
-              formData['memberPrice'] == null ||
-                  formData['memberPrice'].toString().isEmpty
-              ? null
-              : double.tryParse(formData['memberPrice']),
           isActive: formData['isActive'],
           serviceTypeId: formData['serviceTypeId'],
         );

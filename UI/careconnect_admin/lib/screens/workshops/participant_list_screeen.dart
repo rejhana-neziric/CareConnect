@@ -7,11 +7,14 @@ import 'package:careconnect_admin/providers/attendance_status_provider.dart';
 import 'package:careconnect_admin/providers/participant_provider.dart';
 import 'package:careconnect_admin/providers/permission_provider.dart';
 import 'package:careconnect_admin/screens/no_permission_screen.dart';
+import 'package:careconnect_admin/screens/workshops/participant_details_screen.dart';
 import 'package:careconnect_admin/widgets/custom_dropdown_fliter.dart';
 import 'package:careconnect_admin/widgets/no_results.dart';
 import 'package:careconnect_admin/widgets/primary_button.dart';
+import 'package:careconnect_admin/widgets/snackbar.dart';
 import 'package:data_table_2/data_table_2.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
@@ -110,8 +113,7 @@ class _ParticipantListScreeenState extends State<ParticipantListScreeen> {
       attendanceStatus = result.result;
       attendanceOptions = {
         'All': null,
-        for (final status in attendanceStatus)
-          if (status.name != null) status.name!: status.name,
+        for (final status in attendanceStatus) status.name: status.name,
       };
     });
   }
@@ -275,10 +277,6 @@ class _ParticipantListScreeenState extends State<ParticipantListScreeen> {
   }
 
   Widget _buildResultView(Workshop workshop) {
-    // if (isLoading) {
-    //   return const Expanded(child: Center(child: CircularProgressIndicator()));
-    // }
-
     if (isLoading && (result == null || result!.result.isEmpty)) {
       return SizedBox(
         height: MediaQuery.of(context).size.height * 0.6,
@@ -517,7 +515,7 @@ class ParticipantDataSource extends DataTableSource {
           Text("${participant.user?.firstName} ${participant.user?.lastName}"),
         ),
         DataCell(Text(participant.user?.email ?? "")),
-        DataCell(Text(participant.attendanceStatus.name ?? "")),
+        DataCell(Text(participant.attendanceStatus?.name ?? "")),
         DataCell(
           Text(
             DateFormat(
@@ -528,7 +526,7 @@ class ParticipantDataSource extends DataTableSource {
         DataCell(
           PrimaryButton(
             onPressed: () {
-              //todo
+              viewProfile(participant, workshop);
             },
             label: 'View Profile',
           ),
@@ -549,5 +547,33 @@ class ParticipantDataSource extends DataTableSource {
   @override
   void notifyListeners() {
     super.notifyListeners();
+  }
+
+  void viewProfile(Participant participant, Workshop workshop) {
+    final permissionProvider = context.read<PermissionProvider>();
+
+    if (!permissionProvider.canGetByIdParticipant()) {
+      CustomSnackbar.show(
+        context,
+        message: 'Sorry, you do not have permission to perform this action.',
+        type: SnackbarType.error,
+      );
+    } else {
+      Navigator.of(context)
+          .push(
+            MaterialPageRoute(
+              builder: (context) => ParticipantDetailsScreen(
+                participant: participant,
+                workshop: workshop,
+              ),
+            ),
+          )
+          .then((value) {
+            // When user comes back, reload current page
+            if (onPageChanged != null) {
+              onPageChanged!(currentPage);
+            }
+          });
+    }
   }
 }

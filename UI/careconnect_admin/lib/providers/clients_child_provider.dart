@@ -33,8 +33,6 @@ class ClientsChildProvider extends BaseProvider<ClientsChild> {
 
       notifyListeners();
 
-      print(data);
-
       final stats = ClientsChildStatistics.fromJson(data);
 
       return stats;
@@ -108,9 +106,6 @@ class ClientsChildProvider extends BaseProvider<ClientsChild> {
 
     var url = "$baseUrl$endpoint/$id/children";
 
-    // var queryString = getQueryString(id);
-    // url = "$url?$queryString";
-
     var uri = Uri.parse(url);
     var headers = createHeaders();
 
@@ -118,8 +113,6 @@ class ClientsChildProvider extends BaseProvider<ClientsChild> {
 
     if (isValidResponse(response)) {
       var data = jsonDecode(response.body);
-
-      print('Decoded data: $data');
 
       List<Child> result = (data as List)
           .map((item) => Child.fromJson(item))
@@ -170,9 +163,6 @@ class ClientsChildProvider extends BaseProvider<ClientsChild> {
 
     var url = "$baseUrl$endpoint/$clientId/$childId";
 
-    // var queryString = getQueryString(id);
-    // url = "$url?$queryString";
-
     var uri = Uri.parse(url);
     var headers = createHeaders();
 
@@ -180,12 +170,6 @@ class ClientsChildProvider extends BaseProvider<ClientsChild> {
 
     if (isValidResponse(response)) {
       var data = jsonDecode(response.body);
-
-      print('Decoded data: $data');
-
-      // List<Child> result = (data as List)
-      //     .map((item) => Child.fromJson(item))
-      //     .toList();
 
       ClientsChild result = ClientsChild.fromJson(data);
 

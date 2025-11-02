@@ -32,8 +32,6 @@ class AppointmentProvider extends BaseProvider<Appointment> {
     String? startTime,
     String? endTime,
     String? status,
-    // String? userFirstNameGTE;
-    // String? userLastNameGTE;
     int page = 0,
     String? sortBy,
     bool sortAscending = true,

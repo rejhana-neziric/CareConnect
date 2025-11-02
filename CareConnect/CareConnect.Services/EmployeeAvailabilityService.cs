@@ -104,29 +104,5 @@ namespace CareConnect.Services
                 .Include(a => a.Appointments)
                 .First(e => e.EmployeeAvailabilityId == id);
         }
-
-        public override void BeforeDelete(EmployeeAvailability entity)
-        {
-            //foreach (var child in entity.ClientsChildren)
-            //    Context.Remove(child);
-
-            //foreach (var review in entity)
-            //    Context.Remove(review);
-
-            base.BeforeDelete(entity);
-        }
-
-        public override void AfterDelete(int id)
-        {
-            //var user = Context.Users.Find(id);
-
-            //if (user != null)
-            //{
-            //    Context.Remove(user);
-            //    Context.SaveChanges();
-            //}
-
-            base.AfterDelete(id);
-        }
     }
 }

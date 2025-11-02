@@ -62,16 +62,12 @@ class _EmployeeAvailabilityDetailsScreenState
       loadEmployees();
     } else if (permissionProvider.canViewOwnAvailability()) {
       // Employee mode — load only their own availability
-      final userId = currentUser?.id; // or however you store it
+      final userId = currentUser?.id;
       if (userId != null) {
         selectedEmployeeId = userId;
         loadAvailability(userId);
       }
-    } else {
-      //you dont have permission to view any availability
-    }
-
-    //loadEmployees();
+    } else {}
 
     super.initState();
   }
@@ -93,11 +89,6 @@ class _EmployeeAvailabilityDetailsScreenState
     currentSlots = {};
     originalSlots = {};
 
-    // for (var el in response.employeeAvailabilities) {
-    //   currentSlots[el.employeeAvailabilityId] = el.toTimeSlot();
-    //   originalSlots[el.employeeAvailabilityId] = el.toTimeSlot();
-    // }
-
     for (var el in response) {
       currentSlots[el.employeeAvailabilityId] = el.toTimeSlot();
       originalSlots[el.employeeAvailabilityId] = el.toTimeSlot();
@@ -118,7 +109,6 @@ class _EmployeeAvailabilityDetailsScreenState
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    // final colorScheme = theme.colorScheme;
 
     if (!permissionProvider.canViewEmployeeAvailabilityScreen()) {
       return MasterScreen(

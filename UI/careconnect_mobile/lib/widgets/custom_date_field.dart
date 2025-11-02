@@ -5,11 +5,11 @@ import 'package:intl/intl.dart';
 class CustomDateField extends StatefulWidget {
   final DateTime? initialDate;
   final String label;
-  final ValueChanged<DateTime?> onDateSelected; // <-- allow null now
+  final ValueChanged<DateTime?> onDateSelected;
   final DateTime firstDate;
   final DateTime lastDate;
   final Color accentColor;
-  final FormFieldValidator<DateTime?>? validator; // <-- validator supports null
+  final FormFieldValidator<DateTime?>? validator;
 
   CustomDateField({
     super.key,

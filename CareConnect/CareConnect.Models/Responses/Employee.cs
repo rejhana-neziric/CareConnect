@@ -17,14 +17,6 @@ namespace CareConnect.Models.Responses
 
         public virtual User User { get; set; } = null!;
 
-        //public virtual ICollection<EmployeePayHistory> EmployeePayHistories { get; set; } = new List<EmployeePayHistory>();
-
-        //public virtual ICollection<EmployeeAvailability> EmployeeAvailabilities { get; set; } = new List<EmployeeAvailability>();
-
         public virtual Qualification? Qualification { get; set; }
-
-        //public virtual ICollection<Review> Reviews { get; set; } = new List<Review>();
-
-        //public virtual ICollection<Session> Sessions { get; set; } = new List<Session>();
     }
 }

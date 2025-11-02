@@ -45,13 +45,6 @@ namespace CareConnect.Services
                 query = query.Where(x => x.BirthDate <= mappedBirthDate);
             }
 
-            
-
-            //if (search?.Gender.HasValue == true)
-            //{
-            //    query = query.Where(x => search.Gender.Value.ToString().StartsWith(x.Gender.ToString()));
-            //}
-
             if (!string.IsNullOrWhiteSpace(search?.Gender))
             {
                 query = query.Where(x => search.Gender.StartsWith(x.Gender.ToString()));
@@ -86,29 +79,10 @@ namespace CareConnect.Services
             return child.ChildId;
         }
 
-        public override void BeforeUpdate(ChildUpdateRequest request, ref Child entity)
-        {
-            base.BeforeUpdate(request, ref entity);
-        }
-
         public override Child GetByIdWithIncludes(int id)
         {
             return Context.Children
-                .Include(c => c.ChildrenDiagnoses)
                 .First(c => c.ChildId == id);
-        }
-
-        public override void BeforeDelete(Child entity)
-        {
-            foreach (var child in entity.ChildrenDiagnoses)
-                Context.Remove(child);
-
-            base.BeforeDelete(entity);
-        }
-
-        public override void AfterDelete(int id)
-        {
-
         }
     }
 }

@@ -18,7 +18,7 @@ namespace CareConnect.API.Controllers
         [PermissionAuthorize("AssignPermission")]
         public Role AssignPermission(int id, List<string> permissions)
         {
-            return (_service as RoleService).AssignPermission(id, permissions); 
+            return (_service as RoleService)!.AssignPermission(id, permissions); 
         }
     }
 }

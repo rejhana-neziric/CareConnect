@@ -168,10 +168,12 @@ class AppTheme {
       selectedColor: AppColors.dustyRose,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
     ),
-
     dialogTheme: DialogThemeData(
       backgroundColor: AppColors.white, // your custom color
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+    ),
+    datePickerTheme: DatePickerThemeData(
+      backgroundColor: AppSurfaces.lightSurfaceContainerLowest,
     ),
   );
 
@@ -224,6 +226,10 @@ class AppTheme {
     dialogTheme: DialogThemeData(
       backgroundColor: AppColors.darkGray,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+    ),
+
+    datePickerTheme: DatePickerThemeData(
+      backgroundColor: AppSurfaces.darkSurfaceContainerLowest,
     ),
   );
 }

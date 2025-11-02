@@ -14,7 +14,6 @@ import 'package:careconnect_admin/screens/no_permission_screen.dart';
 import 'package:careconnect_admin/widgets/confirm_dialog.dart';
 import 'package:careconnect_admin/widgets/custom_dropdown_fliter.dart';
 import 'package:careconnect_admin/widgets/no_results.dart';
-import 'package:careconnect_admin/widgets/primary_button.dart';
 import 'package:careconnect_admin/widgets/snackbar.dart';
 import 'package:data_table_2/data_table_2.dart';
 import 'package:flutter/material.dart';
@@ -99,8 +98,8 @@ class _AppointmentListScreenState extends State<AppointmentListScreen> {
     );
 
     loadData();
-    loadEmployees();
-    loadChildren();
+    if (permissionProvider.canGetEmployees()) loadEmployees();
+    if (permissionProvider.canGetChildren()) loadChildren();
   }
 
   Future<void> loadData({int page = 0}) async {
@@ -190,8 +189,6 @@ class _AppointmentListScreenState extends State<AppointmentListScreen> {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
 
-    // authProvider.user?.permissions.add(AppPermissions.appointmentView);
-
     if (!permissionProvider.canViewAppointmentScreen()) {
       return MasterScreen(
         'Appointments',
@@ -215,10 +212,6 @@ class _AppointmentListScreenState extends State<AppointmentListScreen> {
           ],
         ),
       ),
-
-      button: permissionProvider.canInsertAppointment()
-          ? PrimaryButton(onPressed: () {}, label: 'Add Appointment')
-          : null,
       currentScreen: "Appointments",
     );
   }
@@ -239,40 +232,40 @@ class _AppointmentListScreenState extends State<AppointmentListScreen> {
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               // Employee
-
-              // if(permissionProvider.cangetempl)
-              SizedBox(
-                width: 220,
-                child: CustomDropdownFilter(
-                  selectedValue: selectedEmployee,
-                  options: employeesOption,
-                  name: "Employee: ",
-                  onChanged: (newEmployee) {
-                    setState(() {
-                      selectedEmployee = newEmployee;
-                    });
-                    loadData();
-                  },
+              if (permissionProvider.canGetEmployees())
+                SizedBox(
+                  width: 220,
+                  child: CustomDropdownFilter(
+                    selectedValue: selectedEmployee,
+                    options: employeesOption,
+                    name: "Employee: ",
+                    onChanged: (newEmployee) {
+                      setState(() {
+                        selectedEmployee = newEmployee;
+                      });
+                      loadData();
+                    },
+                  ),
                 ),
-              ),
 
               const SizedBox(width: 8),
 
-              // Child
-              SizedBox(
-                width: 220,
-                child: CustomDropdownFilter(
-                  selectedValue: selectedChild,
-                  options: childrenOption,
-                  name: "Child: ",
-                  onChanged: (newChild) {
-                    setState(() {
-                      selectedChild = newChild;
-                    });
-                    loadData();
-                  },
+              if (permissionProvider.canGetChildren())
+                // Child
+                SizedBox(
+                  width: 220,
+                  child: CustomDropdownFilter(
+                    selectedValue: selectedChild,
+                    options: childrenOption,
+                    name: "Child: ",
+                    onChanged: (newChild) {
+                      setState(() {
+                        selectedChild = newChild;
+                      });
+                      loadData();
+                    },
+                  ),
                 ),
-              ),
 
               const SizedBox(width: 8),
 
@@ -591,10 +584,6 @@ class _AppointmentTableState extends State<AppointmentTable> {
   void initState() {
     super.initState();
     _updateDataSource();
-    // permissionProvider = Provider.of<PermissionProvider>(
-    //   context,
-    //   listen: false,
-    // );
 
     appointmentProvider = context.read<AppointmentProvider>();
   }
@@ -618,16 +607,19 @@ class _AppointmentTableState extends State<AppointmentTable> {
     );
 
     final canViewDetails = permissionProvider.canGetByIdAppointment();
+    final canDeleteAppointment = permissionProvider.canDeleteAppointment();
 
     _dataSource = AppointmentDataSource(
       appointments,
       context,
+      delete,
       totalCount,
       onPageChanged: _fetchPage,
       pageSize: _pageSize,
       currentPage: currentPage,
       onActionSelected: widget.onActionSelected,
       canViewDetails: canViewDetails,
+      canDeleteAppointment: canDeleteAppointment,
     );
   }
 
@@ -669,16 +661,48 @@ class _AppointmentTableState extends State<AppointmentTable> {
     }
   }
 
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
+  void delete(Appointment appointment) async {
+    final id = appointment.appointmentId;
 
-    final permissionProvider = Provider.of<PermissionProvider>(
+    if (appointment.stateMachine != 'Completed') {
+      CustomSnackbar.show(
+        context,
+        message: 'You can only delete completed appointments.',
+        type: SnackbarType.error,
+      );
+
+      return;
+    }
+
+    final shouldProceed = await CustomConfirmDialog.show(
       context,
-      listen: false,
+      icon: Icons.info,
+
+      title: 'Delete Appointment',
+      content: 'Are you sure you want to delete this appointment?',
+      confirmText: 'Delete',
+      cancelText: 'Cancel',
     );
 
+    if (shouldProceed != true) return;
+
+    final success = await appointmentProvider.delete(id);
+
+    CustomSnackbar.show(
+      context,
+      message: success
+          ? 'Appointment successfully deleted.'
+          : 'Something went wrong. Please try again.',
+      type: success ? SnackbarType.success : SnackbarType.error,
+    );
+
+    if (success) {
+      _fetchPage(currentPage);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final appointments = widget.result?.result ?? [];
 
     if (isLoading && appointments.isEmpty) {
@@ -703,9 +727,9 @@ class _AppointmentTableState extends State<AppointmentTable> {
             DataColumn2(label: Text('Date'), size: ColumnSize.S),
             DataColumn2(label: Text('Time'), size: ColumnSize.S),
             DataColumn2(label: Text('Status'), size: ColumnSize.L),
+            DataColumn2(label: Text('Change status'), size: ColumnSize.S),
+            // if (permissionProvider.canGetByIdAppointment())
             DataColumn2(label: Text('Actions'), size: ColumnSize.S),
-            if (permissionProvider.canGetByIdAppointment())
-              DataColumn2(label: Text('Details'), size: ColumnSize.S),
           ],
           source: _dataSource!,
           rowsPerPage: _pageSize,
@@ -739,20 +763,25 @@ class AppointmentDataSource extends DataTableSource {
   final BuildContext context;
   final int? count;
   final Future<void> Function(int page)? onPageChanged;
+  final void Function(Appointment appointment) delete;
+
   final int pageSize;
   final int currentPage;
   final void Function(Appointment appointment, String action) onActionSelected;
   final bool canViewDetails;
+  final bool canDeleteAppointment;
 
   AppointmentDataSource(
     this.appointments,
     this.context,
+    this.delete,
     this.count, {
     this.onPageChanged,
     this.pageSize = 10,
     this.currentPage = 0,
     required this.onActionSelected,
     required this.canViewDetails,
+    required this.canDeleteAppointment,
   });
 
   final ValueNotifier<int?> hoveredRowNotifier = ValueNotifier(null);
@@ -836,14 +865,20 @@ class AppointmentDataSource extends DataTableSource {
             ),
           ),
         ),
-        if (canViewDetails)
-          DataCell(
-            Row(
-              children: [
-                IconButton(
-                  icon: const Icon(Icons.visibility),
-                  tooltip: 'View Details',
-                  onPressed: () async {
+
+        DataCell(
+          Center(
+            child: PopupMenuButton<String>(
+              onSelected: (value) async {
+                if (value == 'details') {
+                  if (!canViewDetails) {
+                    CustomSnackbar.show(
+                      context,
+                      message:
+                          'You do not have permission to perform this action.',
+                      type: SnackbarType.error,
+                    );
+                  } else {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
@@ -859,12 +894,34 @@ class AppointmentDataSource extends DataTableSource {
                         await onPageChanged!(currentPage);
                       }
                     });
-                  },
+                  }
+                } else if (value == 'delete') {
+                  if (!canDeleteAppointment) {
+                    CustomSnackbar.show(
+                      context,
+                      message:
+                          'You do not have permission to perform this action.',
+                      type: SnackbarType.error,
+                    );
+                  } else {
+                    delete(appointment);
+                  }
+                }
+              },
+              itemBuilder: (context) => [
+                const PopupMenuItem(
+                  value: 'details',
+                  child: Text('View appointment details'),
                 ),
-                // other action buttons if needed
+                const PopupMenuItem(
+                  value: 'delete',
+                  child: Text('Delete appointment'),
+                ),
               ],
+              child: const Icon(Icons.more_vert),
             ),
           ),
+        ),
       ],
     );
   }

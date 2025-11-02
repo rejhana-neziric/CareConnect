@@ -55,26 +55,6 @@ namespace CareConnect.Services
                 query = query.Where(x => x.Amount == search.Amount);
             }
 
-            //if (search?.PaymentDateGTE.HasValue == true)
-            //{
-            //    query = query.Where(x => x.PaymentDate >= search.PaymentDateGTE);
-            //}
-
-            //if (search?.PaymentDateLTE.HasValue == true)
-            //{
-            //    query = query.Where(x => x.PaymentDate <= search.PaymentDateLTE);
-            //}
-
-            //if (!string.IsNullOrWhiteSpace(search?.PaymentPurposeNameGTE))
-            //{
-            //    query = query.Where(x => x.PaymentPurpose.Name.StartsWith(search.PaymentPurposeNameGTE));
-            //}
-
-            //if (!string.IsNullOrWhiteSpace(search?.PaymentStatusNameGTE))
-            //{
-            //    query = query.Where(x => x.PaymentStatus.Name.StartsWith(search.PaymentStatusNameGTE));
-            //}
-
             return query;
         }
 
@@ -115,33 +95,7 @@ namespace CareConnect.Services
         {
             return Context.Payments
                 .Include(u => u.User)
-                //.Include(p => p.PaymentPurpose)
-                //.Include(p => p.PaymentStatus)
                 .First(p => p.PaymentId == id);
-        }
-
-        public override void BeforeDelete(Database.Payment entity)
-        {
-            //foreach (var child in entity.ClientsChildren)
-            //    Context.Remove(child);
-
-            //foreach (var review in entity)
-            //    Context.Remove(review);
-
-            base.BeforeDelete(entity);
-        }
-
-        public override void AfterDelete(int id)
-        {
-            //var user = Context.Users.Find(id);
-
-            //if (user != null)
-            //{
-            //    Context.Remove(user);
-            //    Context.SaveChanges();
-            //}
-
-            base.AfterDelete(id);
         }
 
         public async Task<PaymentIntentResponse> CreatePaymentIntentAsync(PaymentIntentRequest request)
@@ -149,7 +103,6 @@ namespace CareConnect.Services
             decimal amount;
             string itemTitle;
 
-            // Get item details and validate
             if (request.ItemType.Equals("Workshop", StringComparison.OrdinalIgnoreCase))
             {
                 var workshop = await Context.Workshops.FindAsync(request.ItemId);

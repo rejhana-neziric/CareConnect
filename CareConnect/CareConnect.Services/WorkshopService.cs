@@ -110,43 +110,11 @@ namespace CareConnect.Services
             return query;
         }
 
-
-        public override void BeforeInsert(WorkshopInsertRequest request, Database.Workshop entity)
-        {   
-            base.BeforeInsert(request, entity);
-        }
-
-        public override void BeforeUpdate(WorkshopUpdateRequest request, ref Database.Workshop entity)
-        {
-            base.BeforeUpdate(request, ref entity);
-        }
-
         public override Database.Workshop GetByIdWithIncludes(int id)
         {
             return Context.Workshops
                 .Include(w => w.WorkshopType)
                 .First(w => w.WorkshopId == id);
-        }
-
-        public override void BeforeDelete(Database.Workshop entity)
-        {
-            //foreach (var session in entity.Sessions)
-            //    Context.Remove(session);
-
-            base.BeforeDelete(entity);
-        }
-
-        public override void AfterDelete(int id)
-        {
-            //var user = Context.Users.Find(id);
-
-            //if (user != null)
-            //{
-            //    Context.Remove(user);
-            //    Context.SaveChanges();
-            //}
-
-            base.AfterDelete(id);
         }
 
         public Models.Responses.Workshop Insert(WorkshopInsertRequest request)
@@ -160,7 +128,6 @@ namespace CareConnect.Services
             var entity = GetById(id);
             var state = BaseWorkshopState.CreateWorkshopState(entity.Status);
             return state.Update(id, request);
-
         }
 
         public Models.Responses.Workshop Cancel(int id)
@@ -288,6 +255,10 @@ namespace CareConnect.Services
             };
 
             Context.Participants.Add(participant);
+
+            workshop.Participants = (workshop.Participants ?? 0) + 1;
+            workshop.ModifiedDate = DateTime.Now;
+
             await Context.SaveChangesAsync();
 
             _logger.LogInformation("User {clientId} enrolled in workshop {WorkshopId}", clientId, workshopId);
