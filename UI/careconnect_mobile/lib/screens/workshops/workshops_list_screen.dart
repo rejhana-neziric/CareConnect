@@ -158,15 +158,15 @@ class _WorkshopsListScreenState extends State<WorkshopsListScreen> {
     return InkWell(
       borderRadius: BorderRadius.circular(12),
       splashColor: colorScheme.primary.withOpacity(0.1),
-      onTap: () {
-        Navigator.push(
+      onTap: () async {
+        final result = await Navigator.push(
           context,
           MaterialPageRoute(
             builder: (context) => WorkshopDetailsScreen(workshop: workshop),
           ),
         );
 
-        loadWorkshops();
+        if (result == true) loadWorkshops();
       },
       child: Container(
         width: double.infinity,

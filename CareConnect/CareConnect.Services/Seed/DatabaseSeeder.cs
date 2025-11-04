@@ -768,6 +768,7 @@ public static class DatabaseSeeder
         var mikaeelId = context.Users.First(u => u.Username == "mikaeel").UserId;
         var daniyalId = context.Users.First(u => u.Username == "daniyal").UserId;
         var yusufId = context.Users.First(u => u.Username == "yusuf").UserId;
+        var clientId = context.Users.First(u => u.Username == "client").UserId;
 
         var maryamId = context.Users.First(u => u.Username == "maryam").UserId;
         var ismaaId = context.Users.First(u => u.Username == "ismaa").UserId;
@@ -819,6 +820,15 @@ public static class DatabaseSeeder
                 Title = "Professional and Knowledgeable",
                 Content = "The employee was very knowledgeable and professional. Their guidance was extremely valuable.",
                 PublishDate = new DateTime(2025, 9, 10),
+                EmployeeId = employeeId,
+                Stars = 5
+            },
+            new Review
+            {
+                UserId = clientId,
+                Title = "Professional and Knowledgeable",
+                Content = "The employee was very knowledgeable and professional. Highly recommended.",
+                PublishDate = new DateTime(2025, 10, 10),
                 EmployeeId = employeeId,
                 Stars = 5
             }
@@ -1093,9 +1103,9 @@ public static class DatabaseSeeder
             },
             new Appointment
             {
-                ClientId = clientsChildren[7].ClientId,
-                ChildId = clientsChildren[7].ChildId,
-                EmployeeAvailabilityId = availabilities[7].EmployeeAvailabilityId,
+                ClientId = clientsChildren[10].ClientId,
+                ChildId = clientsChildren[10].ChildId,
+                EmployeeAvailabilityId = availabilities[21].EmployeeAvailabilityId,
                 AppointmentType = "Consultation",
                 AttendanceStatusId = presentStatusId,
                 Date = new DateTime(2025, 10, 1),
@@ -1336,6 +1346,8 @@ public static class DatabaseSeeder
                         p.Name == "Permissions.Review.Get" || 
                         p.Name == "Permissions.EmployeeAvailability.Get" ||
                         p.Name == "Permissions.Review.Insert" ||
+                        p.Name == "Permissions.Review.Delete" ||
+                        p.Name == "Permissions.Review.Update" ||
                         p.Name == "Permissions.Client.Update" ||
                         p.Name == "Permissions.Client.AddChildren" || 
                         p.Name == "Permissions.Child.Update" || 

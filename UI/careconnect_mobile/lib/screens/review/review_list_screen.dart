@@ -24,7 +24,7 @@ class ReviewListScreen extends StatefulWidget {
 
 class _ReviewListScreenState extends State<ReviewListScreen> {
   List<Review> reviews = [];
-  bool _isLoading = true;
+  bool _isLoading = false;
 
   AuthUser? currentUser;
 
@@ -153,10 +153,7 @@ class _ReviewListScreenState extends State<ReviewListScreen> {
       // ),
       bottomNavigationBar: permissionProvider.canInsertReview()
           ? Padding(
-              padding: EdgeInsetsGeometry.symmetric(
-                vertical: 12,
-                horizontal: 8,
-              ),
+              padding: EdgeInsets.symmetric(vertical: 12, horizontal: 8),
               child: _buildBottomBar(colorScheme),
             )
           : null,

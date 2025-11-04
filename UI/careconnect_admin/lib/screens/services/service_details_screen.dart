@@ -219,12 +219,6 @@ class _ServiceDetailsScreenState extends State<ServiceDetailsScreen> {
                       label: 'Price',
                       validator: serviceFormProvider.validatePrice,
                     ),
-                    CustomTextField(
-                      width: 600,
-                      name: 'memberPrice',
-                      label: 'Member Price',
-                      validator: serviceFormProvider.validatePrice,
-                    ),
                     CustomCheckboxField(
                       width: 600,
                       name: 'isActive',

@@ -59,7 +59,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
     currentUser = auth.user;
 
-    isEmployee = currentUser?.roles.contains('Superadmin') ?? false;
+    isEmployee = currentUser?.roles.contains('Employee') ?? false;
 
     employeeProvider = context.read<EmployeeProvider>();
     userProvider = context.read<UserProvider>();
@@ -80,7 +80,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
     final filter = additionalData.toJson();
 
-    employee = await employeeProvider.getById(currentUser!.id, filter: filter);
+    if (isEmployee == true) {
+      employee = await employeeProvider.getById(
+        currentUser!.id,
+        filter: filter,
+      );
+    }
+
     user = await userProvider.getById(currentUser!.id);
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -355,7 +361,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
           const SizedBox(height: 16),
           _buildQuickInfoItem(
             Icons.phone_outlined,
-            user?.phoneNumber ?? 'Not provided.',
+            user?.phoneNumber == null
+                ? 'Not provided.'
+                : '+387 ${user?.phoneNumber}',
           ),
           const SizedBox(height: 16),
           _buildQuickInfoItem(

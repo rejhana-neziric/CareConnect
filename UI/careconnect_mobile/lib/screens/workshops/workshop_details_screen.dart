@@ -501,7 +501,7 @@ class _WorkshopDetailsScreenState extends State<WorkshopDetailsScreen> {
       if (result == true) {
         if (!mounted) return;
 
-        Navigator.pop(context);
+        Navigator.pop(context, true);
 
         Future.microtask(() {
           if (mounted) {
