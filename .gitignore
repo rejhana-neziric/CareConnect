@@ -350,3 +350,26 @@ MigrationBackup/
 .ionide/
 
 .env
+
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.packages
+.pub-cache/
+build/
+ios/Pods/
+pubspec.lock
+
+*.log
+logs/
+
+*.desktop
+build/windows/
+build/linux/
+build/macos/
+build/web/
+
+**/generated_plugin_registrant.*
+**/generated_plugins.cmake
+UI/careconnect_admin/macos/Flutter/GeneratedPluginRegistrant.swift
+UI/careconnect_mobile/macos/Flutter/GeneratedPluginRegistrant.swift
