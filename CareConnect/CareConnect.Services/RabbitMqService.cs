@@ -19,8 +19,16 @@ namespace CareConnect.Services
         public RabbitMqService(IConfiguration configuration, ILogger<RabbitMqService> logger)
         {
             _logger = logger;
-            var connectionString = configuration.GetConnectionString("RabbitMQ")
-                ?? "host=localhost;username=guest;password=guest";
+
+            var rabbitHost = Environment.GetEnvironmentVariable("RABBIT_HOST");
+            var rabbitPort = int.Parse(Environment.GetEnvironmentVariable("RABBIT_PORT") ?? "5672");
+            var rabbitUser = Environment.GetEnvironmentVariable("RABBIT_USER");
+            var rabbitPassword = Environment.GetEnvironmentVariable("RABBIT_PASSWORD");
+
+            var connectionString = $"host={rabbitHost};username={rabbitUser};password={rabbitPassword}";
+
+            //var connectionString = configuration.GetConnectionString("RabbitMQ")
+            //    ?? "host=localhost;username=guest;password=guest";
 
             try
             {
@@ -37,17 +45,33 @@ namespace CareConnect.Services
 
         public async Task PublishAppointmentNotificationAsync(AppointmentNotificationMessage message)
         {
-            try
-            {
-                await _bus.PubSub.PublishAsync(message, "appointment.created");
+            //try
+            //{
+            //    await _bus.PubSub.PublishAsync(message, "appointment.created");
 
-                _logger.LogInformation("Published appointment notification for AppointmentId: {AppointmentId}",
-                    message);
-            }
-            catch (Exception ex)
+            //    _logger.LogInformation("Published appointment notification for AppointmentId: {AppointmentId}",
+            //        message);
+            //}
+            //catch (Exception ex)
+            //{
+            //    _logger.LogError(ex, "Failed to publish appointment notification");
+            //    throw;
+            //}
+            int retries = 3;
+            while (retries > 0)
             {
-                _logger.LogError(ex, "Failed to publish appointment notification");
-                throw;
+                try
+                {
+                    await _bus.PubSub.PublishAsync(message, "appointment.created");
+                    return;
+                }
+                catch (TaskCanceledException ex)
+                {
+                    retries--;
+                    if (retries == 0) throw;
+                    _logger.LogWarning("Publish failed, retrying... ({Retries} left)", retries);
+                    await Task.Delay(2000);
+                }
             }
         }
 

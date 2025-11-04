@@ -544,9 +544,8 @@ class _AppointmentConfirmationScreenState
         if (!mounted) return;
         CustomSnackbar.show(
           context,
-          message:
-              'Failed to enroll. Workshop may be full or you have already enrolled.',
-          type: SnackbarType.info,
+          message: 'Something went wrong. Please try again.',
+          type: SnackbarType.error,
         );
       }
     } catch (e) {
@@ -556,7 +555,7 @@ class _AppointmentConfirmationScreenState
       CustomSnackbar.show(
         context,
         message: 'Something went wrong. Please try again.',
-        type: SnackbarType.info,
+        type: SnackbarType.error,
       );
     }
   }

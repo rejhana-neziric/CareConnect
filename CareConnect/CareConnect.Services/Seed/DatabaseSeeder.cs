@@ -1264,18 +1264,21 @@ public static class DatabaseSeeder
             .Where(p => p.Name == "Permissions.Child.Get" ||
                         p.Name == "Permissions.Employee.ViewEmployeeAvailability" ||
                         p.Name == "Permissions.EmployeeAvailability.GetById" ||
-                        p.Name == "Permissions.Appointment.View" || 
+                        p.Name == "Permissions.Appointment.View" ||
+                        p.Name == "Permissions.Appointment.Get" ||
                         p.Name == "Permissions.Appointment.Update" ||
                         p.Name == "Permissions.Appointment.Cancel" ||
                         p.Name == "Permissions.Appointment.GetById" ||
                         p.Name == "Permissions.Appointment.Reschedule" ||
                         p.Name == "Permissions.Appointment.RescheduleRequested" ||
                         p.Name == "Permissions.Appointment.Confirm" ||
+                        p.Name == "Permissions.ClientsChild.Get" ||
                         p.Name == "Permissions.ClientsChild.GetAppointment" ||
                         p.Name == "Permissions.Appointment.Start" ||
                         p.Name == "Permissions.Appointment.Complete" ||
                         p.Name == "Permissions.Appointment.GetAppointmentTypes" ||
                         p.Name == "Permissions.Workshop.View" ||
+                        p.Name == "Permissions.Workshop.Get" ||
                         p.Name == "Permissions.Workshop.GetStatistics" ||
                         p.Name == "Permissions.Workshop.Insert" ||
                         p.Name == "Permissions.Workshop.GetById" ||
@@ -1301,6 +1304,7 @@ public static class DatabaseSeeder
                         p.Name == "Permissions.Review.ViewOwn" ||
                         p.Name == "Permissions.Review.GetAverage" ||
                         p.Name == "Permissions.Service.View" ||
+                        p.Name == "Permissions.Service.Get" ||
                         p.Name == "Permissions.Service.GetStatistics" ||
                         p.Name == "Permissions.Service.GetById" ||
                         p.Name == "Permissions.ServiceType.Get" ||

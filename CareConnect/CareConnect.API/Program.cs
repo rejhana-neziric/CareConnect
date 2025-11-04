@@ -88,11 +88,11 @@ builder.Services.AddSingleton<IUserIdProvider, CustomUserIdProvider>();
 builder.Services.AddSingleton<IBus>(provider =>
 {
     var rabbitHost = Environment.GetEnvironmentVariable("RABBIT_HOST");
-    var rabbitPort = Environment.GetEnvironmentVariable("RABBIT_PORT");
+    var rabbitPort = int.Parse(Environment.GetEnvironmentVariable("RABBIT_PORT") ?? "5672");
     var rabbitUser = Environment.GetEnvironmentVariable("RABBIT_USER");
     var rabbitPassword = Environment.GetEnvironmentVariable("RABBIT_PASSWORD"); 
 
-    var connectionString = $"host={rabbitHost};username={rabbitUser};password={rabbitPassword}";  
+    var connectionString = $"host={rabbitHost};username={rabbitUser};password={rabbitPassword};timeout=60;publisherConfirms=true";  
     return RabbitHutch.CreateBus(connectionString);
 });
 
@@ -194,6 +194,8 @@ builder.Services.AddCors(options =>
     });
 });
 
+builder.Services.AddHealthChecks();
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -220,6 +222,8 @@ app.UseCors();
 app.MapHub<NotificationHub>("/notificationHub");
 
 app.MapGet("/health", () => Results.Ok("Healthy"));
+
+//app.MapHealthChecks("/health");
 
 using (var scope = app.Services.CreateScope())
 {

@@ -3,7 +3,9 @@ import 'package:careconnect_admin/core/theme/app_colors.dart';
 import 'package:careconnect_admin/models/auth_user.dart';
 import 'package:careconnect_admin/providers/auth_provider.dart';
 import 'package:careconnect_admin/providers/notification_provider.dart';
+import 'package:careconnect_admin/providers/permission_provider.dart';
 import 'package:careconnect_admin/providers/user_provider.dart';
+import 'package:careconnect_admin/screens/clients/client_list_screen.dart';
 import 'package:careconnect_admin/screens/employees/employee_list_screen.dart';
 import 'package:careconnect_admin/services/singalr_service.dart';
 import 'package:careconnect_admin/widgets/snackbar.dart';
@@ -351,6 +353,8 @@ class _LoginScreenState extends State<LoginScreen>
           listen: false,
         );
 
+        final permissionProvider = context.read<PermissionProvider>();
+
         notificationProvider.clearNotifications();
 
         await SignalRService().disconnect();
@@ -380,11 +384,19 @@ class _LoginScreenState extends State<LoginScreen>
           Provider.of<AuthProvider>(context, listen: false).setUser(authUser);
 
           await notificationProvider.initialize(_hubUrl, authUser.id);
-
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => const EmployeeListScreen()),
-          );
+          if (permissionProvider.canViewEmployeeScreen()) {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => const EmployeeListScreen(),
+              ),
+            );
+          } else {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const ClientListScreen()),
+            );
+          }
         } else {
           CustomSnackbar.show(
             context,

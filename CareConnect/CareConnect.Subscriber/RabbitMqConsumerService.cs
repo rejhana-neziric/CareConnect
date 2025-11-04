@@ -91,8 +91,8 @@ namespace CareConnect.Subscriber
 
         private async Task InitializeRabbitMQConnection(CancellationToken stoppingToken)
         {
-            var rabbitHost = Environment.GetEnvironmentVariable("RABBIT_HOST"); 
-            var rabbitPort = Environment.GetEnvironmentVariable("RABBIT_PORT");
+            var rabbitHost = Environment.GetEnvironmentVariable("RABBIT_HOST");
+            var rabbitPort = int.Parse(Environment.GetEnvironmentVariable("RABBIT_PORT") ?? "5672");
             var rabbitUser = Environment.GetEnvironmentVariable("RABBIT_USER");
             var rabbitPassword = Environment.GetEnvironmentVariable("RABBIT_PASSWORD");
 

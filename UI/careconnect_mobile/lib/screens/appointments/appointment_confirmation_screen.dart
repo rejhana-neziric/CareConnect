@@ -62,6 +62,8 @@ class _AppointmentConfirmationScreenState
   late ClientsChildProvider clientsChildProvider;
   late ClientProvider clientProvider;
 
+  bool isLoading = false;
+
   @override
   void initState() {
     super.initState();
@@ -88,11 +90,16 @@ class _AppointmentConfirmationScreenState
   }
 
   void loadChildren() async {
+    setState(() {
+      isLoading = true;
+    });
+
     final result = await clientsChildProvider.getChildren(widget.clientId);
 
     setState(() {
       children = result;
       selectedChildId = children.first.childId;
+      isLoading = false;
     });
   }
 
@@ -131,7 +138,7 @@ class _AppointmentConfirmationScreenState
 
                   SizedBox(height: 20),
 
-                  if (widget.isRescheduling != true) ...[
+                  if (widget.isRescheduling != true && !isLoading) ...[
                     //Appointment Type
                     Text(
                       'Appointment Type',
@@ -544,8 +551,7 @@ class _AppointmentConfirmationScreenState
         if (!mounted) return;
         CustomSnackbar.show(
           context,
-          message:
-              'Failed to enroll. Workshop may be full or you have already enrolled.',
+          message: 'Something went wrong. Please try again.',
           type: SnackbarType.info,
         );
       }

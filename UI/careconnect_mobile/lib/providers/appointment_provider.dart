@@ -180,11 +180,11 @@ class AppointmentProvider extends BaseProvider<Appointment> {
       }
 
       return true;
-    } on StripeException {
+    } on StripeException catch (e) {
+      debugPrint('Stripe error: ${e.error.localizedMessage}');
       return false;
     } catch (e) {
-      Navigator.of(context).pop();
-
+      debugPrint('processPayment error: $e');
       return false;
     }
   }

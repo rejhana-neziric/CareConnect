@@ -496,7 +496,7 @@ class _AppointmentListScreenState extends State<AppointmentListScreen> {
     appointment: appointment,
     title: 'Cancel Appointment',
     content: 'Are you sure you want to cancel appointment?',
-    confirmText: 'Cancel',
+    confirmText: 'Confirm',
     action: appointmentProvider.cancelAppointment,
     successMessage: 'You have successfully canceled the appointment.',
   );
