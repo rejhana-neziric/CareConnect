@@ -2,7 +2,6 @@ import 'package:careconnect_admin/providers/appointment_provider.dart';
 import 'package:careconnect_admin/providers/attendance_status_provider.dart';
 import 'package:careconnect_admin/providers/auth_provider.dart';
 import 'package:careconnect_admin/providers/child_provider.dart';
-import 'package:careconnect_admin/providers/children_diagnosis_provider.dart';
 import 'package:careconnect_admin/providers/client_provider.dart';
 import 'package:careconnect_admin/providers/clients_child_form_provider.dart';
 import 'package:careconnect_admin/providers/clients_child_provider.dart';
@@ -53,9 +52,6 @@ void main() async {
         ),
         ChangeNotifierProvider<ClientsChildFormProvider>(
           create: (_) => ClientsChildFormProvider(),
-        ),
-        ChangeNotifierProvider<ChildrenDiagnosisProvider>(
-          create: (_) => ChildrenDiagnosisProvider(),
         ),
         ChangeNotifierProvider<ServiceProvider>(
           create: (_) => ServiceProvider(),

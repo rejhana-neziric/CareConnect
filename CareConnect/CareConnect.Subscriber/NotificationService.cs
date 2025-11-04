@@ -37,8 +37,7 @@ namespace CareConnect.Subscriber
         {
             _logger = logger;
             _configuration = configuration;
-            _hubUrl = configuration["SignalR:HubUrl"]
-                ?? "https://localhost:7000/notificationHub";
+            _hubUrl = Environment.GetEnvironmentVariable("SignalR_HubUrl");  
         }
 
         public async Task InitializeAsync()

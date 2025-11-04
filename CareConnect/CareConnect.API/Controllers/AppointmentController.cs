@@ -6,7 +6,6 @@ using CareConnect.Models.Requests;
 using CareConnect.Models.Responses;
 using CareConnect.Models.SearchObjects;
 using CareConnect.Services;
-using CareConnect.Subscriber;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;

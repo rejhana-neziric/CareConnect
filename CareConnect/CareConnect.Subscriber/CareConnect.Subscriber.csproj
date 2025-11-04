@@ -8,15 +8,16 @@
   </PropertyGroup>
 
 	<ItemGroup>
-      <None Update="appsettings.json">
+      <None Update="appsettings.json"  CopyToOutputDirectory="Never">
         <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       </None>
-	  <None Update="appsettings.Development.json">
+	  <None Update="appsettings.Development.json"  CopyToOutputDirectory="Never">
 	  	<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 	  </None>
     </ItemGroup>
 		
   <ItemGroup>
+    <PackageReference Include="DotNetEnv" Version="3.1.1" />
     <PackageReference Include="EasyNetQ" Version="7.8.0" />
 	<PackageReference Include="Microsoft.Extensions.Hosting" Version="8.0.0" />
 	<PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="8.0.0" />

@@ -21,7 +21,7 @@
     <PackageReference Include="Serilog.Sinks.File" Version="7.0.0" />
     <PackageReference Include="Stripe.net" Version="48.5.0" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="8.1.1" />
-	  <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.13">
+	  <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.8">
 		  <PrivateAssets>all</PrivateAssets>
 		  <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 	  </PackageReference>
@@ -30,7 +30,10 @@
   <ItemGroup>
     <ProjectReference Include="..\CareConnect.Models\CareConnect.Models.csproj" />
     <ProjectReference Include="..\CareConnect.Services\CareConnect.Services.csproj" />
-    <ProjectReference Include="..\CareConnect.Subscriber\CareConnect.Subscriber.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="MLModels\" />
   </ItemGroup>
 
 </Project>

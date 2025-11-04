@@ -152,7 +152,7 @@ namespace CareConnect.API.Controllers
             {
                 if (!_mlService.IsModelTrained())
                 {
-                    await TrainModel(); 
+                    await TrainModel();
                 }
 
                 var prediction = _mlService.PredictParticipants(workshop);
@@ -166,10 +166,10 @@ namespace CareConnect.API.Controllers
 
                 if (workshop.MaxParticipants.HasValue && workshop.MaxParticipants.Value > 0)
                 {
+                    var roundedPrediction = Math.Round(prediction.PredictedParticipants);
                     utilizationPercentage = Math.Round(
-                        (prediction.PredictedParticipants / workshop.MaxParticipants.Value) * 100, 2
+                        (roundedPrediction / workshop.MaxParticipants.Value) * 100, 2
                     );
-
                     if (double.IsInfinity(utilizationPercentage.Value) || double.IsNaN(utilizationPercentage.Value))
                     {
                         utilizationPercentage = null;

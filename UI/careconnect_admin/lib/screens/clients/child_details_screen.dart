@@ -2,12 +2,10 @@ import 'package:careconnect_admin/core/layouts/master_screen.dart';
 import 'package:careconnect_admin/models/requests/child_update_request.dart';
 import 'package:careconnect_admin/models/responses/appointment.dart';
 import 'package:careconnect_admin/models/responses/child.dart';
-import 'package:careconnect_admin/models/responses/children_diagnosis.dart';
 import 'package:careconnect_admin/models/responses/client.dart';
 import 'package:careconnect_admin/models/responses/clients_child.dart';
 import 'package:careconnect_admin/models/responses/search_result.dart';
 import 'package:careconnect_admin/providers/child_provider.dart';
-import 'package:careconnect_admin/providers/children_diagnosis_provider.dart';
 import 'package:careconnect_admin/providers/clients_child_form_provider.dart';
 import 'package:careconnect_admin/providers/clients_child_provider.dart';
 import 'package:careconnect_admin/core/theme/app_colors.dart';
@@ -46,12 +44,9 @@ class _ChildDetailsScreenState extends State<ChildDetailsScreen> {
   SearchResult<ClientsChild>? result;
   late ClientsChildProvider clientsChildProvider;
   late ClientsChildFormProvider clientsChildFormProvider;
-  late ChildrenDiagnosisProvider childrenDiagnosisProvider;
   late ChildProvider childProvider;
   bool isLoading = true;
   ClientsChild? clientsChild;
-
-  SearchResult<ChildrenDiagnosis>? childrenDiagnosis;
 
   List<Appointment>? appointments;
 
@@ -66,7 +61,6 @@ class _ChildDetailsScreenState extends State<ChildDetailsScreen> {
 
     clientsChildProvider = context.read<ClientsChildProvider>();
     clientsChildFormProvider = context.read<ClientsChildFormProvider>();
-    childrenDiagnosisProvider = context.read<ChildrenDiagnosisProvider>();
     childProvider = context.read<ChildProvider>();
 
     WidgetsBinding.instance.addPostFrameCallback((_) {

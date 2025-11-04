@@ -1,25 +1,25 @@
-#See https://aka.ms/customizecontainer to learn how to customize your debug container and how Visual Studio uses this Dockerfile to build your images for faster debugging.
-
-FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS base
-USER app
-WORKDIR /app
-EXPOSE 8080
-EXPOSE 8081
-
+# Use the SDK image for build
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
-ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
+
+RUN apt-get update && apt-get install -y curl && rm -rf /var/lib/apt/lists/*
+
+# Copy only the csproj files first to leverage caching
 COPY ["CareConnect.API/CareConnect.API.csproj", "CareConnect.API/"]
-RUN dotnet restore "./CareConnect.API/./CareConnect.API.csproj"
+COPY ["CareConnect.Models/CareConnect.Models.csproj", "CareConnect.Models/"]
+COPY ["CareConnect.Services/CareConnect.Services.csproj", "CareConnect.Services/"]
+
+# Restore packages separately for caching
+RUN dotnet restore "CareConnect.API/CareConnect.API.csproj"
+
+# Copy the rest of the source code
 COPY . .
-WORKDIR "/src/CareConnect.API"
-RUN dotnet build "./CareConnect.API.csproj" -c $BUILD_CONFIGURATION -o /app/build
 
-FROM build AS publish
-ARG BUILD_CONFIGURATION=Release
-RUN dotnet publish "./CareConnect.API.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
+# Build and publish
+RUN dotnet publish "CareConnect.API/CareConnect.API.csproj" -c Release -o /app --no-restore
 
-FROM base AS final
+# Runtime image
+FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS runtime
 WORKDIR /app
-COPY --from=publish /app/publish .
+COPY --from=build /app ./
 ENTRYPOINT ["dotnet", "CareConnect.API.dll"]

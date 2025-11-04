@@ -20,7 +20,6 @@ android {
         jvmTarget = JavaVersion.VERSION_11.toString()
     }
 
-    compileSdk = 36
 
     defaultConfig {
         // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
@@ -33,10 +32,24 @@ android {
         versionName = flutter.versionName
     }
 
-    buildTypes {
-        release {
-            // TODO: Add your own signing config for the release build.
-            // Signing with the debug keys for now, so `flutter run --release` works.
+    signingConfigs {
+        create("release") {
+            storeFile = file("keystore.jks") // or your keystore file
+            storePassword = System.getenv("KEYSTORE_PASSWORD") ?: ""
+            keyAlias = System.getenv("KEY_ALIAS") ?: ""
+            keyPassword = System.getenv("KEY_PASSWORD") ?: ""
+        }
+    }
+
+     buildTypes {
+        getByName("release") {
+            isMinifyEnabled = true
+            isShrinkResources = true
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro"
+            )
+            
             signingConfig = signingConfigs.getByName("debug")
         }
     }
@@ -48,8 +61,12 @@ flutter {
 
 
 dependencies {
-    implementation("org.jetbrains.kotlin:kotlin-stdlib:1.9.0")
-
-    // Upgrade to 2.1.4 or above
     coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.4")
+    implementation("org.jetbrains.kotlin:kotlin-stdlib:1.9.0")
+    
+    implementation("com.google.android.play:feature-delivery:2.1.0")
+    implementation("com.google.android.play:review:2.0.1")
+    implementation("com.google.android.play:app-update:2.1.0")
+    
+    implementation("com.stripe:stripe-android:20.37.4")
 }

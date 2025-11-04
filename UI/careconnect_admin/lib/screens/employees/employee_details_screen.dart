@@ -103,6 +103,7 @@ class _EmployeeDetailsScreenState extends State<EmployeeDetailsScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (employeeFormProvider.formKey.currentState != null) {
         employeeFormProvider.formKey.currentState!.patchValue(_initialValue);
+        employeeFormProvider.saveInitialValue();
       }
     });
 
@@ -202,7 +203,6 @@ class _EmployeeDetailsScreenState extends State<EmployeeDetailsScreen> {
                     label: 'First Name',
                     required: true,
                     validator: employeeFormProvider.validateName,
-                    enabled: !employeeFormProvider.isUpdate,
                   ),
                   CustomDateField(
                     width: 400,
@@ -241,7 +241,6 @@ class _EmployeeDetailsScreenState extends State<EmployeeDetailsScreen> {
                     label: 'Last Name',
                     required: true,
                     validator: employeeFormProvider.validateName,
-                    enabled: !employeeFormProvider.isUpdate,
                   ),
                   CustomDropdownField<String>(
                     width: 400,

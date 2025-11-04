@@ -65,11 +65,44 @@ class CustomDateField extends StatelessWidget {
 
                             if (timePicker) {
                               // pick time if enabled
+                              // final pickedTime = await showTimePicker(
+                              //   context: context,
+                              //   initialTime: TimeOfDay.fromDateTime(
+                              //     field.value ?? DateTime.now(),
+                              //   ),
+                              // );
+
                               final pickedTime = await showTimePicker(
                                 context: context,
                                 initialTime: TimeOfDay.fromDateTime(
                                   field.value ?? DateTime.now(),
                                 ),
+                                builder: (context, child) {
+                                  return Theme(
+                                    data: Theme.of(context).copyWith(
+                                      timePickerTheme: TimePickerThemeData(
+                                        backgroundColor:
+                                            colorScheme.surfaceContainerLowest,
+                                        dialHandColor: colorScheme.primary,
+                                        dialBackgroundColor:
+                                            colorScheme.surfaceContainerLow,
+                                        hourMinuteTextColor:
+                                            colorScheme.onSurface,
+                                        hourMinuteColor:
+                                            MaterialStateColor.resolveWith(
+                                              (states) =>
+                                                  states.contains(
+                                                    MaterialState.selected,
+                                                  )
+                                                  ? colorScheme.primary
+                                                  : colorScheme
+                                                        .surfaceContainerLow,
+                                            ),
+                                      ),
+                                    ),
+                                    child: child!,
+                                  );
+                                },
                               );
 
                               if (pickedTime != null) {

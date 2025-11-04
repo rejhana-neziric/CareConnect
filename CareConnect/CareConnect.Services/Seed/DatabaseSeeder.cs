@@ -3,7 +3,6 @@ using System.Reflection;
 using System.Threading.Tasks;
 using CareConnect.Services.Database;
 using CareConnect.Services.Helpers;
-using CareConnect.Services.Migrations;
 using Microsoft.EntityFrameworkCore;
 
 
@@ -13,7 +12,7 @@ public static class DatabaseSeeder
 {
     public static void Seed(CareConnectContext context)
     {
-        // Check if database is already seeded
+        // Checking if database is already seeded
         if (context.Users.Any())
         {
             Console.WriteLine("Database already seeded. Skipping seed operation.");
@@ -212,7 +211,6 @@ public static class DatabaseSeeder
     {
         if (context.Employees.Any()) return;
 
-        // Get the users and qualifications
         var aaliyahId = context.Users.First(u => u.Username == "aaliyah").UserId;
         var maryamId = context.Users.First(u => u.Username == "maryam").UserId;
         var aminaId = context.Users.First(u => u.Username == "amina").UserId;
@@ -224,8 +222,8 @@ public static class DatabaseSeeder
 
         var psychologyQualId = context.Qualifications.First(q => q.Name == "Bachelor of Psychology").QualificationId;
         var speechTherapyQualId = context.Qualifications.First(q => q.Name == "Master of Speech-Language Pathology").QualificationId;
-        var speechTherapyQualIdBachelor = context.Qualifications.First(q => q.Name == "Bachelor of Speech - Language Pathology").QualificationId;
-        var speechTherapyQualIdBachelor2 = context.Qualifications.First(q => q.Name == "Bachelor of Speech and Language Therapy ").QualificationId;  
+        var speechTherapyQualIdBachelor = context.Qualifications.First(q => q.Name == "Bachelor of Speech-Language Pathology").QualificationId;
+        var speechTherapyQualIdBachelor2 = context.Qualifications.First(q => q.Name == "Bachelor of Speech and Language Therapy").QualificationId;
         var specialEdQualId = context.Qualifications.First(q => q.Name == "Bachelor of Special Education").QualificationId;
         var pedagogyBachelorQualId = context.Qualifications.First(q => q.Name == "Bachelor of Pedagogy").QualificationId;
         var pedagogyMasterQualId = context.Qualifications.First(q => q.Name == "Master of Pedagogy").QualificationId;
@@ -240,7 +238,6 @@ public static class DatabaseSeeder
             new Employee { EmployeeId = hannahId, HireDate = new DateTime(2019, 11, 10), JobTitle = "Speech Therapist", QualificationId = speechTherapyQualIdBachelor},
             new Employee { EmployeeId = ismaaId, HireDate = new DateTime(2010, 9, 12), JobTitle = "Speech Therapist", QualificationId = speechTherapyQualIdBachelor2 },
             new Employee { EmployeeId = rahmaId, HireDate = new DateTime(2021, 3, 20), JobTitle = "Special Educator", QualificationId = specialEdQualId },
-            //new Employee { EmployeeId = isabellaId, HireDate = new DateTime(2022, 3, 20), JobTitle = "Psychologist", QualificationId = psychologyMasterId }
             new Employee { EmployeeId = employeeId, HireDate = new DateTime(2022, 3, 20), JobTitle = "Psychologist", QualificationId = psychologyMasterId }
         };
 
@@ -266,16 +263,16 @@ public static class DatabaseSeeder
 
         var clients = new[]
         {
-            new Client { ClientId = mikaeelId, EmploymentStatus = true },
-            new Client { ClientId = daniyalId, EmploymentStatus = false },
-            new Client { ClientId = yusufId, EmploymentStatus = true },
-            new Client { ClientId = rashidId, EmploymentStatus = false },
-            new Client { ClientId = waleedId, EmploymentStatus = true },
-            new Client { ClientId = davidId, EmploymentStatus = false },
-            new Client { ClientId = sofiaId, EmploymentStatus = true },
-            new Client { ClientId = karimaId, EmploymentStatus = false },
-            new Client { ClientId = mariamId, EmploymentStatus = false },
-            new Client { ClientId = clientTestId, EmploymentStatus = true }
+            new Client { ClientId = mikaeelId, EmploymentStatus = true, CreatedDate = new DateTime(2025, 6, 15) },
+            new Client { ClientId = daniyalId, EmploymentStatus = false,  CreatedDate = new DateTime(2025, 10, 12)},
+            new Client { ClientId = yusufId, EmploymentStatus = true,  CreatedDate = new DateTime(2025, 10, 10) },
+            new Client { ClientId = rashidId, EmploymentStatus = false,  CreatedDate = new DateTime(2025, 9, 5) },
+            new Client { ClientId = waleedId, EmploymentStatus = true,  CreatedDate = new DateTime(2025, 9, 25) },
+            new Client { ClientId = davidId, EmploymentStatus = false,  CreatedDate = new DateTime(2025, 8, 20) },
+            new Client { ClientId = sofiaId, EmploymentStatus = true,  CreatedDate = new DateTime(2025, 10, 17) },
+            new Client { ClientId = karimaId, EmploymentStatus = false,  CreatedDate = new DateTime(2025, 9, 10) },
+            new Client { ClientId = mariamId, EmploymentStatus = false,  CreatedDate = new DateTime(2025, 10, 11) },
+            new Client { ClientId = clientTestId, EmploymentStatus = true,  CreatedDate = new DateTime(2025, 11, 1) }
         };
 
         context.Clients.AddRange(clients);
@@ -358,9 +355,9 @@ public static class DatabaseSeeder
 
         var serviceTypes = new[]
         {
-            new ServiceType { Name = "Diagnostic & Assessment Services", Description = "Identifying needs, challenges, and strengths through evaluations and screenings." },
-            new ServiceType { Name = "Therapeutic Interventions", Description = "Providing targeted treatments and therapies to address specific issues." },
-            new ServiceType { Name = "Educational Support", Description = "Assisting with learning, skills development, and academic progress." },
+            new ServiceType { Name = "Diagnostic Services", Description = "Identifying needs, challenges, and strengths through evaluations and screenings." },
+            new ServiceType { Name = "Therapy Services", Description = "Providing targeted treatments and therapies to address specific issues." },
+            new ServiceType { Name = "Educational Services", Description = "Assisting with learning, skills development, and academic progress." },
             new ServiceType { Name = "Counseling & Guidance", Description = "Offering emotional, psychological, and behavioral support.." },
             new ServiceType { Name = "Follow-up & Monitoring", Description = "Tracking progress and adjusting interventions as needed." },
         };
@@ -410,7 +407,7 @@ public static class DatabaseSeeder
                 Name = "Supporting Children with Autism",
                 Description = "A comprehensive workshop for parents on understanding and supporting children with autism.",
                 Status = "Closed",
-                Date = new DateTime(2024, 10, 10),
+                Date = new DateTime(2024, 10, 10, 14, 0, 0),
                 Price = 200.00m,
                 MaxParticipants = 10,
                 Participants = 5,
@@ -422,7 +419,7 @@ public static class DatabaseSeeder
                 Description = "Interactive activities designed to improve social skills in children with disabilities.",
                 Status = "Closed",
                 Participants = 10,
-                Date = new DateTime(2024, 11, 5),
+                Date = new DateTime(2024, 11, 5, 10, 0, 0),
                 Price = 180.00m,
                 WorkshopType = "Children",
             },
@@ -431,7 +428,7 @@ public static class DatabaseSeeder
                 Name = "Parenting Strategies for Children with Special Needs",
                 Description = "Guidance for parents on effective strategies for children with special needs.",
                 Status = "Closed",
-                Date = new DateTime(2024, 12, 1),
+                Date = new DateTime(2024, 12, 1, 18, 0, 0),
                 MaxParticipants = 12,
                 Participants = 7,
                 Price = 220.00m,
@@ -442,7 +439,7 @@ public static class DatabaseSeeder
                 Name = "Learning Through Play",
                 Description = "Interactive session for children focusing on developing communication and problem-solving skills.",
                 Status = "Closed",
-                Date = new DateTime(2025, 9, 10),
+                Date = new DateTime(2025, 9, 10, 13, 0, 0),
                 Price = 80.00m,
                 MaxParticipants = 8,
                 Participants = 4,
@@ -453,7 +450,7 @@ public static class DatabaseSeeder
                 Name = "Managing Challenging Behaviors at Home",
                 Description = "Helping parents understand the reasons behind challenging behaviors and how to respond positively.",
                 Status = "Closed",
-                Date = new DateTime(2025, 8, 20),
+                Date = new DateTime(2025, 8, 2, 11, 0, 0),
                 Price = 150.00m,
                 MaxParticipants = 11,
                 Participants = 7,
@@ -464,7 +461,7 @@ public static class DatabaseSeeder
                 Name = "Art Therapy for Emotional Expression",
                 Description = "Creative art activities to help children express emotions and build confidence.",
                 Status = "Canceled",
-                Date = new DateTime(2025, 7, 15),
+                Date = new DateTime(2025, 7, 15, 12, 0, 0),
                 Price = 90.00m,
                 MaxParticipants = 13,
                 Participants = 3,
@@ -475,7 +472,7 @@ public static class DatabaseSeeder
                 Name = "Building Daily Routines",
                 Description = "Guidance for parents on creating structured and calming daily routines for their children.",
                 Status = "Closed",
-                Date = new DateTime(2025, 6, 25),
+                Date = new DateTime(2025, 9, 25, 17, 0, 0),
                 Price = 100.00m,
                 MaxParticipants = 9,
                 Participants = 5,
@@ -486,7 +483,7 @@ public static class DatabaseSeeder
                 Name = "Sensory Play Adventures",
                 Description = "Hands-on sensory activities designed to improve coordination and focus in children.",
                 Status = "Closed",
-                Date = new DateTime(2025, 5, 18),
+                Date = new DateTime(2025, 8, 18, 12, 0, 0),
                 Price = 70.00m,
                 MaxParticipants = 10,
                 Participants = 5,
@@ -497,7 +494,7 @@ public static class DatabaseSeeder
                 Name = "Parent-Child Communication Skills",
                 Description = "A parent-focused session on improving listening, understanding, and responding effectively.",
                 Status = "Closed",
-                Date = new DateTime(2025, 5, 5),
+                Date = new DateTime(2025, 10, 5, 14, 0, 0),
                 Price = 120.00m,
                 MaxParticipants = 13,
                 Participants = 6,
@@ -508,7 +505,7 @@ public static class DatabaseSeeder
                 Name = "Developing Fine Motor Skills",
                 Description = "Activity-based workshop for children to enhance coordination and hand strength.",
                 Status = "Closed",
-                Date = new DateTime(2025, 4, 10),
+                Date = new DateTime(2025, 10, 10, 13, 0, 0),
                 Price = 60.00m,
                 MaxParticipants = 6,
                 Participants = 4,
@@ -519,7 +516,7 @@ public static class DatabaseSeeder
                 Name = "Supporting Emotional Regulation",
                 Description = "Helping parents teach children to recognize and manage their emotions calmly.",
                 Status = "Closed",
-                Date = new DateTime(2025, 3, 20),
+                Date = new DateTime(2025, 9, 20, 15, 0, 0),
                 Price = 130.00m,
                 MaxParticipants = 8,
                 Participants = 7,
@@ -530,7 +527,7 @@ public static class DatabaseSeeder
                 Name = "Creative Movement for Kids",
                 Description = "Dance and movement exercises promoting confidence and social interaction.",
                 Status = "Closed",
-                Date = new DateTime(2025, 3, 10),
+                Date = new DateTime(2025, 9, 10, 10, 0, 0),
                 Price = 90.00m,
                 MaxParticipants = 8,
                 Participants = 7,
@@ -541,7 +538,7 @@ public static class DatabaseSeeder
                 Name = "Positive Parenting Strategies",
                 Description = "Parent workshop on building strong, respectful, and supportive relationships.",
                 Status = "Closed",
-                Date = new DateTime(2025, 2, 5),
+                Date = new DateTime(2025, 9, 5, 15, 0, 0),
                 Price = 110.00m,
                 MaxParticipants = 10,
                 Participants = 7,
@@ -552,7 +549,7 @@ public static class DatabaseSeeder
                 Name = "Storytelling for Imagination Development",
                 Description = "Children's session using storytelling to encourage creativity and expression.",
                 Status = "Closed",
-                Date = new DateTime(2025, 1, 25),
+                Date = new DateTime(2025, 10, 25, 12, 0, 0),
                 Price = 70.00m,
                 MaxParticipants = 6,
                 Participants = 3,
@@ -563,7 +560,7 @@ public static class DatabaseSeeder
                 Name = "Managing Screen Time",
                 Description = "Parents learn techniques for balancing technology use with family and learning time.",
                 Status = "Closed",
-                Date = new DateTime(2025, 8, 5),
+                Date = new DateTime(2025, 10, 5, 17, 0, 0),
                 Price = 90.00m,
                 MaxParticipants = 9,
                 Participants = 5,
@@ -574,7 +571,7 @@ public static class DatabaseSeeder
                 Name = "Mindfulness for Kids",
                 Description = "Interactive mindfulness activities to help children reduce stress and improve focus.",
                 Status = "Closed",
-                Date = new DateTime(2025, 7, 2),
+                Date = new DateTime(2025, 11, 2, 12, 0, 0),
                 Price = 80.00m,
                 MaxParticipants = 10,
                 Participants = 7,
@@ -585,7 +582,7 @@ public static class DatabaseSeeder
                 Name = "Nutrition and Healthy Habits",
                 Description = "A parent-focused workshop on nutrition, sleep, and building healthy daily routines.",
                 Status = "Closed",
-                Date = new DateTime(2025, 6, 15),
+                Date = new DateTime(2025, 9, 15, 17, 0, 0),
                 Price = 100.00m,
                 MaxParticipants = 12,
                 Participants = 6,
@@ -596,7 +593,7 @@ public static class DatabaseSeeder
                 Name = "Confidence Building Games",
                 Description = "Games and teamwork activities designed to increase children's self-esteem.",
                 Status = "Closed",
-                Date = new DateTime(2025, 5, 22),
+                Date = new DateTime(2025, 10, 22, 11, 0, 0),
                 Price = 85.00m,
                 MaxParticipants = 15,
                 Participants = 6,
@@ -607,7 +604,7 @@ public static class DatabaseSeeder
                 Name = "Stress Management for Parents",
                 Description = "Helping parents cope with stress and maintain emotional balance while caregiving.",
                 Status = "Closed",
-                Date = new DateTime(2025, 4, 28),
+                Date = new DateTime(2025, 9, 28, 16, 0, 0),
                 Price = 100.00m,
                 MaxParticipants = 15,
                 Participants = 8,
@@ -618,7 +615,7 @@ public static class DatabaseSeeder
                 Name = "Movement for Children",
                 Description = "Fun rhythmic activities that promote coordination and language development.",
                 Status = "Closed",
-                Date = new DateTime(2025, 3, 12),
+                Date = new DateTime(2025, 7, 12, 9, 0, 0),
                 Price = 75.00m,
                 MaxParticipants = 9,
                 Participants = 9,
@@ -629,7 +626,7 @@ public static class DatabaseSeeder
                 Name = "Understanding Sensory Overload",
                 Description = "Parents learn to recognize sensory triggers and how to help children self-regulate.",
                 Status = "Published",
-                Date = new DateTime(2025, 12, 18),
+                Date = new DateTime(2025, 12, 18, 15, 0, 0),
                 Price = 130.00m,
                 MaxParticipants = 14,
                 Participants = 9,
@@ -640,11 +637,121 @@ public static class DatabaseSeeder
                 Name = "Exploring Emotions Through Art",
                 Description = "Art-based activities helping children identify and communicate feelings.",
                 Status = "Published",
-                Date = new DateTime(2025, 12, 30),
+                Date = new DateTime(2025, 12, 30, 10, 0, 0),
                 Price = 90.00m,
                 MaxParticipants = 8,
                 Participants = 6,
                 WorkshopType = "Children"
+            },
+            new Workshop
+            {
+                Name = "Emotional Intelligence for Children",
+                Description = "Activities to help children recognize and manage their emotions.",
+                Status = "Closed",
+                Date = new DateTime(2025, 11, 5, 10, 0, 0),
+                Price = 95.00m,
+                MaxParticipants = 12,
+                Participants = 8,
+                WorkshopType = "Children"
+            },
+            new Workshop
+            {
+                Name = "Positive Discipline Techniques",
+                Description = "Parent-focused session on disciplining children constructively.",
+                Status = "Closed",
+                Date = new DateTime(2025, 10, 15, 17, 0, 0),
+                Price = 120.00m,
+                MaxParticipants = 15,
+                Participants = 10,
+                WorkshopType = "Parents"
+            },
+            new Workshop
+            {
+                Name = "Music and Rhythm Therapy",
+                Description = "Interactive session for children to develop coordination and rhythm skills.",
+                Status = "Published",
+                Date = new DateTime(2025, 12, 5, 14, 0, 0),
+                Price = 85.00m,
+                MaxParticipants = 10,
+                Participants = 6,
+                WorkshopType = "Children"
+            },
+            new Workshop
+            {
+                Name = "Parent Support Group",
+                Description = "Monthly meeting for parents to share experiences and strategies.",
+                Status = "Closed",
+                Date = new DateTime(2025, 9, 20, 18, 0, 0),
+                Price = 50.00m,
+                MaxParticipants = 20,
+                Participants = 15,
+                WorkshopType = "Parents"
+            },
+            new Workshop
+            {
+                Name = "STEM Fun for Kids",
+                Description = "Hands-on science, technology, engineering, and math activities for children.",
+                Status = "Closed",
+                Date = new DateTime(2025, 11, 1, 11, 0, 0),
+                Price = 90.00m,
+                MaxParticipants = 8,
+                Participants = 5,
+                WorkshopType = "Children"
+            },
+            new Workshop
+            {
+                Name = "Mindfulness and Relaxation for Parents",
+                Description = "Techniques to reduce stress and maintain calm in parenting.",
+                Status = "Closed",
+                Date = new DateTime(2025, 10, 10, 16, 0, 0),
+                Price = 100.00m,
+                MaxParticipants = 12,
+                Participants = 9,
+                WorkshopType = "Parents"
+            },
+            new Workshop
+            {
+                Name = "Creative Writing for Children",
+                Description = "Encouraging imagination and literacy through storytelling and writing.",
+                Status = "Published",
+                Date = new DateTime(2025, 12, 12, 10, 0, 0),
+                Price = 75.00m,
+                MaxParticipants = 10,
+                Participants = 7,
+                WorkshopType = "Children"
+            },
+            new Workshop
+            {
+                Name = "Healthy Eating Habits for Families",
+                Description = "Practical guidance for parents to promote nutrition and wellness at home.",
+                Status = "Published",
+                Date = new DateTime(2025, 11, 25, 15, 0, 0),
+                Price = 110.00m,
+                MaxParticipants = 14,
+                Participants = 10,
+                WorkshopType = "Parents"
+            },
+            new Workshop
+            {
+                Name = "Outdoor Adventure and Play",
+                Description = "Encouraging children to explore nature and develop motor skills.",
+                Status = "Closed",
+                Date = new DateTime(2025, 10, 22, 9, 0, 0),
+                Price = 80.00m,
+                MaxParticipants = 12,
+                Participants = 9,
+                WorkshopType = "Children"
+            },
+            new Workshop
+            {
+                Name = "Stress-Free Homework Strategies",
+                Description = "Helping parents guide their children through homework without stress.",
+                Status = "Closed",
+                Date = new DateTime(2025, 9, 30, 17, 0, 0),
+                Price = 95.00m,
+                MaxParticipants = 10,
+                Participants = 6,
+                WorkshopType = "Parents"
             }
 
         };
@@ -738,16 +845,14 @@ public static class DatabaseSeeder
         {
             int numberOfParticipants = workshop.Participants.Value;
 
-            if (numberOfParticipants == 0) continue; // skip workshops with no participants
+            if (numberOfParticipants == 0) continue; 
 
             if (workshop.WorkshopType == "Parents")
             {
-                // Randomly pick clients
                 var parentClients = clients.OrderBy(_ => random.Next()).Take(numberOfParticipants).ToList();
 
                 foreach (var client in parentClients)
                 {
-                    // Generate a registration date between 1 and 60 days before workshop
                     var daysBefore = random.Next(1, 61);
                     var registrationDate = workshop.Date.AddDays(-daysBefore);
 
@@ -781,7 +886,6 @@ public static class DatabaseSeeder
             }
             else if (workshop.WorkshopType == "Children")
             {
-                // Pick clients with children
                 var eligibleClients = clientsChildren.OrderBy(_ => random.Next()).Take(numberOfParticipants).ToList();
 
                 foreach (var cc in eligibleClients)
@@ -1135,7 +1239,6 @@ public static class DatabaseSeeder
         var permissionEntities = permissionNames
             .Select((name, index) => new Permission
             {
-                PermissionId = index + 1,
                 Name = name
             })
             .ToList();
@@ -1158,8 +1261,7 @@ public static class DatabaseSeeder
         admin.Permissions = allPermissions;
 
         employee.Permissions = allPermissions
-            .Where(p =>
-                        p.Name == "Permissions.Child.Get" ||
+            .Where(p => p.Name == "Permissions.Child.Get" ||
                         p.Name == "Permissions.Employee.ViewEmployeeAvailability" ||
                         p.Name == "Permissions.EmployeeAvailability.GetById" ||
                         p.Name == "Permissions.Appointment.View" || 
@@ -1208,11 +1310,7 @@ public static class DatabaseSeeder
             .ToList();
 
         client.Permissions = allPermissions
-            .Where(p => 
-                        //p.Name.Contains("Client") ||
-                        //p.Name.Contains("Workshop") ||
-                        //p.Name.Contains("User") ||
-                        p.Name == "Permissions.Appointment.Get" ||
+            .Where(p => p.Name == "Permissions.Appointment.Get" ||
                         p.Name == "Permissions.ServiceType.Get" ||
                         p.Name == "Permissions.Appointment.GetById" ||
                         p.Name == "Permissions.Appointment.Cancel" ||
@@ -1226,6 +1324,7 @@ public static class DatabaseSeeder
                         p.Name == "Permissions.Payment.VerifyPayment" ||
                         p.Name == "Permissions.Client.GetById" ||
                         p.Name == "Permissions.Service.Get" ||
+                        p.Name == "Permissions.Service.GetById" ||
                         p.Name == "Permissions.Service.GetEmployeesForService" ||
                         p.Name == "Permissions.Appointment.Insert" ||
                         p.Name == "Permissions.Employee.GetEmployeeAvailability" ||

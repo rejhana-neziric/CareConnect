@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace CareConnect.Services.Migrations
 {
     [DbContext(typeof(CareConnectContext))]
-    [Migration("20250820141525_AddServiceType")]
-    partial class AddServiceType
+    [Migration("20251103222925_InitialCreate")]
+    partial class InitialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -67,6 +67,9 @@ namespace CareConnect.Services.Migrations
                     b.Property<string>("Note")
                         .HasColumnType("text")
                         .HasColumnName("NOTE");
+
+                    b.Property<string>("PaymentIntentId")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("StateMachine")
                         .HasMaxLength(50)
@@ -149,39 +152,14 @@ namespace CareConnect.Services.Migrations
                     b.ToTable("Children");
                 });
 
-            modelBuilder.Entity("CareConnect.Services.Database.ChildrenDiagnosis", b =>
-                {
-                    b.Property<int>("ChildId")
-                        .HasColumnType("int")
-                        .HasColumnName("ChildID");
-
-                    b.Property<int>("DiagnosisId")
-                        .HasColumnType("int")
-                        .HasColumnName("DiagnosisID");
-
-                    b.Property<DateTime?>("DiagnosisDate")
-                        .HasColumnType("datetime");
-
-                    b.Property<DateTime>("ModifiedDate")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime")
-                        .HasDefaultValueSql("(getdate())");
-
-                    b.Property<string>("Notes")
-                        .HasColumnType("text");
-
-                    b.HasKey("ChildId", "DiagnosisId");
-
-                    b.HasIndex("DiagnosisId");
-
-                    b.ToTable("ChildrenDiagnoses");
-                });
-
             modelBuilder.Entity("CareConnect.Services.Database.Client", b =>
                 {
                     b.Property<int>("ClientId")
                         .HasColumnType("int")
                         .HasColumnName("ClientID");
+
+                    b.Property<DateTime>("CreatedDate")
+                        .HasColumnType("datetime2");
 
                     b.Property<bool>("EmploymentStatus")
                         .HasColumnType("bit");
@@ -219,34 +197,6 @@ namespace CareConnect.Services.Migrations
                     b.HasIndex("ChildId");
 
                     b.ToTable("ClientsChildren");
-                });
-
-            modelBuilder.Entity("CareConnect.Services.Database.Diagnosis", b =>
-                {
-                    b.Property<int>("DiagnosisId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasColumnName("DiagnosisID");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("DiagnosisId"));
-
-                    b.Property<string>("Description")
-                        .HasColumnType("text");
-
-                    b.Property<DateTime>("ModifiedDate")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime")
-                        .HasDefaultValueSql("(getdate())");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.HasKey("DiagnosisId")
-                        .HasName("PK__Diagnose__0C54CB93F48849F6");
-
-                    b.ToTable("Diagnoses");
                 });
 
             modelBuilder.Entity("CareConnect.Services.Database.Employee", b =>
@@ -303,27 +253,24 @@ namespace CareConnect.Services.Migrations
                         .HasColumnType("int")
                         .HasColumnName("EmployeeID");
 
-                    b.Property<DateTime>("EndTime")
-                        .HasColumnType("datetime");
-
-                    b.Property<bool>("IsAvailable")
-                        .HasColumnType("bit");
+                    b.Property<string>("EndTime")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
 
                     b.Property<DateTime>("ModifiedDate")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime")
                         .HasDefaultValueSql("(getdate())");
 
-                    b.Property<string>("ReasonOfUnavailability")
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
-
                     b.Property<int?>("ServiceId")
                         .HasColumnType("int")
                         .HasColumnName("ServiceID");
 
-                    b.Property<DateTime>("StartTime")
-                        .HasColumnType("datetime");
+                    b.Property<string>("StartTime")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
 
                     b.HasKey("EmployeeAvailabilityId")
                         .HasName("PK__Employee__A9E4B8771C174821");
@@ -335,106 +282,13 @@ namespace CareConnect.Services.Migrations
                     b.ToTable("EmployeeAvailability", (string)null);
                 });
 
-            modelBuilder.Entity("CareConnect.Services.Database.EmployeePayHistory", b =>
-                {
-                    b.Property<int>("EmployeeId")
-                        .HasColumnType("int")
-                        .HasColumnName("EmployeeID");
-
-                    b.Property<DateTime>("RateChangeDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime>("ModifiedDate")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime")
-                        .HasDefaultValueSql("(getdate())");
-
-                    b.Property<decimal>("Rate")
-                        .HasColumnType("decimal(18, 2)");
-
-                    b.HasKey("EmployeeId", "RateChangeDate");
-
-                    b.ToTable("EmployeePayHistory", (string)null);
-                });
-
-            modelBuilder.Entity("CareConnect.Services.Database.Instructor", b =>
-                {
-                    b.Property<int>("InstructorId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasColumnName("InstructorID");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("InstructorId"));
-
-                    b.Property<string>("Email")
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.Property<string>("FirstName")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.Property<string>("InstitutionName")
-                        .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)");
-
-                    b.Property<string>("LastName")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.Property<DateTime>("ModifiedDate")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime")
-                        .HasDefaultValueSql("(getdate())");
-
-                    b.Property<string>("PhoneNumber")
-                        .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
-
-                    b.Property<string>("ProfessionalTitle")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.HasKey("InstructorId")
-                        .HasName("PK__Instruct__9D010B7B6EBA19E2");
-
-                    b.ToTable("Instructors");
-                });
-
-            modelBuilder.Entity("CareConnect.Services.Database.Member", b =>
-                {
-                    b.Property<int>("MemberId")
-                        .HasColumnType("int")
-                        .HasColumnName("MemberID");
-
-                    b.Property<DateTime>("JoinedDate")
-                        .HasColumnType("datetime");
-
-                    b.Property<DateTime?>("LeftDate")
-                        .HasColumnType("datetime");
-
-                    b.Property<DateTime>("ModifiedDate")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime")
-                        .HasDefaultValueSql("(getdate())");
-
-                    b.HasKey("MemberId", "JoinedDate");
-
-                    b.ToTable("Members");
-                });
-
             modelBuilder.Entity("CareConnect.Services.Database.Participant", b =>
                 {
-                    b.Property<int>("UserId")
-                        .HasColumnType("int")
-                        .HasColumnName("UserID");
+                    b.Property<int>("ParticipantId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
 
-                    b.Property<int>("WorkshopId")
-                        .HasColumnType("int")
-                        .HasColumnName("WorkshopID");
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ParticipantId"));
 
                     b.Property<int>("AttendanceStatusId")
                         .HasColumnType("int")
@@ -448,14 +302,27 @@ namespace CareConnect.Services.Migrations
                         .HasColumnType("datetime")
                         .HasDefaultValueSql("(getdate())");
 
+                    b.Property<string>("PaymentIntentId")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<DateTime>("RegistrationDate")
                         .HasColumnType("datetime");
 
-                    b.HasKey("UserId", "WorkshopId");
+                    b.Property<int>("UserId")
+                        .HasColumnType("int")
+                        .HasColumnName("UserID");
+
+                    b.Property<int>("WorkshopId")
+                        .HasColumnType("int")
+                        .HasColumnName("WorkshopID");
+
+                    b.HasKey("ParticipantId");
 
                     b.HasIndex("AttendanceStatusId");
 
                     b.HasIndex("ChildId");
+
+                    b.HasIndex("UserId");
 
                     b.HasIndex("WorkshopId");
 
@@ -474,86 +341,57 @@ namespace CareConnect.Services.Migrations
                     b.Property<decimal>("Amount")
                         .HasColumnType("decimal(18, 2)");
 
-                    b.Property<DateTime>("ModifiedDate")
+                    b.Property<DateTime?>("AppointmentDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("ChildId")
+                        .HasColumnType("int")
+                        .HasColumnName("ChildID");
+
+                    b.Property<DateTime?>("CompletedAt")
+                        .HasColumnType("datetime");
+
+                    b.Property<DateTime>("CreatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime")
                         .HasDefaultValueSql("(getdate())");
 
-                    b.Property<DateTime>("PaymentDate")
-                        .HasColumnType("datetime");
+                    b.Property<string>("Currency")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)");
 
-                    b.Property<int>("PaymentPurposeId")
-                        .HasColumnType("int")
-                        .HasColumnName("PaymentPurposeID");
+                    b.Property<int?>("EmployeeAvailabilityId")
+                        .HasColumnType("int");
 
-                    b.Property<int>("PaymentStatusId")
-                        .HasColumnType("int")
-                        .HasColumnName("PaymentStatusID");
+                    b.Property<string>("ItemType")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("PaymentIntentId")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
 
                     b.Property<int>("UserId")
                         .HasColumnType("int")
                         .HasColumnName("UserID");
 
+                    b.Property<int?>("WorkshopId")
+                        .HasColumnType("int");
+
                     b.HasKey("PaymentId")
                         .HasName("PK__Payments__9B556A581C157F0D");
-
-                    b.HasIndex("PaymentPurposeId");
-
-                    b.HasIndex("PaymentStatusId");
 
                     b.HasIndex("UserId");
 
                     b.ToTable("Payments");
-                });
-
-            modelBuilder.Entity("CareConnect.Services.Database.PaymentPurpose", b =>
-                {
-                    b.Property<int>("PaymentPurposeId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasColumnName("PaymentPurposeID");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("PaymentPurposeId"));
-
-                    b.Property<DateTime>("ModifiedDate")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime")
-                        .HasDefaultValueSql("(getdate())");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.HasKey("PaymentPurposeId")
-                        .HasName("PK__PaymentP__847171664C3B3572");
-
-                    b.ToTable("PaymentPurposes");
-                });
-
-            modelBuilder.Entity("CareConnect.Services.Database.PaymentStatus", b =>
-                {
-                    b.Property<int>("PaymentStatusId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasColumnName("PaymentStatusID");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("PaymentStatusId"));
-
-                    b.Property<DateTime>("ModifiedDate")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime")
-                        .HasDefaultValueSql("(getdate())");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.HasKey("PaymentStatusId")
-                        .HasName("PK__PaymentS__34F8AC1F8C1BD45C");
-
-                    b.ToTable("PaymentStatus", (string)null);
                 });
 
             modelBuilder.Entity("CareConnect.Services.Database.Permission", b =>
@@ -698,9 +536,6 @@ namespace CareConnect.Services.Migrations
                     b.Property<bool>("IsActive")
                         .HasColumnType("bit");
 
-                    b.Property<decimal?>("MemberPrice")
-                        .HasColumnType("decimal(18, 2)");
-
                     b.Property<DateTime>("ModifiedDate")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime")
@@ -745,67 +580,6 @@ namespace CareConnect.Services.Migrations
                     b.HasKey("ServiceTypeId");
 
                     b.ToTable("ServiceTypes");
-                });
-
-            modelBuilder.Entity("CareConnect.Services.Database.Session", b =>
-                {
-                    b.Property<int>("SessionId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasColumnName("SessionID");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("SessionId"));
-
-                    b.Property<DateTime>("Date")
-                        .HasColumnType("datetime");
-
-                    b.Property<string>("Description")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<int?>("EmployeeId")
-                        .HasColumnType("int")
-                        .HasColumnName("EmployeeID");
-
-                    b.Property<DateTime>("EndTime")
-                        .HasColumnType("datetime");
-
-                    b.Property<int?>("InstructorId")
-                        .HasColumnType("int")
-                        .HasColumnName("InstructorID");
-
-                    b.Property<DateTime>("ModifiedDate")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime")
-                        .HasDefaultValueSql("(getdate())");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)");
-
-                    b.Property<DateTime>("StartTime")
-                        .HasColumnType("datetime");
-
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.Property<int>("WorkshopId")
-                        .HasColumnType("int")
-                        .HasColumnName("WorkshopID");
-
-                    b.HasKey("SessionId")
-                        .HasName("PK__Sessions__C9F49270A1B7D6A1");
-
-                    b.HasIndex("EmployeeId");
-
-                    b.HasIndex("InstructorId");
-
-                    b.HasIndex("WorkshopId");
-
-                    b.ToTable("Sessions");
                 });
 
             modelBuilder.Entity("CareConnect.Services.Database.User", b =>
@@ -909,18 +683,15 @@ namespace CareConnect.Services.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("WorkshopId"));
 
+                    b.Property<DateTime>("Date")
+                        .HasColumnType("datetime");
+
                     b.Property<string>("Description")
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<DateTime?>("EndDate")
-                        .HasColumnType("datetime");
-
                     b.Property<int?>("MaxParticipants")
                         .HasColumnType("int");
-
-                    b.Property<decimal?>("MemberPrice")
-                        .HasColumnType("decimal(18, 2)");
 
                     b.Property<DateTime>("ModifiedDate")
                         .ValueGeneratedOnAdd()
@@ -940,9 +711,6 @@ namespace CareConnect.Services.Migrations
 
                     b.Property<decimal?>("Price")
                         .HasColumnType("decimal(18, 2)");
-
-                    b.Property<DateTime>("StartDate")
-                        .HasColumnType("datetime");
 
                     b.Property<string>("Status")
                         .IsRequired()
@@ -1002,25 +770,6 @@ namespace CareConnect.Services.Migrations
                     b.Navigation("ClientsChild");
 
                     b.Navigation("EmployeeAvailability");
-                });
-
-            modelBuilder.Entity("CareConnect.Services.Database.ChildrenDiagnosis", b =>
-                {
-                    b.HasOne("CareConnect.Services.Database.Child", "Child")
-                        .WithMany("ChildrenDiagnoses")
-                        .HasForeignKey("ChildId")
-                        .IsRequired()
-                        .HasConstraintName("FK_ChildrenDiagnoses_Children");
-
-                    b.HasOne("CareConnect.Services.Database.Diagnosis", "Diagnosis")
-                        .WithMany("ChildrenDiagnoses")
-                        .HasForeignKey("DiagnosisId")
-                        .IsRequired()
-                        .HasConstraintName("FK_ChildrenDiagnoses_Diagnoses");
-
-                    b.Navigation("Child");
-
-                    b.Navigation("Diagnosis");
                 });
 
             modelBuilder.Entity("CareConnect.Services.Database.Client", b =>
@@ -1089,28 +838,6 @@ namespace CareConnect.Services.Migrations
                     b.Navigation("Service");
                 });
 
-            modelBuilder.Entity("CareConnect.Services.Database.EmployeePayHistory", b =>
-                {
-                    b.HasOne("CareConnect.Services.Database.Employee", "Employee")
-                        .WithMany("EmployeePayHistories")
-                        .HasForeignKey("EmployeeId")
-                        .IsRequired()
-                        .HasConstraintName("FK_EmployeePayHistory_Users");
-
-                    b.Navigation("Employee");
-                });
-
-            modelBuilder.Entity("CareConnect.Services.Database.Member", b =>
-                {
-                    b.HasOne("CareConnect.Services.Database.Client", "Client")
-                        .WithMany("Members")
-                        .HasForeignKey("MemberId")
-                        .IsRequired()
-                        .HasConstraintName("FK_Members_Clients");
-
-                    b.Navigation("Client");
-                });
-
             modelBuilder.Entity("CareConnect.Services.Database.Participant", b =>
                 {
                     b.HasOne("CareConnect.Services.Database.AttendanceStatus", "AttendanceStatus")
@@ -1146,27 +873,11 @@ namespace CareConnect.Services.Migrations
 
             modelBuilder.Entity("CareConnect.Services.Database.Payment", b =>
                 {
-                    b.HasOne("CareConnect.Services.Database.PaymentPurpose", "PaymentPurpose")
-                        .WithMany("Payments")
-                        .HasForeignKey("PaymentPurposeId")
-                        .IsRequired()
-                        .HasConstraintName("FK_Payments_PaymentPurposes");
-
-                    b.HasOne("CareConnect.Services.Database.PaymentStatus", "PaymentStatus")
-                        .WithMany("Payments")
-                        .HasForeignKey("PaymentStatusId")
-                        .IsRequired()
-                        .HasConstraintName("FK_Payments_PaymentStatus");
-
                     b.HasOne("CareConnect.Services.Database.User", "User")
                         .WithMany("Payments")
                         .HasForeignKey("UserId")
                         .IsRequired()
                         .HasConstraintName("FK_Payments_Users");
-
-                    b.Navigation("PaymentPurpose");
-
-                    b.Navigation("PaymentStatus");
 
                     b.Navigation("User");
                 });
@@ -1200,31 +911,6 @@ namespace CareConnect.Services.Migrations
                         .HasConstraintName("FK_Services_ServiceTypes");
 
                     b.Navigation("ServiceType");
-                });
-
-            modelBuilder.Entity("CareConnect.Services.Database.Session", b =>
-                {
-                    b.HasOne("CareConnect.Services.Database.Employee", "Employee")
-                        .WithMany("Sessions")
-                        .HasForeignKey("EmployeeId")
-                        .HasConstraintName("FK_Sessions_Employees");
-
-                    b.HasOne("CareConnect.Services.Database.Instructor", "Instructor")
-                        .WithMany("Sessions")
-                        .HasForeignKey("InstructorId")
-                        .HasConstraintName("FK_Sessions_Instructors");
-
-                    b.HasOne("CareConnect.Services.Database.Workshop", "Workshop")
-                        .WithMany("Sessions")
-                        .HasForeignKey("WorkshopId")
-                        .IsRequired()
-                        .HasConstraintName("FK_Sessions_Workshops");
-
-                    b.Navigation("Employee");
-
-                    b.Navigation("Instructor");
-
-                    b.Navigation("Workshop");
                 });
 
             modelBuilder.Entity("CareConnect.Services.Database.UsersRole", b =>
@@ -1270,16 +956,12 @@ namespace CareConnect.Services.Migrations
 
             modelBuilder.Entity("CareConnect.Services.Database.Child", b =>
                 {
-                    b.Navigation("ChildrenDiagnoses");
-
                     b.Navigation("ClientsChildren");
                 });
 
             modelBuilder.Entity("CareConnect.Services.Database.Client", b =>
                 {
                     b.Navigation("ClientsChildren");
-
-                    b.Navigation("Members");
                 });
 
             modelBuilder.Entity("CareConnect.Services.Database.ClientsChild", b =>
@@ -1287,40 +969,16 @@ namespace CareConnect.Services.Migrations
                     b.Navigation("Appointments");
                 });
 
-            modelBuilder.Entity("CareConnect.Services.Database.Diagnosis", b =>
-                {
-                    b.Navigation("ChildrenDiagnoses");
-                });
-
             modelBuilder.Entity("CareConnect.Services.Database.Employee", b =>
                 {
                     b.Navigation("EmployeeAvailabilities");
 
-                    b.Navigation("EmployeePayHistories");
-
                     b.Navigation("Reviews");
-
-                    b.Navigation("Sessions");
                 });
 
             modelBuilder.Entity("CareConnect.Services.Database.EmployeeAvailability", b =>
                 {
                     b.Navigation("Appointments");
-                });
-
-            modelBuilder.Entity("CareConnect.Services.Database.Instructor", b =>
-                {
-                    b.Navigation("Sessions");
-                });
-
-            modelBuilder.Entity("CareConnect.Services.Database.PaymentPurpose", b =>
-                {
-                    b.Navigation("Payments");
-                });
-
-            modelBuilder.Entity("CareConnect.Services.Database.PaymentStatus", b =>
-                {
-                    b.Navigation("Payments");
                 });
 
             modelBuilder.Entity("CareConnect.Services.Database.Qualification", b =>
@@ -1361,8 +1019,6 @@ namespace CareConnect.Services.Migrations
             modelBuilder.Entity("CareConnect.Services.Database.Workshop", b =>
                 {
                     b.Navigation("ParticipantsNavigation");
-
-                    b.Navigation("Sessions");
                 });
 #pragma warning restore 612, 618
         }

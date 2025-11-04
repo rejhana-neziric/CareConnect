@@ -18,7 +18,7 @@ namespace CareConnect.Services.WorkshopML
         private readonly MLContext _mlContext;
 
         private readonly string _modelPath;
-        
+
         private ITransformer? _model;
 
         private readonly Dictionary<string, float> _workshopTypeMapping;
@@ -29,7 +29,7 @@ namespace CareConnect.Services.WorkshopML
         {
             _mlContext = new MLContext(seed: 0);
             _modelPath = modelPath;
-            _logger = logger;   
+            _logger = logger;
 
             _workshopTypeMapping = new Dictionary<string, float>();
 
@@ -41,7 +41,7 @@ namespace CareConnect.Services.WorkshopML
 
         public void TrainModel(List<Workshop> historicalWorkshops)
         {
-            if (historicalWorkshops == null || historicalWorkshops.Count < 10) 
+            if (historicalWorkshops == null || historicalWorkshops.Count < 10)
             {
                 throw new InvalidOperationException("Need at least 10 completed workshops to train the model.");
             }
@@ -158,7 +158,7 @@ namespace CareConnect.Services.WorkshopML
         {
             dynamic w = workshop;
 
-            decimal priceValue = (decimal?)w.Price ?? 0m; 
+            decimal priceValue = (decimal?)w.Price ?? 0m;
             int maxParticipantsValue = (int?)w.MaxParticipants ?? 30;
 
             float price = (float)priceValue;

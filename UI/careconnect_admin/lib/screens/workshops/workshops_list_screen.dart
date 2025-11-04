@@ -103,7 +103,7 @@ class _WorkshopsListScreenState extends State<WorkshopsListScreen> {
 
     final result = await workshopProvider.loadData(
       fts: _ftsController.text,
-      nameGTE: null,
+      nameGTE: _ftsController.text,
       status: selectedStatusOption,
       dateGTE: null,
       dateLTE: null,
@@ -441,10 +441,7 @@ class _WorkshopsListScreenState extends State<WorkshopsListScreen> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                NoResultsWidget(
-                  message: 'No results found. Please try again.',
-                  icon: Icons.sentiment_dissatisfied,
-                ),
+                NoResultsWidget(message: 'No results found. Please try again.'),
               ],
             ),
           );
@@ -634,7 +631,9 @@ class _WorkshopCardState extends State<WorkshopCard> {
                           Icon(Icons.date_range),
                           SizedBox(width: 8),
                           Text(
-                            DateFormat('d. M. y.').format(widget.workshop.date),
+                            DateFormat(
+                              'd. M. y, HH:mm',
+                            ).format(widget.workshop.date),
                           ),
                         ],
                       ),

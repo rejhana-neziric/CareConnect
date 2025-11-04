@@ -315,7 +315,7 @@ class _WorkshopDetailsScreenState extends State<WorkshopDetailsScreen> {
               ),
               const SizedBox(height: 4),
               Text(
-                DateFormat('EEEE, d. MM. yyyy.').format(date),
+                DateFormat('EEEE, d. MM. yyyy., HH:mm').format(date),
                 style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,

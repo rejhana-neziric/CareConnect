@@ -27,6 +27,7 @@ abstract class BaseFormProvider<TFormProvider, TEntityProvider>
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (formKey.currentState != null) {
         formKey.currentState!.patchValue(initialData);
+        saveInitialValue();
       }
     });
     notifyListeners();
@@ -41,6 +42,8 @@ abstract class BaseFormProvider<TFormProvider, TEntityProvider>
   bool? success;
 
   void saveInitialValue() {
+    if (formKey.currentState == null) return;
+    formKey.currentState!.save();
     final currentRaw = formKey.currentState?.value ?? {};
     initialData = removeNulls(currentRaw);
   }

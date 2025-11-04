@@ -1,4 +1,3 @@
-import 'package:careconnect_admin/models/responses/diagnosis.dart';
 import 'package:json_annotation/json_annotation.dart';
 
 part 'child.g.dart';
@@ -10,7 +9,6 @@ class Child {
   final String lastName;
   final DateTime birthDate;
   final String gender;
-  final List<Diagnosis> diagnoses;
 
   Child({
     required this.childId,
@@ -18,7 +16,6 @@ class Child {
     required this.lastName,
     required this.birthDate,
     required this.gender,
-    required this.diagnoses,
   });
 
   factory Child.fromJson(Map<String, dynamic> json) => _$ChildFromJson(json);

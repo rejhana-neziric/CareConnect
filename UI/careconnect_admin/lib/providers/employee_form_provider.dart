@@ -52,6 +52,8 @@ class EmployeeFormProvider
           jobTitle: formData['jobTitle'],
           endDate: formData['endDate'],
           user: UserUpdateRequest(
+            firstName: formData['firstName'],
+            lastName: formData['lastName'],
             phoneNumber: formData['phoneNumber'],
             username: formData['username'],
             status: isAccessAllowed,

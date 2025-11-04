@@ -8,7 +8,6 @@ using CareConnect.Services.AppointmentStateMachine;
 using CareConnect.Services.Database;
 using CareConnect.Api.Hubs;
 using CareConnect.Services.WorkshopStateMachine;
-using CareConnect.Subscriber;
 using DotNetEnv;
 using EasyNetQ;
 using Mapster;
@@ -25,8 +24,8 @@ using Microsoft.AspNetCore.SignalR;
 using CareConnect.Services.WorkshopML;
 using CareConnect.Services.Seeders;
 
-var envFilePath = Path.Combine(Directory.GetParent(Directory.GetCurrentDirectory())!.FullName, ".env");
-Env.Load(envFilePath);
+//var envFilePath = Path.Combine(Directory.GetParent(Directory.GetCurrentDirectory())!.FullName, ".env");
+//Env.Load(envFilePath);
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -35,8 +34,7 @@ builder.Configuration
        .AddEnvironmentVariables();
 
 // Stripe key
-var stripeSettings = builder.Configuration.GetSection("Stripe");
-StripeConfiguration.ApiKey = stripeSettings["SecretKey"];
+StripeConfiguration.ApiKey = Environment.GetEnvironmentVariable("Stripe_SecretKey");
 
 MapsterConfig.RegisterMappings();
 
@@ -89,7 +87,12 @@ builder.Services.AddSingleton<IUserIdProvider, CustomUserIdProvider>();
 // RabbitMQ connection
 builder.Services.AddSingleton<IBus>(provider =>
 {
-    var connectionString = builder.Configuration.GetConnectionString("RabbitMQ");
+    var rabbitHost = Environment.GetEnvironmentVariable("RABBIT_HOST");
+    var rabbitPort = Environment.GetEnvironmentVariable("RABBIT_PORT");
+    var rabbitUser = Environment.GetEnvironmentVariable("RABBIT_USER");
+    var rabbitPassword = Environment.GetEnvironmentVariable("RABBIT_PASSWORD"); 
+
+    var connectionString = $"host={rabbitHost};username={rabbitUser};password={rabbitPassword}";  
     return RabbitHutch.CreateBus(connectionString);
 });
 
@@ -145,7 +148,7 @@ builder.Services.AddSwaggerGen(options =>
     options.CustomSchemaIds(type => type.FullName);
 });
 
-var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+var connectionString = Environment.GetEnvironmentVariable("CONNECTION_STRING");
 
 builder.Services.AddDbContext<CareConnectContext>(options =>
     options.UseSqlServer(connectionString));
@@ -216,20 +219,41 @@ app.UseCors();
 
 app.MapHub<NotificationHub>("/notificationHub");
 
+app.MapGet("/health", () => Results.Ok("Healthy"));
+
 using (var scope = app.Services.CreateScope())
 {
     var context = scope.ServiceProvider.GetRequiredService<CareConnectContext>();
 
-    // Check if the database already exists
-    var databaseExists = await context.Database.CanConnectAsync();
-
-    // Apply migrations (creates DB if missing)
-    await context.Database.MigrateAsync();
-
-    // Run seeding only if database was just created
-    if (!databaseExists)
+    var retries = 15;
+    while (retries > 0)
     {
-        DatabaseSeeder.Seed(context);
+        try
+        {
+            var databaseExists = await context.Database.CanConnectAsync();
+
+            if (!databaseExists)
+            {
+                Console.WriteLine("Database does not exist. Creating and applying migrations...");
+                await context.Database.MigrateAsync();
+                DatabaseSeeder.Seed(context);
+                Console.WriteLine("Database created and seeded successfully.");
+            }
+            else
+            {
+                Console.WriteLine("Database already exists. Applying any pending migrations...");
+                await context.Database.MigrateAsync();
+                Console.WriteLine("Migrations applied successfully.");
+            }
+
+            break; 
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Waiting for DB... {ex.Message}");
+            await Task.Delay(5000);
+            retries--;
+        }
     }
 }
 

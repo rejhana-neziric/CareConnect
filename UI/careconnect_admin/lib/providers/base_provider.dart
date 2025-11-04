@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:careconnect_admin/core/config.dart';
 import 'package:careconnect_admin/models/responses/search_result.dart';
 import 'package:careconnect_admin/models/auth_credentials.dart';
 import 'package:flutter/material.dart';
@@ -19,10 +20,11 @@ abstract class BaseProvider<T> with ChangeNotifier {
 
   BaseProvider(String endpoint) {
     _endpoint = endpoint;
-    _baseUrl = const String.fromEnvironment(
-      "baseUrl",
-      defaultValue: "http://localhost:5241/",
-    );
+    _baseUrl = AppConfig.apiBaseUrl;
+    // const String.fromEnvironment(
+    //   "baseUrl",
+    //   defaultValue: "http://localhost:5241/",
+    // );
   }
 
   void markShouldRefresh() {

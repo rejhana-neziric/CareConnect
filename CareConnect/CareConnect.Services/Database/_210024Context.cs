@@ -52,12 +52,11 @@ public partial class CareConnectContext : DbContext
 
     public virtual DbSet<Workshop> Workshops { get; set; }
 
+    //    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+    //#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.
+    //        => optionsBuilder.UseSqlServer("Data Source=DESKTOP-BRFTFE0\\MSSQLSERVER9;Initial Catalog=_210024;Trusted_Connection=True;User ID=sa;Password=QWEasd123!;MultipleActiveResultSets=true; TrustServerCertificate=true"); 
+    //        //.LogTo(Console.WriteLine).EnableSensitiveDataLogging();
 
-
-    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.
-        => optionsBuilder.UseSqlServer("Data Source=DESKTOP-BRFTFE0\\MSSQLSERVER9;Initial Catalog=_210024;Trusted_Connection=True;User ID=sa;Password=QWEasd123!;MultipleActiveResultSets=true; TrustServerCertificate=true"); 
-        //.LogTo(Console.WriteLine).EnableSensitiveDataLogging();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -424,171 +423,7 @@ public partial class CareConnectContext : DbContext
             entity.Property(e => e.WorkshopType).HasMaxLength(50);
         });
 
-       // SeedData(modelBuilder);
-
-
         OnModelCreatingPartial(modelBuilder);
-    }
-
-    private void SeedData(ModelBuilder modelBuilder)
-    {
-        // Seed AttendanceStatus
-        modelBuilder.Entity<AttendanceStatus>().HasData(
-            new AttendanceStatus { AttendanceStatusId = 1, Name = "Present" },
-            new AttendanceStatus { AttendanceStatusId = 2, Name = "Absent" },
-            new AttendanceStatus { AttendanceStatusId = 3, Name = "Late" },
-            new AttendanceStatus { AttendanceStatusId = 4, Name = "Excused" }
-        );
-
-        // Seed Qualifications
-        modelBuilder.Entity<Qualification>().HasData(
-            new Qualification { QualificationId = 1, Name = "Bachelor of Psychology", InstituteName = "University of Sarajevo", ProcurementYear = new DateTime(2010, 6, 1) },
-            new Qualification { QualificationId = 2, Name = "Master of Speech-Language Pathology", InstituteName = "University of Sarajevo", ProcurementYear = new DateTime(2012, 6, 1) },
-            new Qualification { QualificationId = 3, Name = "Bachelor of Special Education", InstituteName = "University of Sarajevo", ProcurementYear = new DateTime(2015, 6, 1) },
-            new Qualification { QualificationId = 4, Name = "Bachelor of Pedagogy", InstituteName = "University of Sarajevo", ProcurementYear = new DateTime(2013, 6, 1) },
-            new Qualification { QualificationId = 5, Name = "Master of Pedagogy", InstituteName = "University of Sarajevo", ProcurementYear = new DateTime(2016, 6, 1) }
-        );
-
-        // Seed Users
-        modelBuilder.Entity<User>().HasData(
-            new User { UserId = 1, FirstName = "Anna", LastName = "Smith", Email = "anna.smith@email.com", PhoneNumber = "123456789", Username = "annasmith", PasswordHash = "hash1", PasswordSalt = "salt1", Status = true, BirthDate = new DateTime(1990, 5, 15), Gender = "F", Address = "123 Main St" },
-            new User { UserId = 2, FirstName = "Maria", LastName = "Garcia", Email = "maria.garcia@email.com", PhoneNumber = "123456788", Username = "mariagarcia", PasswordHash = "hash2", PasswordSalt = "salt2", Status = true, BirthDate = new DateTime(1988, 3, 22), Gender = "F", Address = "456 Elm St" },
-            new User { UserId = 3, FirstName = "Emily", LastName = "Johnson", Email = "emily.johnson@email.com", PhoneNumber = "123456787", Username = "emilyj", PasswordHash = "hash3", PasswordSalt = "salt3", Status = true, BirthDate = new DateTime(1992, 7, 30), Gender = "F", Address = "789 Oak St" },
-            new User { UserId = 4, FirstName = "Sophie", LastName = "Brown", Email = "sophie.brown@email.com", PhoneNumber = "123456786", Username = "sophieb", PasswordHash = "hash4", PasswordSalt = "salt4", Status = true, BirthDate = new DateTime(1985, 11, 10), Gender = "F", Address = "321 Pine St" },
-            new User { UserId = 5, FirstName = "Emma", LastName = "Williams", Email = "emma.williams@email.com", PhoneNumber = "123456785", Username = "emmaw", PasswordHash = "hash5", PasswordSalt = "salt5", Status = true, BirthDate = new DateTime(1991, 8, 25), Gender = "F", Address = "654 Cedar St" },
-            new User { UserId = 6, FirstName = "Olivia", LastName = "Miller", Email = "olivia.miller@email.com", PhoneNumber = "123456784", Username = "oliviam", PasswordHash = "hash6", PasswordSalt = "salt6", Status = true, BirthDate = new DateTime(1989, 2, 14), Gender = "F", Address = "987 Birch St" },
-            new User { UserId = 7, FirstName = "Isabella", LastName = "Davis", Email = "isabella.davis@email.com", PhoneNumber = "123456783", Username = "isabellad", PasswordHash = "hash7", PasswordSalt = "salt7", Status = true, BirthDate = new DateTime(1994, 12, 5), Gender = "F", Address = "246 Walnut St" },
-            new User { UserId = 8, FirstName = "Ava", LastName = "Wilson", Email = "ava.wilson@email.com", PhoneNumber = "123456782", Username = "avawilson", PasswordHash = "hash8", PasswordSalt = "salt8", Status = true, BirthDate = new DateTime(1993, 6, 18), Gender = "F", Address = "369 Maple St" },
-            new User { UserId = 9, FirstName = "Michael", LastName = "Anderson", Email = "michael.anderson@email.com", PhoneNumber = "223456789", Username = "michaela", PasswordHash = "hash9", PasswordSalt = "salt9", Status = true, BirthDate = new DateTime(1980, 4, 12), Gender = "M", Address = "111 Main St" },
-            new User { UserId = 10, FirstName = "Daniel", LastName = "Martinez", Email = "daniel.martinez@email.com", PhoneNumber = "223456788", Username = "danielm", PasswordHash = "hash10", PasswordSalt = "salt10", Status = true, BirthDate = new DateTime(1982, 9, 9), Gender = "M", Address = "222 Elm St" },
-            new User { UserId = 11, FirstName = "James", LastName = "Hernandez", Email = "james.hernandez@email.com", PhoneNumber = "223456787", Username = "jamesh", PasswordHash = "hash11", PasswordSalt = "salt11", Status = true, BirthDate = new DateTime(1995, 10, 23), Gender = "M", Address = "333 Oak St" },
-            new User { UserId = 12, FirstName = "Robert", LastName = "Lopez", Email = "robert.lopez@email.com", PhoneNumber = "223456786", Username = "robertl", PasswordHash = "hash12", PasswordSalt = "salt12", Status = true, BirthDate = new DateTime(1991, 7, 17), Gender = "M", Address = "444 Pine St" },
-            new User { UserId = 13, FirstName = "William", LastName = "Clark", Email = "william.clark@email.com", PhoneNumber = "223456785", Username = "williamc", PasswordHash = "hash13", PasswordSalt = "salt13", Status = true, BirthDate = new DateTime(1987, 5, 29), Gender = "M", Address = "555 Cedar St" },
-            new User { UserId = 14, FirstName = "David", LastName = "Lewis", Email = "david.lewis@email.com", PhoneNumber = "223456784", Username = "davidl", PasswordHash = "hash14", PasswordSalt = "salt14", Status = true, BirthDate = new DateTime(1999, 8, 20), Gender = "M", Address = "666 Birch St" },
-            new User { UserId = 15, FirstName = "Sophia", LastName = "Walker", Email = "sophia.walker@email.com", PhoneNumber = "223456783", Username = "sophiaw", PasswordHash = "hash15", PasswordSalt = "salt15", Status = true, BirthDate = new DateTime(1983, 1, 8), Gender = "F", Address = "777 Walnut St" },
-            new User { UserId = 16, FirstName = "Charlotte", LastName = "Young", Email = "charlotte.young@email.com", PhoneNumber = "223456782", Username = "charlottey", PasswordHash = "hash16", PasswordSalt = "salt16", Status = true, BirthDate = new DateTime(1996, 3, 14), Gender = "F", Address = "888 Maple St" },
-            new User { UserId = 17, FirstName = "Mia", LastName = "Hall", Email = "mia.hall@email.com", PhoneNumber = "223456781", Username = "miah", PasswordHash = "hash17", PasswordSalt = "salt17", Status = true, BirthDate = new DateTime(1992, 6, 11), Gender = "F", Address = "999 Oak St" }
-        );
-
-        // Seed Employees
-        modelBuilder.Entity<Employee>().HasData(
-            new Employee { EmployeeId = 1, HireDate = new DateTime(2022, 1, 15), JobTitle = "Psychologist", QualificationId = 1 },
-            new Employee { EmployeeId = 2, HireDate = new DateTime(2021, 7, 22), JobTitle = "Pedagogue", QualificationId = 5 },
-            new Employee { EmployeeId = 3, HireDate = new DateTime(2020, 5, 30), JobTitle = "Pedagogue", QualificationId = 4 },
-            new Employee { EmployeeId = 4, HireDate = new DateTime(2019, 11, 10), JobTitle = "Speech Therapist", QualificationId = 2 },
-            new Employee { EmployeeId = 5, HireDate = new DateTime(2010, 9, 12), JobTitle = "Speech Therapist", QualificationId = 2 },
-            new Employee { EmployeeId = 6, HireDate = new DateTime(2021, 3, 20), JobTitle = "Special Educator", QualificationId = 3 },
-            new Employee { EmployeeId = 7, HireDate = new DateTime(2022, 3, 20), JobTitle = "Psychologist", QualificationId = 1 }
-        );
-
-        // Seed Clients
-        modelBuilder.Entity<Client>().HasData(
-            new Client { ClientId = 9, EmploymentStatus = true },
-            new Client { ClientId = 10, EmploymentStatus = false },
-            new Client { ClientId = 11, EmploymentStatus = true },
-            new Client { ClientId = 12, EmploymentStatus = false },
-            new Client { ClientId = 13, EmploymentStatus = true },
-            new Client { ClientId = 14, EmploymentStatus = false },
-            new Client { ClientId = 15, EmploymentStatus = true },
-            new Client { ClientId = 16, EmploymentStatus = false },
-            new Client { ClientId = 17, EmploymentStatus = false }
-        );
-
-        // Seed Children
-        modelBuilder.Entity<Child>().HasData(
-            new Child { ChildId = 1, FirstName = "Liam", LastName = "Smith", BirthDate = new DateTime(2015, 2, 10), Gender = "M" },
-            new Child { ChildId = 2, FirstName = "Noah", LastName = "Garcia", BirthDate = new DateTime(2017, 6, 22), Gender = "M" },
-            new Child { ChildId = 3, FirstName = "Molly", LastName = "Johnson", BirthDate = new DateTime(2018, 4, 15), Gender = "F" },
-            new Child { ChildId = 4, FirstName = "Oliver", LastName = "Brown", BirthDate = new DateTime(2016, 9, 30), Gender = "M" },
-            new Child { ChildId = 5, FirstName = "Lucas", LastName = "Williams", BirthDate = new DateTime(2019, 11, 5), Gender = "M" },
-            new Child { ChildId = 6, FirstName = "Mason", LastName = "Miller", BirthDate = new DateTime(2014, 12, 20), Gender = "M" },
-            new Child { ChildId = 7, FirstName = "Ethan", LastName = "Davis", BirthDate = new DateTime(2015, 7, 8), Gender = "M" },
-            new Child { ChildId = 8, FirstName = "James", LastName = "Wilson", BirthDate = new DateTime(2018, 3, 14), Gender = "M" },
-            new Child { ChildId = 9, FirstName = "Benjamin", LastName = "Anderson", BirthDate = new DateTime(2017, 8, 26), Gender = "M" },
-            new Child { ChildId = 10, FirstName = "William", LastName = "Martinez", BirthDate = new DateTime(2020, 2, 5), Gender = "M" },
-            new Child { ChildId = 11, FirstName = "Charlotte", LastName = "Hernandez", BirthDate = new DateTime(2015, 9, 17), Gender = "F" },
-            new Child { ChildId = 12, FirstName = "Amelia", LastName = "Lopez", BirthDate = new DateTime(2017, 6, 2), Gender = "F" },
-            new Child { ChildId = 13, FirstName = "Sophia", LastName = "Clark", BirthDate = new DateTime(2016, 10, 29), Gender = "F" },
-            new Child { ChildId = 14, FirstName = "Mia", LastName = "Lewis", BirthDate = new DateTime(2019, 4, 23), Gender = "F" },
-            new Child { ChildId = 15, FirstName = "Isabella", LastName = "Walker", BirthDate = new DateTime(2021, 1, 15), Gender = "F" }
-        );
-
-        // Seed ClientsChildren
-        modelBuilder.Entity<ClientsChild>().HasData(
-            new ClientsChild { ClientId = 9, ChildId = 1 },
-            new ClientsChild { ClientId = 10, ChildId = 2 },
-            new ClientsChild { ClientId = 11, ChildId = 3 },
-            new ClientsChild { ClientId = 12, ChildId = 4 },
-            new ClientsChild { ClientId = 13, ChildId = 5 },
-            new ClientsChild { ClientId = 14, ChildId = 6 },
-            new ClientsChild { ClientId = 15, ChildId = 7 },
-            new ClientsChild { ClientId = 16, ChildId = 8 },
-            new ClientsChild { ClientId = 17, ChildId = 9 }
-        );
-
-        // Seed ServiceTypes (you'll need to add this based on your schema)
-        modelBuilder.Entity<ServiceType>().HasData(
-            new ServiceType { ServiceTypeId = 1, Name = "Diagnostic Services", Description = "Services for diagnosis and assessment" },
-            new ServiceType { ServiceTypeId = 2, Name = "Therapy Services", Description = "Therapeutic intervention services" },
-            new ServiceType { ServiceTypeId = 3, Name = "Educational Services", Description = "Educational support services" }
-        );
-
-        // Seed Services
-        modelBuilder.Entity<Service>().HasData(
-            new Service { ServiceId = 1, Name = "Observation Protocol for Autism Diagnosis - ADOS-2", Description = "Standardized protocol for diagnosing autism spectrum disorders.", Price = 160.00m,  ServiceTypeId = 1 },
-            new Service { ServiceId = 2, Name = "Speech Therapy Observation", Description = "Assessment of speech and language abilities.", Price = 70.00m,  ServiceTypeId = 1 },
-            new Service { ServiceId = 3, Name = "Special Education Observation", Description = "Assessment of specific developmental and learning difficulties.", Price = 70.00m, ServiceTypeId = 1 },
-            new Service { ServiceId = 4, Name = "Psychological Observation and Assessment", Description = "Evaluation of cognitive and emotional abilities.", Price = 80.00m,ServiceTypeId = 1 },
-            new Service { ServiceId = 5, Name = "Educational Observation", Description = "Analysis of educational needs and potential.", Price = 65.00m,  ServiceTypeId = 3 },
-            new Service { ServiceId = 6, Name = "Speech Therapy Treatment", Description = "Individual treatment to improve speech and language abilities.", Price = 40.00m, ServiceTypeId = 2 },
-            new Service { ServiceId = 7, Name = "Follow-up Speech Therapy Session", Description = "Monitoring progress after previous treatment.", Price = 40.00m, ServiceTypeId = 2 }
-        );
-
-        // Seed Workshops
-        modelBuilder.Entity<Workshop>().HasData(
-            new Workshop { WorkshopId = 1, Name = "Supporting Children with Autism", Description = "A comprehensive workshop for parents on understanding and supporting children with autism.", Status = "Finished", Date = new DateTime(2024, 10, 10), Price = 200.00m, WorkshopType = "Workshop for Parents", Notes = "Bring a notebook." },
-            new Workshop { WorkshopId = 2, Name = "Social Skills Development for Children", Description = "Interactive activities designed to improve social skills in children with disabilities.", Status = "Finished", Date = new DateTime(2024, 11, 5), Price = 180.00m, WorkshopType = "Workshop for Children", Notes = "Materials will be provided." },
-            new Workshop { WorkshopId = 3, Name = "Parenting Strategies for Children with Special Needs", Description = "Guidance for parents on effective strategies for children with special needs.", Status = "Finished", Date = new DateTime(2024, 12, 1), Price = 220.00m, WorkshopType = "Workshop for Parents", Notes = "Refreshments included." }
-        );
-
-        // Seed Reviews
-        modelBuilder.Entity<Review>().HasData(
-            new Review { ReviewId = 1, UserId = 9, Title = "Excellent Workshop", Content = "The workshop was incredibly informative and engaging. The instructor was very supportive and answered all questions thoroughly.", PublishDate = new DateTime(2024, 9, 1), Stars = 5 },
-            new Review { ReviewId = 2, UserId = 10, Title = "Very Helpful", Content = "I found the session very helpful, especially the practical exercises. It really helped me understand how to support my child better.", PublishDate = new DateTime(2024, 9, 5), EmployeeId = 2, Stars = 4 },
-            new Review { ReviewId = 3, UserId = 11, Title = "Good Experience", Content = "The staff was friendly and the workshop was well-structured. I would recommend this to other parents.", PublishDate = new DateTime(2024, 9, 10), Stars = 4 }
-        );
-
-        // Seed Participants
-        modelBuilder.Entity<Participant>().HasData(
-            new Participant { ParticipantId = 1, UserId = 9, WorkshopId = 1, AttendanceStatusId = 1, RegistrationDate = new DateTime(2024, 2, 1) },
-            new Participant { ParticipantId = 2, UserId = 8, WorkshopId = 2, AttendanceStatusId = 1, RegistrationDate = new DateTime(2024, 2, 5) },
-            new Participant { ParticipantId = 3, UserId = 10, WorkshopId = 3, AttendanceStatusId = 1, RegistrationDate = new DateTime(2024, 2, 10) },
-            new Participant { ParticipantId = 4, UserId = 11, WorkshopId = 1, AttendanceStatusId = 1, RegistrationDate = new DateTime(2024, 2, 15) },
-            new Participant { ParticipantId = 5, UserId = 12, WorkshopId = 2, AttendanceStatusId = 1, RegistrationDate = new DateTime(2024, 2, 20) }
-        );
-
-        // Seed EmployeeAvailability
-        modelBuilder.Entity<EmployeeAvailability>().HasData(
-            new EmployeeAvailability { EmployeeAvailabilityId = 1, EmployeeId = 1, ServiceId = 1, DayOfWeek = "Monday", StartTime = "09:00", EndTime = "17:00"},
-            new EmployeeAvailability { EmployeeAvailabilityId = 2, EmployeeId = 2, ServiceId = 2, DayOfWeek = "Monday", StartTime = "08:00", EndTime = "16:00"},
-            new EmployeeAvailability { EmployeeAvailabilityId = 3, EmployeeId = 3, ServiceId = 3, DayOfWeek = "Tuesday", StartTime = "10:00", EndTime = "18:00"},
-            new EmployeeAvailability { EmployeeAvailabilityId = 4, EmployeeId = 4, ServiceId = null, DayOfWeek = "Wednesday", StartTime = "09:00", EndTime = "12:00"},
-            new EmployeeAvailability { EmployeeAvailabilityId = 5, EmployeeId = 5, ServiceId = 1, DayOfWeek = "Thursday", StartTime = "08:30", EndTime = "17:30"},
-            new EmployeeAvailability { EmployeeAvailabilityId = 6, EmployeeId = 6, ServiceId = 2, DayOfWeek = "Friday", StartTime = "09:00", EndTime = "15:00"},
-            new EmployeeAvailability { EmployeeAvailabilityId = 7, EmployeeId = 7, ServiceId = 3, DayOfWeek = "Saturday", StartTime = "10:00", EndTime = "14:00"}
-        );
-
-        // Note: Appointments seed data requires ClientId and ChildId which come from Users
-        // Since we're seeding based on composite keys, we use the actual IDs
-        modelBuilder.Entity<Appointment>().HasData(
-            new Appointment { AppointmentId = 1, ClientId = 9, ChildId = 1, EmployeeAvailabilityId = 1, AppointmentType = "Consultation", AttendanceStatusId = 1, Date = new DateTime(2025, 2, 1), Description = "Initial consultation regarding project progress", Note = "No special notes" },
-            new Appointment { AppointmentId = 2, ClientId = 10, ChildId = 2, EmployeeAvailabilityId = 2, AppointmentType = "Follow-up", AttendanceStatusId = 2, Date = new DateTime(2025, 2, 3), Description = "Follow-up on previous meeting regarding design feedback", Note = "Absent due to illness" },
-            new Appointment { AppointmentId = 3, ClientId = 11, ChildId = 3, EmployeeAvailabilityId = 3, AppointmentType = "Interview", AttendanceStatusId = 3, Date = new DateTime(2025, 2, 5), Description = "Job interview for Software Engineer position", Note = "Late arrival due to traffic" },
-            new Appointment { AppointmentId = 4, ClientId = 12, ChildId = 4, EmployeeAvailabilityId = 4, AppointmentType = "Consultation", AttendanceStatusId = 1, Date = new DateTime(2025, 2, 7), Description = "Consultation on marketing strategy", Note = "On time, very productive" },
-            new Appointment { AppointmentId = 5, ClientId = 13, ChildId = 5, EmployeeAvailabilityId = 5, AppointmentType = "Training", AttendanceStatusId = 4, Date = new DateTime(2025, 2, 10), Description = "Training session for new software", Note = "Excused absence, rescheduled to next week" },
-            new Appointment { AppointmentId = 6, ClientId = 14, ChildId = 6, EmployeeAvailabilityId = 6, AppointmentType = "Consultation", AttendanceStatusId = 1, Date = new DateTime(2025, 2, 12), Description = "Meeting to discuss the upcoming product launch", Note = "All points covered" },
-            new Appointment { AppointmentId = 7, ClientId = 15, ChildId = 7, EmployeeAvailabilityId = 7, AppointmentType = "Follow-up", AttendanceStatusId = 2, Date = new DateTime(2025, 2, 15), Description = "Follow-up meeting on last weeks workshop", Note = "Absent due to vacation" }
-        );
     }
 
     partial void OnModelCreatingPartial(ModelBuilder modelBuilder);

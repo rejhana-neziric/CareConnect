@@ -1,3 +1,4 @@
+import 'package:careconnect_admin/core/config.dart';
 import 'package:careconnect_admin/core/theme/app_colors.dart';
 import 'package:careconnect_admin/models/auth_user.dart';
 import 'package:careconnect_admin/providers/auth_provider.dart';
@@ -36,7 +37,8 @@ class _LoginScreenState extends State<LoginScreen>
 
   List<String>? permissions;
 
-  final String _hubUrl = dotenv.env['SIGNALR_HUB_URL'] ?? '';
+  final String _hubUrl =
+      AppConfig.signalHubUrl; //dotenv.env['SIGNALR_HUB_URL'] ?? '';
 
   @override
   void initState() {
