@@ -752,6 +752,7 @@ namespace CareConnect.Services.Migrations
                     b.HasOne("CareConnect.Services.Database.EmployeeAvailability", "EmployeeAvailability")
                         .WithMany("Appointments")
                         .HasForeignKey("EmployeeAvailabilityId")
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired()
                         .HasConstraintName("FK_Appointments_EmployeeAvailability");
 

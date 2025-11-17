@@ -39,11 +39,11 @@ namespace CareConnect.API.Controllers
 
         [HttpDelete("{clientId}/{childId}")]
         [PermissionAuthorize("RemoveChildren")]
-        public bool RemoveChildFromClient(int clientId, int childId)
+        public virtual IActionResult RemoveChildFromClient(int clientId, int childId)
         {
             var response = _clientsChildService.RemoveChildFromClient(clientId, childId);
 
-            return response;
+            return Ok(response);
         }
     }
 }

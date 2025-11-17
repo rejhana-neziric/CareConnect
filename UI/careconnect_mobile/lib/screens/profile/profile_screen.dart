@@ -153,7 +153,8 @@ class _ProfileScreenState extends State<ProfileScreen>
                     _buildChildrenInfo(colorScheme),
                     const SizedBox(height: 24),
                     if (permissionProvider.canEditClient()) ...[
-                      _buildDeactivateAccount(colorScheme),
+                      if (permissionProvider.canDeactivateAccount())
+                        _buildDeactivateAccount(colorScheme),
                       const SizedBox(height: 34),
                       _buildActionButtons(colorScheme),
                     ],

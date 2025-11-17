@@ -37,9 +37,10 @@ namespace CareConnect.API.Controllers
 
         [HttpDelete("{id}")]
         [PermissionAuthorize("Delete")]
-        public virtual bool Delete(int id)
+        public virtual IActionResult Delete(int id)
         {
-            return _service.Delete(id);
+            var result = _service.Delete(id);
+            return Ok(result);
         }
     }
 }

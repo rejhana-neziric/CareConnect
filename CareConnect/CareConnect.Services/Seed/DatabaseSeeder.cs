@@ -1337,6 +1337,8 @@ public static class DatabaseSeeder
                         p.Name == "Permissions.Payment.CreatePaymentIntent" ||
                         p.Name == "Permissions.Payment.VerifyPayment" ||
                         p.Name == "Permissions.Client.GetById" ||
+                        p.Name == "Permissions.Client.Delete" ||
+                        p.Name == "Permissions.Child.Delete" ||
                         p.Name == "Permissions.Service.Get" ||
                         p.Name == "Permissions.Service.GetById" ||
                         p.Name == "Permissions.Service.GetEmployeesForService" ||

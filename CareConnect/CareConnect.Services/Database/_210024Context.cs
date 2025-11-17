@@ -86,7 +86,7 @@ public partial class CareConnectContext : DbContext
 
             entity.HasOne(d => d.EmployeeAvailability).WithMany(p => p.Appointments)
                 .HasForeignKey(d => d.EmployeeAvailabilityId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
+                .OnDelete(DeleteBehavior.Restrict)
                 .HasConstraintName("FK_Appointments_EmployeeAvailability");
 
             entity.HasOne(d => d.ClientsChild)

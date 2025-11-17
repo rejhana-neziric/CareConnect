@@ -96,18 +96,17 @@ class _ReviewDetailsScreenState extends State<ReviewDetailsScreen> {
     List<Appointment> appointments,
     int clientId,
   ) {
-    final filtered = appointments.where((a) {
-      return a.clientId == clientId;
-    }).toList();
+    final filtered = appointments.where((a) => a.clientId == clientId).toList();
 
-    final employees = filtered
-        .map((a) => a.employeeAvailability?.employee)
-        .where((e) => e != null)
-        .cast<Employee>()
-        .toSet()
-        .toList();
+    final employeesMap = <int, Employee>{};
+    for (var a in filtered) {
+      final employee = a.employeeAvailability?.employee;
+      if (employee != null && employee.user != null) {
+        employeesMap[employee.user!.userId] = employee;
+      }
+    }
 
-    return employees;
+    return employeesMap.values.toList();
   }
 
   @override

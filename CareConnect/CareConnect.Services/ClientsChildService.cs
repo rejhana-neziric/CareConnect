@@ -193,7 +193,8 @@ namespace CareConnect.Services
             }
         }
 
-        public bool RemoveChildFromClient(int clientId, int childId)
+
+        public object RemoveChildFromClient(int clientId, int childId)
         {
             using var transaction = Context.Database.BeginTransaction();
 
@@ -201,22 +202,36 @@ namespace CareConnect.Services
             {
                 var clientsChild = Context.ClientsChildren.FirstOrDefault(x => x.ClientId == clientId && x.ChildId == childId);
 
-                if (clientsChild == null) return false; 
+                if (clientsChild == null) return new { success = false, message = "Not found." };
 
                 Context.ClientsChildren.Remove(clientsChild);   
-                var child = _childService.Delete(childId);  
-
+                
                 Context.SaveChanges();
+
+                var child = _childService.Delete(childId);  
 
                 transaction.Commit();
 
-                return true;
+                return new { success = true, message = "Deleted successfully." };
 
             }
-            catch (Exception ex)
+            catch (DbUpdateConcurrencyException)
             {
                 transaction.Rollback();
-                throw;
+                return new { success = false, message = "The item was already deleted or modified by another process." };
+            }
+            catch (DbUpdateException ex)
+            {
+                transaction.Rollback();
+
+                if (ex.InnerException != null &&
+                   (ex.InnerException.Message.Contains("REFERENCE constraint") ||
+                    ex.InnerException.Message.Contains("FOREIGN KEY constraint")))
+                {
+                    return new { success = false, message = "Sorry, you cannot delete this item because it is referenced by other records." };
+                }
+
+                return new { success = false, message = "An error occurred while deleting." };
             }
         }
 

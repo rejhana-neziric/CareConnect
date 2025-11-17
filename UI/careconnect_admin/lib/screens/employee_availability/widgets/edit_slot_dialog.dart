@@ -45,6 +45,10 @@ class _EditSlotDialogState extends State<EditSlotDialog> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
+            Text(
+              'Important: Any availability that has scheduled appointments will be kept and cannot be removed.',
+            ),
+            SizedBox(height: 5),
             // Time selection with resize handles
             Card(
               child: Padding(

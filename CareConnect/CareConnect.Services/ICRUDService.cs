@@ -13,6 +13,6 @@ namespace CareConnect.Services
 
         TModel Update(int id, TUpdate request);
 
-        public bool Delete(int id);
+        public object Delete(int id);
     }
 }

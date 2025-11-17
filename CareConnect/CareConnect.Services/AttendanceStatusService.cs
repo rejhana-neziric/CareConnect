@@ -22,13 +22,13 @@ namespace CareConnect.Services
 
         }
 
-        public override bool Delete(int id)
+        public override object Delete(int id) 
         {
             var isUsedAppointments = Context.Appointments.Any(a => a.AttendanceStatusId == id);
             var isUsedWorkshops = Context.Participants.Any(a => a.AttendanceStatusId == id);
 
             if (isUsedAppointments || isUsedWorkshops)
-                return false; 
+                return new { success = false, message = "Sorry, you cannot delete this item because it is referenced by other records." };
 
             var status = Context.AttendanceStatuses.Find(id);
 
@@ -36,10 +36,10 @@ namespace CareConnect.Services
             {
                 Context.AttendanceStatuses.Remove(status);
                 Context.SaveChanges();
-                return true;
+                return new { success = true, message = "Deleted successfully." };
             }
 
-            return false;
+            return new { success = false, message = "Not found." };
         }
     }
 }

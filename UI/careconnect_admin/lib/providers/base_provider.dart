@@ -146,29 +146,38 @@ abstract class BaseProvider<T> with ChangeNotifier {
     throw Exception("Method not implemented");
   }
 
-  Future<bool> delete(int id) async {
+  Future<Map<String, dynamic>> delete(int id) async {
     var url = "$_baseUrl$_endpoint/$id";
     var uri = Uri.parse(url);
     var headers = createHeaders();
 
-    var response = await http.delete(uri, headers: headers);
+    try {
+      var response = await http.delete(uri, headers: headers);
 
-    if (isValidResponse(response)) {
-      final data = jsonDecode(response.body);
-      // final success = fromJson(data);
-      final success = data;
+      if (isValidResponse(response)) {
+        final data = jsonDecode(response.body);
 
-      if (success == true) {
-        final index = _items.result.indexWhere((e) => getId(e) == id);
-        if (index != -1) {
-          _items.result.removeAt(index);
-          notifyListeners();
+        if (data['success'] == true) {
+          final index = _items.result.indexWhere((e) => getId(e) == id);
+          if (index != -1) {
+            _items.result.removeAt(index);
+            notifyListeners();
+          }
         }
-      }
 
-      return success == true;
-    } else {
-      throw new Exception("Unknown error");
+        return {
+          'success': data['success'] ?? false,
+          'message': data['message'] ?? 'Unknown error',
+        };
+      } else {
+        final data = jsonDecode(response.body);
+        return {
+          'success': false,
+          'message': data['message'] ?? 'Failed to delete',
+        };
+      }
+    } catch (e) {
+      return {'success': false, 'message': 'Network error: ${e.toString()}'};
     }
   }
 

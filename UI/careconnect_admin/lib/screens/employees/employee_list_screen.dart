@@ -540,18 +540,30 @@ class _EmployeeTableState extends State<EmployeeTable> {
 
     if (shouldProceed != true) return;
 
-    final success = await employeeProvider.delete(id!);
+    try {
+      final result = await employeeProvider.delete(id!);
 
-    CustomSnackbar.show(
-      context,
-      message: success
-          ? 'Employee successfully deleted.'
-          : 'Something went wrong. Please try again.',
-      type: success ? SnackbarType.success : SnackbarType.error,
-    );
+      if (result['success']) {
+        CustomSnackbar.show(
+          context,
+          message: 'Employee successfully deleted.',
+          type: SnackbarType.success,
+        );
 
-    if (success) {
-      _fetchPage(currentPage);
+        _fetchPage(currentPage);
+      } else {
+        CustomSnackbar.show(
+          context,
+          message: result['message'],
+          type: SnackbarType.error,
+        );
+      }
+    } catch (e) {
+      CustomSnackbar.show(
+        context,
+        message: 'Something went wrong. Please try again later.',
+        type: SnackbarType.error,
+      );
     }
   }
 
@@ -660,7 +672,13 @@ class EmployeeDataSource extends DataTableSource {
         ),
         DataCell(Text(employee.jobTitle.toString())),
         DataCell(Text(employee.user?.email ?? "Not provided")),
-        DataCell(Text(employee.user?.phoneNumber ?? "Not provided")),
+        DataCell(
+          Text(
+            employee.user?.phoneNumber == null
+                ? "Not provided"
+                : '+387 ${employee.user?.phoneNumber}',
+          ),
+        ),
         DataCell(
           Container(
             padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),

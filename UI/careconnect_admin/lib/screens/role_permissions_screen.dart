@@ -882,19 +882,28 @@ class _RolePermissionsScreenState extends State<RolePermissionsScreen> {
 
     if (shouldProceed != true) return;
 
-    final success = await roleProvider.delete(role.roleId);
+    try {
+      final result = await roleProvider.delete(role.roleId);
 
-    if (success) {
+      if (result['success']) {
+        CustomSnackbar.show(
+          context,
+          message: 'Role deleted successfully.',
+          type: SnackbarType.success,
+        );
+
+        _loadData();
+      } else {
+        CustomSnackbar.show(
+          context,
+          message: result['message'],
+          type: SnackbarType.error,
+        );
+      }
+    } catch (e) {
       CustomSnackbar.show(
         context,
-        message: 'Role deleted successfully.',
-        type: SnackbarType.success,
-      );
-      _loadData();
-    } else {
-      CustomSnackbar.show(
-        context,
-        message: 'Something went wrong. Please try again.',
+        message: 'Something went wrong. Please try again later.',
         type: SnackbarType.error,
       );
     }

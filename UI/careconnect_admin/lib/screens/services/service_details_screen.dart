@@ -314,20 +314,30 @@ class _ServiceDetailsScreenState extends State<ServiceDetailsScreen> {
 
     if (shouldProceed != true) return;
 
-    final success = await serviceProvider.delete(id!);
+    try {
+      final result = await serviceProvider.delete(id!);
 
-    if (!mounted) return;
+      if (result['success']) {
+        CustomSnackbar.show(
+          context,
+          message: 'Service successfully deleted.',
+          type: SnackbarType.success,
+        );
 
-    CustomSnackbar.show(
-      context,
-      message: success
-          ? 'Service successfully deleted.'
-          : 'Something went wrong. Please try again.',
-      type: success ? SnackbarType.success : SnackbarType.error,
-    );
-
-    if (success) {
-      Navigator.of(context).pop();
+        Navigator.of(context).pop();
+      } else {
+        CustomSnackbar.show(
+          context,
+          message: result['message'],
+          type: SnackbarType.error,
+        );
+      }
+    } catch (e) {
+      CustomSnackbar.show(
+        context,
+        message: 'Something went wrong. Please try again later.',
+        type: SnackbarType.error,
+      );
     }
   }
 

@@ -13,6 +13,7 @@ using CareConnect.Services.Helpers;
 using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using CareConnect.Models.SearchObjects;
 using System.Security.Permissions;
+using Stripe.TestHelpers.Treasury;
 
 namespace CareConnect.Services
 {
@@ -155,7 +156,7 @@ namespace CareConnect.Services
             base.AfterDelete(clientId);
         }
 
-        public override bool Delete(int id)
+        public override object Delete(int id) 
         {
             using var transaction = Context.Database.BeginTransaction();
 
@@ -167,7 +168,7 @@ namespace CareConnect.Services
                     .Include(c => c.User)
                     .FirstOrDefault(c => c.ClientId == id);
 
-                if (client == null) return false;
+                if (client == null) return new { success = false, message = "Not found." };
 
                 foreach (var clientsChild in client.ClientsChildren.ToList())
                 {
@@ -199,12 +200,20 @@ namespace CareConnect.Services
                 Context.SaveChanges();
                 transaction.Commit();
 
-                return true;
+                return new { success = true, message = "Deleted successfully." };
             }
-            catch
+            catch (DbUpdateException ex)
             {
                 transaction.Rollback();
-                return false;
+
+                if (ex.InnerException != null &&
+                   (ex.InnerException.Message.Contains("REFERENCE constraint") ||
+                    ex.InnerException.Message.Contains("FOREIGN KEY constraint")))
+                {
+                    return new { success = false, message = "Sorry, you cannot delete this item because it is referenced by other records." };
+                }
+
+                return new { success = false, message = "An error occurred while deleting." };
             }
         }
 

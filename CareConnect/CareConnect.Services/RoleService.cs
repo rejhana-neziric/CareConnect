@@ -2,20 +2,23 @@
 using CareConnect.Models.SearchObjects;
 using CareConnect.Services.Database;
 using MapsterMapper;
+using Microsoft.AspNet.SignalR.Client.Http;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Xml.Linq;
+using static Permissions;
 
 namespace CareConnect.Services
 {
-    public class RoleService : BaseCRUDService<Models.Responses.Role, RoleSearchObject, RoleAdditionalData, Role, RoleInsertRequest, RoleUpdateRequest>, IRoleService
+    public class RoleService : BaseCRUDService<Models.Responses.Role, RoleSearchObject, RoleAdditionalData, Database.Role, RoleInsertRequest, RoleUpdateRequest>, IRoleService
     {
         public RoleService(CareConnectContext context, IMapper mapper) : base(context, mapper) { }
 
-        protected override void AddInclude(RoleAdditionalData additionalData, ref IQueryable<Role> query)
+        protected override void AddInclude(RoleAdditionalData additionalData, ref IQueryable<Database.Role> query)
         {
             if (additionalData != null)
             {
@@ -28,7 +31,7 @@ namespace CareConnect.Services
             base.AddInclude(additionalData, ref query);
         }
 
-        public override Role GetByIdWithIncludes(int id)
+        public override Database.Role GetByIdWithIncludes(int id)
         {
             return Context.Roles
                 .Include(p => p.Permissions)
@@ -56,6 +59,43 @@ namespace CareConnect.Services
             return Mapper.Map<Models.Responses.Role>(entity);   
         }
 
+        public virtual object Delete(int id)
+        {
+            var entity = GetByIdWithIncludes(id);
 
+            if (entity == null) return new { success = false, message = "Not found." };
+
+            try
+            {
+                BeforeDelete(entity);
+
+                var count = Context.Database
+                    .SqlQuery<int>($"SELECT COUNT(*) as Value FROM RolePermissions WHERE RoleId = {id}")
+                    .FirstOrDefault();
+
+                bool hasChildren = count > 0;
+
+                if (hasChildren) return new { success = false, message = "Sorry, you cannot delete this item because it is referenced by other records." };
+
+
+                Context.Set<Database.Role>().Remove(entity);
+                Context.SaveChanges();
+
+                AfterDelete(id);
+
+                return new { success = true, message = "Deleted successfully." };
+            }
+            catch (DbUpdateException ex)
+            {
+                if (ex.InnerException != null &&
+                   (ex.InnerException.Message.Contains("REFERENCE constraint") ||
+                    ex.InnerException.Message.Contains("FOREIGN KEY constraint")))
+                {
+                    return new { success = false, message = "Sorry, you cannot delete this item because it is referenced by other records." };
+                }
+
+                return new { success = false, message = "An error occurred while deleting." };
+            }
+        }
     }
 }

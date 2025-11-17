@@ -344,19 +344,31 @@ class _ReviewListScreenState extends State<ReviewListScreen> {
     );
 
     if (confirm) {
-      final success = await reviewProvider.delete(review.reviewId);
+      try {
+        final result = await reviewProvider.delete(review.reviewId);
 
-      if (!mounted) return;
+        if (result['success']) {
+          CustomSnackbar.show(
+            context,
+            message: 'You have deleted review.',
+            type: SnackbarType.success,
+          );
 
-      CustomSnackbar.show(
-        context,
-        message: success
-            ? 'You have deleted review.'
-            : 'Something went wrong. Please try again later.',
-        type: success ? SnackbarType.success : SnackbarType.error,
-      );
-
-      loadReviews();
+          loadReviews();
+        } else {
+          CustomSnackbar.show(
+            context,
+            message: result['message'],
+            type: SnackbarType.error,
+          );
+        }
+      } catch (e) {
+        CustomSnackbar.show(
+          context,
+          message: 'Something went wrong. Please try again later.',
+          type: SnackbarType.error,
+        );
+      }
     }
   }
 

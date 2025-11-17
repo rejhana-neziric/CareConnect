@@ -1,6 +1,7 @@
 ﻿using CareConnect.Models.SearchObjects;
 using CareConnect.Services.Database;
 using MapsterMapper;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Linq;
 
@@ -56,20 +57,34 @@ namespace CareConnect.Services
             return Context.Set<TDbEntity>().Find(id);
         }
 
-        public virtual bool Delete(int id)
+        public virtual object Delete(int id)
         {
             var entity = GetByIdWithIncludes(id);
 
-            if (entity == null) return false;
+            if (entity == null) return new { success = false, message = "Not found."};
 
-            BeforeDelete(entity);
+            try
+            {
+                BeforeDelete(entity);
 
-            Context.Set<TDbEntity>().Remove(entity);
-            Context.SaveChanges();
+                Context.Set<TDbEntity>().Remove(entity);
+                Context.SaveChanges();
 
-            AfterDelete(id);
+                AfterDelete(id);
 
-            return true;
+                return new { success = true, message = "Deleted successfully."};
+            }
+            catch (DbUpdateException ex)
+            {
+                if (ex.InnerException != null &&
+                   (ex.InnerException.Message.Contains("REFERENCE constraint") ||
+                    ex.InnerException.Message.Contains("FOREIGN KEY constraint")))
+                {
+                    return new { success = false, message = "Sorry, you cannot delete this item because it is referenced by other records." };
+                }
+
+                return new { success = false, message = "An error occurred while deleting." };
+            }
         }
 
         public virtual void BeforeDelete(TDbEntity entity) { }

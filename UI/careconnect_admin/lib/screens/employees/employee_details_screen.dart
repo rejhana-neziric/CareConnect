@@ -587,20 +587,30 @@ class _EmployeeDetailsScreenState extends State<EmployeeDetailsScreen> {
 
     if (shouldProceed != true) return;
 
-    final success = await employeeProvider.delete(id!);
+    try {
+      final result = await employeeProvider.delete(id!);
 
-    if (!mounted) return;
+      if (result['success']) {
+        CustomSnackbar.show(
+          context,
+          message: 'Employee successfully deleted.',
+          type: SnackbarType.success,
+        );
 
-    CustomSnackbar.show(
-      context,
-      message: success
-          ? 'Employee successfully deleted.'
-          : 'Something went wrong. Please try again.',
-      type: success ? SnackbarType.success : SnackbarType.error,
-    );
-
-    if (success) {
-      Navigator.of(context).pop(success);
+        Navigator.of(context).pop(result['success']);
+      } else {
+        CustomSnackbar.show(
+          context,
+          message: result['message'],
+          type: SnackbarType.error,
+        );
+      }
+    } catch (e) {
+      CustomSnackbar.show(
+        context,
+        message: 'Something went wrong. Please try again later.',
+        type: SnackbarType.error,
+      );
     }
   }
 

@@ -151,6 +151,11 @@ namespace CareConnect.Services
             base.BeforeUpdate(request, ref entity);
         }
 
+        public override void AfterInsert(Database.Employee entity)
+        {
+            base.AfterInsert(entity);
+        }
+
         public override Database.Employee GetByIdWithIncludes(int id)
         {
             return Context.Employees
@@ -301,7 +306,16 @@ namespace CareConnect.Services
                 {
                     foreach (var request in availability.toDelete)
                     {
-                        _employeeAvailabilityService.Delete(request);
+                        var count = Context.Database
+                            .SqlQuery<int>($"SELECT COUNT(*) as Value FROM Appointments WHERE EmployeeAvailabilityID = {request}")
+                            .FirstOrDefault();
+
+                        bool hasAppointments = count > 0;
+
+                        if(!hasAppointments)
+                        {
+                            _employeeAvailabilityService.Delete(request);
+                        }
                     }
                 }
 

@@ -537,17 +537,32 @@ class _ChildDetailsScreenState extends State<ChildDetailsScreen>
       );
 
       if (confirm) {
-        final success = await _deleteInformation();
+        try {
+          final result = await clientsChildProvider.removeChildFromClient(
+            currentUser!.id,
+            widget.child.childId,
+          );
 
-        if (!mounted) return;
-
-        CustomSnackbar.show(
-          context,
-          message: success
-              ? 'You have deleted child\'s information.'
-              : 'Failed to deactivate account. Please try again later.',
-          type: success ? SnackbarType.success : SnackbarType.error,
-        );
+          if (result['success']) {
+            CustomSnackbar.show(
+              context,
+              message: 'You have deleted child\'s information.',
+              type: SnackbarType.success,
+            );
+          } else {
+            CustomSnackbar.show(
+              context,
+              message: result['message'],
+              type: SnackbarType.error,
+            );
+          }
+        } catch (e) {
+          CustomSnackbar.show(
+            context,
+            message: 'Failed to deactivate account. Please try again later.',
+            type: SnackbarType.error,
+          );
+        }
 
         Navigator.pop(context);
       }
@@ -565,39 +580,49 @@ class _ChildDetailsScreenState extends State<ChildDetailsScreen>
 
       if (shouldProceed != true) return;
 
-      final success = await clientProvider.delete(currentUser!.id);
-
-      if (!mounted) return;
-
-      CustomSnackbar.show(
-        context,
-        message: success
-            ? 'Client and child successfully deleted.'
-            : 'Something went wrong. Please try again.',
-        type: success ? SnackbarType.success : SnackbarType.error,
-      );
-
-      if (success) {
-        final auth = Provider.of<AuthProvider>(context, listen: false);
-        auth.logout();
-
-        Navigator.pushReplacement(
+      if (!permissionProvider.canDeactivateAccount()) {
+        CustomSnackbar.show(
           context,
-          MaterialPageRoute(builder: (context) => const LoginScreen()),
+          message:
+              'Deleting this child will also deactivate your account and you do not have permission for that.',
+          type: SnackbarType.error,
         );
+      }
 
-        Navigator.of(context).pop(success);
+      try {
+        final result = await clientProvider.delete(currentUser!.id);
+
+        if (result['success']) {
+          CustomSnackbar.show(
+            context,
+            message: 'Client and child successfully deleted.',
+            type: SnackbarType.success,
+          );
+
+          final auth = Provider.of<AuthProvider>(context, listen: false);
+          auth.logout();
+
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => const LoginScreen()),
+          );
+
+          Navigator.of(context).pop(result['success']);
+        } else {
+          CustomSnackbar.show(
+            context,
+            message: result['message'],
+            type: SnackbarType.error,
+          );
+        }
+      } catch (e) {
+        CustomSnackbar.show(
+          context,
+          message: 'Something went wrong. Please try again later.',
+          type: SnackbarType.error,
+        );
       }
     }
-  }
-
-  Future<bool> _deleteInformation() async {
-    final success = await clientsChildProvider.removeChildFromClient(
-      currentUser!.id,
-      widget.child.childId,
-    );
-
-    return success;
   }
 
   Widget _buildActionButtons(ColorScheme colorScheme) {

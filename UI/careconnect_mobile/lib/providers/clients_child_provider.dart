@@ -107,32 +107,45 @@ class ClientsChildProvider extends BaseProvider<ClientsChild> {
     }
   }
 
-  Future<bool> removeChildFromClient(int clientId, int childId) async {
+  Future<Map<String, dynamic>> removeChildFromClient(
+    int clientId,
+    int childId,
+  ) async {
     var endpoint = "Client";
 
     var url = "$baseUrl$endpoint/$clientId/$childId";
     var uri = Uri.parse(url);
     var headers = createHeaders();
 
-    var response = await http.delete(uri, headers: headers);
+    try {
+      var response = await http.delete(uri, headers: headers);
 
-    if (isValidResponse(response)) {
-      final data = jsonDecode(response.body);
-      final success = data;
+      if (isValidResponse(response)) {
+        final data = jsonDecode(response.body);
 
-      if (success == true) {
-        final index = item.result.indexWhere(
-          (e) => getChildId(e) == childId && getClientId(e) == clientId,
-        );
-        if (index != -1) {
-          item.result.removeAt(index);
-          notifyListeners();
+        if (data['success'] == true) {
+          final index = item.result.indexWhere(
+            (e) => getChildId(e) == childId && getClientId(e) == clientId,
+          );
+          if (index != -1) {
+            item.result.removeAt(index);
+            notifyListeners();
+          }
         }
-      }
 
-      return success == true;
-    } else {
-      throw new Exception("Unknown error");
+        return {
+          'success': data['success'] ?? false,
+          'message': data['message'] ?? 'Unknown error',
+        };
+      } else {
+        final data = jsonDecode(response.body);
+        return {
+          'success': false,
+          'message': data['message'] ?? 'Failed to delete',
+        };
+      }
+    } catch (e) {
+      return {'success': false, 'message': 'Network error: ${e.toString()}'};
     }
   }
 

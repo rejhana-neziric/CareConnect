@@ -573,22 +573,35 @@ class _ReviewCardState extends State<ReviewCard> {
 
                         if (shouldProceed != true) return;
 
-                        final result = await Provider.of<ReviewProvider>(
-                          context,
-                          listen: false,
-                        ).delete(widget.review.reviewId);
+                        try {
+                          final result = await Provider.of<ReviewProvider>(
+                            context,
+                            listen: false,
+                          ).delete(widget.review.reviewId);
 
-                        CustomSnackbar.show(
-                          context,
-                          message: result
-                              ? 'Review successfully deleted.'
-                              : 'Something went wrong. Please try again.',
-                          type: result
-                              ? SnackbarType.success
-                              : SnackbarType.error,
-                        );
+                          if (result['success']) {
+                            CustomSnackbar.show(
+                              context,
+                              message: 'Review successfully deleted.',
+                              type: SnackbarType.success,
+                            );
 
-                        if (result == true) widget.loadData();
+                            widget.loadData();
+                          } else {
+                            CustomSnackbar.show(
+                              context,
+                              message: result['message'],
+                              type: SnackbarType.error,
+                            );
+                          }
+                        } catch (e) {
+                          CustomSnackbar.show(
+                            context,
+                            message:
+                                'Something went wrong. Please try again later.',
+                            type: SnackbarType.error,
+                          );
+                        }
                       },
                       label: 'Delete',
                       backgroundColor: colorScheme.error,

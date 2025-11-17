@@ -765,29 +765,39 @@ class _ClientDetailsScreenState extends State<ClientDetailsScreen> {
 
                                           if (shouldProceed != true) return;
 
-                                          final success =
-                                              await clientsChildProvider
-                                                  .removeChildFromClient(
-                                                    clientId,
-                                                    childId,
-                                                  );
+                                          try {
+                                            final result =
+                                                await clientsChildProvider
+                                                    .removeChildFromClient(
+                                                      clientId,
+                                                      childId,
+                                                    );
 
-                                          if (!mounted) return;
+                                            if (result['success']) {
+                                              CustomSnackbar.show(
+                                                context,
+                                                message:
+                                                    'Child successfully deleted.',
+                                                type: SnackbarType.success,
+                                              );
 
-                                          CustomSnackbar.show(
-                                            context,
-                                            message: success
-                                                ? 'Child successfully deleted.'
-                                                : 'Something went wrong. Please try again.',
-                                            type: success
-                                                ? SnackbarType.success
-                                                : SnackbarType.error,
-                                          );
-
-                                          if (success) {
-                                            setState(() {
-                                              getChildren();
-                                            });
+                                              setState(() {
+                                                getChildren();
+                                              });
+                                            } else {
+                                              CustomSnackbar.show(
+                                                context,
+                                                message: result['message'],
+                                                type: SnackbarType.error,
+                                              );
+                                            }
+                                          } catch (e) {
+                                            CustomSnackbar.show(
+                                              context,
+                                              message:
+                                                  'Something went wrong. Please try again later.',
+                                              type: SnackbarType.error,
+                                            );
                                           }
                                         } else {
                                           final shouldProceed =
@@ -804,23 +814,35 @@ class _ClientDetailsScreenState extends State<ClientDetailsScreen> {
 
                                           if (shouldProceed != true) return;
 
-                                          final success = await clientProvider
-                                              .delete(clientId);
+                                          try {
+                                            final result = await clientProvider
+                                                .delete(clientId);
 
-                                          if (!mounted) return;
+                                            if (result['success']) {
+                                              CustomSnackbar.show(
+                                                context,
+                                                message:
+                                                    'Client and child successfully deleted.',
+                                                type: SnackbarType.success,
+                                              );
 
-                                          CustomSnackbar.show(
-                                            context,
-                                            message: success
-                                                ? 'Client and child successfully deleted.'
-                                                : 'Something went wrong. Please try again.',
-                                            type: success
-                                                ? SnackbarType.success
-                                                : SnackbarType.error,
-                                          );
-
-                                          if (success) {
-                                            Navigator.of(context).pop(success);
+                                              Navigator.of(
+                                                context,
+                                              ).pop(result['success']);
+                                            } else {
+                                              CustomSnackbar.show(
+                                                context,
+                                                message: result['message'],
+                                                type: SnackbarType.error,
+                                              );
+                                            }
+                                          } catch (e) {
+                                            CustomSnackbar.show(
+                                              context,
+                                              message:
+                                                  'Something went wrong. Please try again later.',
+                                              type: SnackbarType.error,
+                                            );
                                           }
                                         }
                                       }
@@ -1039,19 +1061,31 @@ class _ClientDetailsScreenState extends State<ClientDetailsScreen> {
     );
 
     if (confirm) {
-      final success = await clientProvider.delete(
-        widget.clientsChild!.client.user!.userId,
-      );
+      try {
+        final result = await clientProvider.delete(
+          widget.clientsChild!.client.user!.userId,
+        );
 
-      if (!mounted) return;
-
-      CustomSnackbar.show(
-        context,
-        message: success
-            ? 'Your account has been deactivated.'
-            : 'Failed to deactivate account. Please try again later.',
-        type: success ? SnackbarType.success : SnackbarType.error,
-      );
+        if (result['success']) {
+          CustomSnackbar.show(
+            context,
+            message: 'Employee successfully deleted.',
+            type: SnackbarType.success,
+          );
+        } else {
+          CustomSnackbar.show(
+            context,
+            message: result['message'],
+            type: SnackbarType.error,
+          );
+        }
+      } catch (e) {
+        CustomSnackbar.show(
+          context,
+          message: 'Something went wrong. Please try again later.',
+          type: SnackbarType.error,
+        );
+      }
 
       Navigator.pop(context, true);
     }

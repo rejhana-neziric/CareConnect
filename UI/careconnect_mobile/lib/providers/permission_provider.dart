@@ -85,6 +85,10 @@ class PermissionProvider {
     ]);
   }
 
+  bool canDeactivateAccount() {
+    return hasPermission(AppPermissions.clientDelete);
+  }
+
   // Appointment Permissions
   bool canViewAppointmentScreen() {
     return hasPermission(AppPermissions.appointmentView);

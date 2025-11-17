@@ -10,7 +10,7 @@ namespace CareConnect.Services
 
         public Models.Responses.ClientsChild AddChildToClient(int clientId, ChildInsertRequest childInsertRequest); 
 
-        public bool RemoveChildFromClient(int clientId, int childId);
+        public object RemoveChildFromClient(int clientId, int childId);
 
         public ClientsChildStatistics GetStatistics();
 

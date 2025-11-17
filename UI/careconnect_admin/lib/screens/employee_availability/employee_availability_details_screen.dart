@@ -333,7 +333,7 @@ class _EmployeeAvailabilityDetailsScreenState
     } else {
       CustomSnackbar.show(
         context,
-        message: 'Please fix the errors above',
+        message: 'Please fix the errors above.',
         type: SnackbarType.error,
       );
     }

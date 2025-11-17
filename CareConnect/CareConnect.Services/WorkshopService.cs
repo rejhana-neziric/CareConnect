@@ -113,7 +113,7 @@ namespace CareConnect.Services
         public override Database.Workshop GetByIdWithIncludes(int id)
         {
             return Context.Workshops
-                .Include(w => w.WorkshopType)
+                //.Include(w => w.WorkshopType)
                 .First(w => w.WorkshopId == id);
         }
 

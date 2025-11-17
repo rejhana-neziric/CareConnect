@@ -170,7 +170,7 @@ class _AppointmentListScreenState extends State<AppointmentListScreen> {
   }
 
   Future<void> loadChildren() async {
-    final response = await childProvider.get();
+    final response = await childProvider.get(filter: {"retrieveAll": true});
 
     setState(() {
       children = response.result;
@@ -686,18 +686,30 @@ class _AppointmentTableState extends State<AppointmentTable> {
 
     if (shouldProceed != true) return;
 
-    final success = await appointmentProvider.delete(id);
+    try {
+      final result = await appointmentProvider.delete(id);
 
-    CustomSnackbar.show(
-      context,
-      message: success
-          ? 'Appointment successfully deleted.'
-          : 'Something went wrong. Please try again.',
-      type: success ? SnackbarType.success : SnackbarType.error,
-    );
+      if (result['success']) {
+        CustomSnackbar.show(
+          context,
+          message: 'Appointment successfully deleted.',
+          type: SnackbarType.success,
+        );
 
-    if (success) {
-      _fetchPage(currentPage);
+        _fetchPage(currentPage);
+      } else {
+        CustomSnackbar.show(
+          context,
+          message: result['message'],
+          type: SnackbarType.error,
+        );
+      }
+    } catch (e) {
+      CustomSnackbar.show(
+        context,
+        message: 'Something went wrong. Please try again later.',
+        type: SnackbarType.error,
+      );
     }
   }
 

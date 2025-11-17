@@ -619,20 +619,30 @@ class _WorkshopDetailsScreenState extends State<WorkshopDetailsScreen> {
 
     if (shouldProceed != true) return;
 
-    final success = await workshopProvider.delete(id!);
+    try {
+      final result = await workshopProvider.delete(id!);
 
-    if (!mounted) return;
+      if (result['success']) {
+        CustomSnackbar.show(
+          context,
+          message: 'Workshop successfully deleted.',
+          type: SnackbarType.success,
+        );
 
-    CustomSnackbar.show(
-      context,
-      message: success
-          ? 'Workshop successfully deleted.'
-          : 'Something went wrong. Please try again.',
-      type: success ? SnackbarType.success : SnackbarType.error,
-    );
-
-    if (success) {
-      Navigator.of(context).pop();
+        Navigator.of(context).pop();
+      } else {
+        CustomSnackbar.show(
+          context,
+          message: result['message'],
+          type: SnackbarType.error,
+        );
+      }
+    } catch (e) {
+      CustomSnackbar.show(
+        context,
+        message: 'Something went wrong. Please try again later.',
+        type: SnackbarType.error,
+      );
     }
   }
 
